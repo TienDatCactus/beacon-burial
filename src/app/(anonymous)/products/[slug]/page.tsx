@@ -65,7 +65,7 @@ const mockProducts: Product[] = [
 ];
 
 export default function ProductPage() {
-  const id = useParams().id as string;
+  const slug = useParams().slug as string;
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
@@ -80,7 +80,7 @@ export default function ProductPage() {
       try {
         // Simulate API delay
         setTimeout(() => {
-          const foundProduct = mockProducts.find((p) => p.slug === id);
+          const foundProduct = mockProducts.find((p) => p.slug === slug);
           if (foundProduct) {
             setProduct(foundProduct);
             const related = mockProducts
@@ -101,7 +101,7 @@ export default function ProductPage() {
     };
 
     fetchProduct();
-  }, [id]);
+  }, [slug]);
 
   // Handle product not found
   if (!isLoading && !product) {

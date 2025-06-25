@@ -19,7 +19,7 @@ const CartBreadcrumps: React.FC = () => {
   };
   return (
     <>
-      <div className="flex flex-col space-y-4 items-center mb-12">
+      <div className="flex flex-col space-y-4 items-center my-12">
         <h1 className="text-6xl font-serif text-center ">Giỏ hàng</h1>
         <ChevronDown />
       </div>

@@ -26,15 +26,15 @@ const Header: React.FC = () => {
     },
     {
       label: "Danh sách sản phẩm",
-      href: "/our-features",
+      href: "/shop",
     },
     {
       label: "Danh sách dịch vụ",
-      href: "#",
+      href: "/services",
     },
     {
       label: "Tin tức",
-      href: "#",
+      href: "/news",
     },
 
     {

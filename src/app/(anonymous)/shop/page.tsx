@@ -6,14 +6,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { formatPrice, renderStars } from "@/lib/utils";
-import { ChevronDown } from "lucide-react";
-import { motion } from "motion/react";
-import Image from "next/image";
-import Link from "next/link";
-import React from "react";
 import { Product } from "@/lib/interfaces";
 import ProductCards from "@/shared/components/cards/ProductCards";
+import { ChevronDown } from "lucide-react";
+import React from "react";
 
 const Shop: React.FC = () => {
   const products: Product[] = [

@@ -10,6 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Product } from "@/lib/interfaces";
+import { useCartStore } from "@/lib/stores/useCartStore";
 import { formatCurrency } from "@/lib/utils";
 import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
 import {
@@ -23,76 +24,21 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
-interface CartItem extends Product {
-  quantity: number;
-}
 
 const CartPage: React.FC = () => {
-  // Always define hooks at the top level before any conditional logic
-  const [cartItems, setCartItems] = useState<CartItem[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const { items, removeItem, clearCart, updateQuantity, subtotal, totalPrice } =
+    useCartStore();
+  const [isLoading, setIsLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
-
-  useEffect(() => {
-    setIsLoading(true);
-    setTimeout(() => {
-      setCartItems([
-        {
-          _id: "1",
-          name: "Modern Arrangement",
-          slug: "modern-arrangement",
-          price: 156.0,
-          image:
-            "/images/image-9-pist9h4brl9fb6a1imhxr4xsqxo5cqvbwpn4fqxahy.jpg",
-          rating: 5,
-          quantity: 1,
-        },
-        {
-          _id: "3",
-          name: "Rose and Freesia Bouquet",
-          slug: "rose-and-freesia-bouquet",
-          price: 135.0,
-          image: "/images/image-45-840x840.jpg",
-          rating: 5,
-          quantity: 2,
-        },
-      ]);
-      setIsLoading(false);
-    }, 500);
-  }, []);
-
-  const updateQuantity = (id: string, newQuantity: number) => {
-    if (newQuantity < 1) return;
-
-    setCartItems((prevItems) =>
-      prevItems.map((item) =>
-        item._id === id ? { ...item, quantity: newQuantity } : item
-      )
-    );
-  };
-
-  const removeItem = (id: string) => {
-    setCartItems((prevItems) => prevItems.filter((item) => item._id !== id));
-  };
-
   const applyCoupon = () => {
     if (couponCode.trim() !== "" && couponCode.trim() == "LETANGFPT") {
       setCouponApplied(true);
     }
   };
 
-  const clearCart = () => {
-    setCartItems([]);
-  };
-
-  const subtotal = cartItems.reduce(
-    (sum, item) => sum + item.price * item.quantity,
-    0
-  );
-  const discount = couponApplied ? subtotal * 0.1 : 0; // 10% discount when coupon applied
-  const tax = subtotal > 0 ? 15.0 : 0;
-  const total = subtotal - discount + tax;
+  const discount = couponApplied ? (subtotal || 0) * 0.1 : 0; // 10% discount when coupon applied
+  const tax = subtotal || 0 > 0 ? 15.0 : 0;
 
   if (isLoading) {
     return (
@@ -106,7 +52,7 @@ const CartPage: React.FC = () => {
     <div className=" py-12 mx-auto bg-gray-50">
       <div className="container mx-auto px-10">
         <CartBreadcrumps />
-        {cartItems.length > 0 ? (
+        {items.length > 0 ? (
           <div className="spayce-y-8">
             <Table>
               <TableHeader className="">
@@ -119,35 +65,35 @@ const CartPage: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody className="w-full">
-                {cartItems.map((item) => (
-                  <TableRow key={item._id}>
+                {items.map((item, index) => (
+                  <TableRow key={index}>
                     <TableCell className="font-medium">
                       <div className="flex items-center">
                         <div className="w-20 h-20 flex-shrink-0 relative mr-4">
                           <Image
-                            src={item.image}
-                            alt={item.name}
+                            src={item.product.image}
+                            alt={item.product.name}
                             fill
                             className="object-cover"
                           />
                         </div>
                         <div>
                           <Link
-                            href={`/products/${item.slug}`}
+                            href={`/products/${item.product.slug}`}
                             className="hover:text-primary transition-colors"
                           >
-                            {item.name}
+                            {item.product.name}
                           </Link>
                         </div>
                       </div>
                     </TableCell>
-                    <TableCell>{formatCurrency(item.price)}</TableCell>
+                    <TableCell>{formatCurrency(item.product.price)}</TableCell>
                     <TableCell className="">
                       <div className="flex items-center space-x-2">
                         <Button
                           variant={"secondary"}
                           onClick={() =>
-                            updateQuantity(item._id, item.quantity - 1)
+                            updateQuantity(item.product._id, item.quantity - 1)
                           }
                           aria-label="Decrease quantity"
                         >
@@ -160,7 +106,7 @@ const CartPage: React.FC = () => {
                           value={item.quantity}
                           onChange={(e) =>
                             updateQuantity(
-                              item._id,
+                              item.product._id,
                               parseInt(e.target.value) || 1
                             )
                           }
@@ -168,7 +114,7 @@ const CartPage: React.FC = () => {
                         <Button
                           variant={"secondary"}
                           onClick={() =>
-                            updateQuantity(item._id, item.quantity + 1)
+                            updateQuantity(item.product._id, item.quantity + 1)
                           }
                           aria-label="Increase quantity"
                         >
@@ -177,12 +123,12 @@ const CartPage: React.FC = () => {
                       </div>
                     </TableCell>
                     <TableCell>
-                      {formatCurrency(item.price * item.quantity)}
+                      {formatCurrency(item.product.price * item.quantity)}
                     </TableCell>
                     <TableCell className="text-right">
                       <Button
                         variant={"destructive"}
-                        onClick={() => removeItem(item._id)}
+                        onClick={() => removeItem(item.product._id)}
                         aria-label="Remove item"
                       >
                         <X size={18} />
@@ -216,8 +162,8 @@ const CartPage: React.FC = () => {
                 <Button
                   className="bg-primary hover:bg-primary/50 text-white"
                   onClick={() => {
-                    // In a real app, this would update cart items
-                    alert("Cart updated");
+                    // We don't need to call updateCart here since cart state is already managed internally
+                    // by the useCartStore and updated automatically when items change
                   }}
                 >
                   Cập nhật Giỏ hàng
@@ -226,19 +172,23 @@ const CartPage: React.FC = () => {
 
               <div>
                 <div className="border border-gray-300 p-6">
-                  <h2 className="text-xl font-serif mb-6">Cart Totals</h2>
+                  <h2 className="text-2xl font-semibold mb-6 ">
+                    Hóa đơn tạm tính
+                  </h2>
 
                   <div className="space-y-4 mb-6">
                     <div className="flex justify-between pb-4 border-b border-gray-200">
                       <span>Tổng cộng</span>
-                      <span>{formatCurrency(subtotal)}</span>
+                      <span>{formatCurrency(subtotal || 0)}</span>
                     </div>
 
                     <div className="pb-4 border-b border-gray-200">
                       <div className="flex justify-between mb-2">
                         <span>Mã giảm giá</span>
                         <span>
-                          {couponApplied ? `-$${discount.toFixed(2)}` : "$0.00"}
+                          {couponApplied
+                            ? `-$${formatCurrency(discount)}`
+                            : "$0.00"}
                         </span>
                       </div>
 
@@ -281,13 +231,14 @@ const CartPage: React.FC = () => {
 
                     <div className="flex justify-between font-bold text-lg">
                       <span>Tổng cộng</span>
-                      <span>{formatCurrency(total)}</span>
+                      <span>{formatCurrency(totalPrice)}</span>
                     </div>
                   </div>
-
-                  <Button className="w-full bg-primary hover:bg-primary/50 text-white py-3 text-base">
-                    Proceed to Checkout
-                  </Button>
+                  <Link href={"/checkout"}>
+                    <Button className="w-full bg-primary hover:bg-primary/50 text-white py-3 text-base">
+                      Tiến hành thanh toán
+                    </Button>
+                  </Link>
                 </div>
               </div>
             </div>

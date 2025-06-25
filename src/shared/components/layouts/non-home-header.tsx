@@ -10,6 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCartStore } from "@/lib/stores/useCartStore";
 import {
   Clock,
   Facebook,
@@ -22,6 +23,8 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+import { Product } from "@/lib/interfaces";
+import CartPreview from "../cart";
 
 interface MenuItem {
   label: string;
@@ -39,15 +42,15 @@ const NoneHomeHeader: React.FC = () => {
     },
     {
       label: "Danh sách sản phẩm",
-      href: "/our-features",
+      href: "/shop",
     },
     {
       label: "Danh sách dịch vụ",
-      href: "#",
+      href: "/services",
     },
     {
       label: "Tin tức",
-      href: "#",
+      href: "/news",
     },
 
     {
@@ -78,8 +81,6 @@ const NoneHomeHeader: React.FC = () => {
   };
 
   const renderMenuItem = (item: MenuItem, isSubMenu: boolean = false) => {
-    const hasChildren = item.children && item.children.length > 0;
-
     return (
       <li
         key={item.label}
@@ -158,21 +159,7 @@ const NoneHomeHeader: React.FC = () => {
             </nav>
 
             <div className="flex items-center space-x-6">
-              <div className="relative h-10 w-10">
-                <Badge
-                  className="h-5 min-w-5 rounded-full px-1 font-mono tabular-nums absolute bottom-6 left-6 "
-                  variant="default"
-                >
-                  20
-                </Badge>
-                <Button
-                  size={"icon"}
-                  className="bg-white hover:bg-primary/50 text-black hover:*:text-white"
-                >
-                  <ShoppingCart size={20} className="text-gray-600" />
-                </Button>
-              </div>
-
+              <CartPreview />
               <DropdownMenu>
                 <DropdownMenuTrigger className="hover:bg-primary/50 text-black hover:*:text-white rounded-full ">
                   <Avatar>

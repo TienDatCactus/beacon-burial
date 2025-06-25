@@ -1,13 +1,17 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/interfaces";
+import { useCartStore } from "@/lib/stores/useCartStore";
 import { renderStars } from "@/lib/utils";
 import { Heart, MoveRight, ShoppingCart } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import React from "react";
 
 const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
+  const { addItem } = useCartStore();
+
   return (
     <div
       key={product._id}
@@ -27,28 +31,33 @@ const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
           transition={{ duration: 0.2, ease: "easeOut" }}
           className="absolute inset-0 transition-opacity duration-200 gap-2 flex items-center justify-center *:bg-white *:rounded-full "
         >
-          <Button className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white">
+          <Button
+            onClick={() => addItem(product, 1)}
+            className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white"
+          >
             <ShoppingCart className="text-gray-700" />
           </Button>
+
           <Button className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white">
             <Heart className="text-gray-700" />
           </Button>
-          <Button className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white  ">
-            <MoveRight className="text-gray-700" />
+          <Button className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white">
+            <Link href={`/products/${product.slug}`}>
+              <MoveRight className="text-gray-700" />
+            </Link>
           </Button>
         </motion.div>
       </div>
-      <h3 className="duration-200 group-hover:text-primary text-2xl font-semibold">
+      <h3 className="duration-200 group-hover:text-primary text-lg font-semibold">
         {product.name}
       </h3>
-      <p className="text-gray-500 text-lg">
+      <p className="text-gray-500 text-base">
         {product.price.toLocaleString("vi-VN", {
           style: "currency",
           currency: "VND",
         })}
       </p>
       <div className="flex items-center justify-center space-x-1 ">
-        {/* <span>{product.rating}</span> */}
         <span className="flex">{renderStars(product.rating)}</span>
       </div>
     </div>

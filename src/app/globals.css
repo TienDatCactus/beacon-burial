@@ -75,7 +75,7 @@
   --background: oklch(0.9582 0.0152 90.2357);
   --foreground: oklch(0.376 0.0225 64.3434);
   --card: oklch(0.9914 0.0098 87.4695);
-  --card-foreground: oklch(0.376 0.0225 64.3434);
+  --card-foreground: oklch(37.598% 0.02246 64.3);
   --popover: oklch(0.9914 0.0098 87.4695);
   --popover-foreground: oklch(0.376 0.0225 64.3434);
   --primary: oklch(0.618 0.0778 65.5444);
@@ -204,4 +204,11 @@ input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+* {
+  scroll-behavior: smooth;
+}
+
+::-webkit-scrollbar {
+  display: none;
 }

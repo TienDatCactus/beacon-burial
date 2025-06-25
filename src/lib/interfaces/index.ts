@@ -8,9 +8,20 @@ export interface Product {
   description?: string;
   category?: string;
   stock?: number;
-  createdAt?: Date;
-  updatedAt?: Date;
   isFeatured?: boolean;
   isNew?: boolean;
   isPopular?: boolean;
+}
+
+export interface Cart {
+  _id: string;
+  items: CartItem[];
+  totalPrice: number;
+  totalItems: number;
+  subtotal?: number;
+}
+export interface CartItem {
+  _id?: string;
+  product: Product;
+  quantity: number;
 }
