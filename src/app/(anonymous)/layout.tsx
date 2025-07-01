@@ -24,7 +24,7 @@ export default function RootLayout({
         {pathname === "/home" ? <Header /> : <NoneHomeHeader />}
         {children}
         <Footer />
-        <Toaster />
+        <Toaster richColors />
       </body>
     </html>
   );

@@ -25,6 +25,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { Product } from "@/lib/interfaces";
 import CartPreview from "../cart";
+import useAuth from "@/lib/stores/useAuthStores";
 
 interface MenuItem {
   label: string;
@@ -38,7 +39,7 @@ const NoneHomeHeader: React.FC = () => {
   const menuItems: MenuItem[] = [
     {
       label: "Trang chủ",
-      href: "#",
+      href: "/",
     },
     {
       label: "Danh sách sản phẩm",
@@ -97,7 +98,7 @@ const NoneHomeHeader: React.FC = () => {
       </li>
     );
   };
-
+  const { logout, user, isAuthenticated } = useAuth();
   return (
     <>
       {/* Top Info Bar */}
@@ -160,20 +161,31 @@ const NoneHomeHeader: React.FC = () => {
 
             <div className="flex items-center space-x-6">
               <CartPreview />
-              <DropdownMenu>
-                <DropdownMenuTrigger className="hover:bg-primary/50 text-black hover:*:text-white rounded-full ">
-                  <Avatar>
-                    <AvatarImage src="/images/undraw_pic-profile_nr49.svg" />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent>
-                  <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
-                  <DropdownMenuItem>Đăng xuất</DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {isAuthenticated ? (
+                <DropdownMenu>
+                  <DropdownMenuTrigger className="hover:bg-primary/50 text-black hover:*:text-white rounded-full ">
+                    <Avatar>
+                      <AvatarImage src="/images/undraw_pic-profile_nr49.svg" />
+                      <AvatarFallback>CN</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="end"
+                    className="*:hover:bg-primary/20"
+                  >
+                    <DropdownMenuLabel>Tài khoản</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem>Hồ sơ</DropdownMenuItem>
+                    <DropdownMenuItem onClick={logout}>
+                      Đăng xuất
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              ) : (
+                <Button variant="link" className="p-0">
+                  <Link href="/auth">Đăng nhập</Link>
+                </Button>
+              )}
             </div>
           </div>
         </div>

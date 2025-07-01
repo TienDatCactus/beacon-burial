@@ -197,7 +197,7 @@ export default function ProductPage() {
               <span className="inline-block bg-primary text-white text-xs px-2 py-1 mb-2">
                 SALE
               </span>
-              <h1 className="text-3xl font-serif">{product?.name}</h1>
+              <h1 className="text-3xl ">{product?.name}</h1>
             </div>
 
             <div className="mb-6">

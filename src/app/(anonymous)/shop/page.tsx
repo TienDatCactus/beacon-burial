@@ -91,7 +91,7 @@ const Shop: React.FC = () => {
     <div className="bg-gray-50 p-20">
       <div className="container mx-auto px-4">
         <div className="flex flex-col space-y-4 items-center mb-12">
-          <h1 className="text-6xl font-serif text-center ">Cửa hàng</h1>
+          <h1 className="text-6xl  text-center ">Cửa hàng</h1>
           <ChevronDown />
         </div>
 

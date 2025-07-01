@@ -1,6 +1,7 @@
 import { create } from "zustand";
+import { AuthState } from "@/lib/interfaces/auth";
 
-const useAuth = create((set) => ({
+const useAuth = create<AuthState>((set) => ({
   user: null,
   token: null,
   isAuthenticated: false,
@@ -15,8 +16,11 @@ const useAuth = create((set) => ({
         body: JSON.stringify(credentials),
       });
 
-      if (!response.ok) throw new Error("Login failed");
-
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const message = errorData?.message || "Login failed";
+        throw new Error(message);
+      }
       const data = await response.json();
 
       set({
@@ -27,8 +31,10 @@ const useAuth = create((set) => ({
 
       // Optionally save to localStorage
       localStorage.setItem("token", data.token);
-    } catch (error) {
+      return { success: true };
+    } catch (error: any) {
       console.error("Login error:", error);
+      return { success: false, error: error.message || "Unknown error" };
     }
   },
 

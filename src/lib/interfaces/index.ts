@@ -25,3 +25,19 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export type Service = {
+  id: string;
+  name: string;
+  slug: string;
+  price: number;
+  image?: string;
+  description?: string;
+  category?: string;
+  status: "active" | "inactive";
+  rating?: number;
+  stock?: number;
+  isFeatured?: boolean;
+  isNew?: boolean;
+  isPopular?: boolean;
+};

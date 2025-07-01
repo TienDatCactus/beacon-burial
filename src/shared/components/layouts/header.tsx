@@ -22,7 +22,7 @@ const Header: React.FC = () => {
   const menuItems: MenuItem[] = [
     {
       label: "Trang chủ",
-      href: "#",
+      href: "/",
     },
     {
       label: "Danh sách sản phẩm",
