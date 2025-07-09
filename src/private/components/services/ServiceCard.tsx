@@ -36,7 +36,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
   const [isHovered, setIsHovered] = useState(false);
 
   // Format price function
-  const formatPrice = (amount: number) => {
+  const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
       currency: "USD",
@@ -100,7 +100,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         {/* Price tag */}
         {price && (
           <div className="absolute bottom-4 right-4 bg-white px-4 py-2 font-medium rounded-md shadow-md">
-            {formatPrice(price)}
+            {formatCurrency(price)}
           </div>
         )}
 

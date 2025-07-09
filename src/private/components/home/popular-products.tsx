@@ -1,8 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/interfaces";
 import ProductCards from "@/shared/components/cards/ProductCards";
-import { Heart, MoveRight, ShoppingCart, Star } from "lucide-react";
-import Image from "next/image";
 import React from "react";
 const PopularProductSection: React.FC = () => {
   const products: Product[] = [

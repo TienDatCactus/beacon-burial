@@ -8,12 +8,13 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
+import withAuth from "@/lib/hooks/useWithAuth";
 import DeleteService from "@/private/components/manager/services/DeleteService";
 import DetailDialog from "@/private/components/manager/services/DetailDialog";
 import EditService from "@/private/components/manager/services/EditService";
-import EmptyFilter from "@/private/components/manager/services/EmptyFilter";
 import GridView from "@/private/components/manager/services/GridView";
 import TableView from "@/private/components/manager/services/TableView";
+import EmptyFilter from "@/shared/components/state/EmptyFilter";
 import {
   ChartBarBig,
   Check,
@@ -23,7 +24,7 @@ import {
   Plus,
   Search,
 } from "lucide-react";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const mockServices = [
   {
@@ -348,6 +349,7 @@ const mockServices = [
         description:
           "Premium floral arrangements with imported flowers and artistic design",
       },
+
       {
         name: "Luxury Transportation",
         description:
@@ -406,30 +408,33 @@ const ServicesManagementPage = () => {
   });
 
   // Filter services based on search term and category
-  const filterServices = () => {
-    let filtered = [...mockServices];
+  const getFilteredServices = (
+    services: typeof mockServices,
+    searchTerm: string,
+    categoryFilter: string | null
+  ) => {
+    const term = searchTerm.trim().toLowerCase();
 
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(
-        (service) =>
-          service.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          service.description.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
+    return services.filter((service) => {
+      const matchSearch =
+        !term ||
+        service.name?.toLowerCase().includes(term) ||
+        service.description?.toLowerCase().includes(term);
 
-    if (categoryFilter) {
-      filtered = filtered.filter(
-        (service) => service.category === categoryFilter
-      );
-    }
+      const matchCategory =
+        !categoryFilter || service.category === categoryFilter;
 
+      return matchSearch && matchCategory;
+    });
+  };
+  useEffect(() => {
+    const filtered = getFilteredServices(
+      mockServices,
+      searchTerm,
+      categoryFilter
+    );
     setFilteredServices(filtered);
-  };
-
-  // Handle search input changes
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
+  }, [searchTerm, categoryFilter]);
 
   // Handle category filter changes
   const handleCategoryFilter = (category: string | null) => {
@@ -516,11 +521,6 @@ const ServicesManagementPage = () => {
     }
   };
 
-  // Apply filters when dependencies change
-  React.useEffect(() => {
-    filterServices();
-  }, [searchTerm, categoryFilter]);
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -563,7 +563,7 @@ const ServicesManagementPage = () => {
             placeholder="Tìm kiếm gói dịch vụ..."
             className="pl-10"
             value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
+            onChange={(e) => setSearchTerm(e.target.value)}
           />
         </div>
         <div className="flex gap-2 flex-wrap justify-end">
@@ -578,21 +578,18 @@ const ServicesManagementPage = () => {
               <DropdownMenuItem onClick={() => handleCategoryFilter(null)}>
                 Tất cả danh mục
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryFilter("Premium")}>
-                Dịch vụ cao cấp
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleCategoryFilter("Basic")}>
-                Dịch vụ cơ bản
+              <DropdownMenuItem
+                onClick={() => handleCategoryFilter("Buddhism")}
+              >
+                Mai táng theo Phật giáo
               </DropdownMenuItem>
               <DropdownMenuItem
-                onClick={() => handleCategoryFilter("Specialized")}
+                onClick={() => handleCategoryFilter("Catholicism")}
               >
-                Dịch vụ chuyên biệt
+                Mai táng theo Công giáo
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleCategoryFilter("Traditional")}
-              >
-                Dịch vụ truyền thống
+              <DropdownMenuItem onClick={() => handleCategoryFilter("Taoism")}>
+                Mai táng theo Đạo giáo
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
@@ -620,12 +617,17 @@ const ServicesManagementPage = () => {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => handleCategoryFilter(null)}>
-                Tất cả trạng thái
-              </DropdownMenuItem>
               <DropdownMenuItem
                 onClick={() => {
-                  const active = filteredServices.filter(
+                  setFilteredServices(mockServices); // reset về tất cả trạng thái
+                }}
+              >
+                Tất cả trạng thái
+              </DropdownMenuItem>
+
+              <DropdownMenuItem
+                onClick={() => {
+                  const active = mockServices.filter(
                     (s) => s.status === "active"
                   );
                   setFilteredServices(active);
@@ -633,9 +635,10 @@ const ServicesManagementPage = () => {
               >
                 Chỉ hoạt động
               </DropdownMenuItem>
+
               <DropdownMenuItem
                 onClick={() => {
-                  const inactive = filteredServices.filter(
+                  const inactive = mockServices.filter(
                     (s) => s.status === "inactive"
                   );
                   setFilteredServices(inactive);
@@ -652,7 +655,7 @@ const ServicesManagementPage = () => {
       {filteredServices.length === 0 && (
         <EmptyFilter
           setSearchTerm={setSearchTerm}
-          setCategoryFilter={setCategoryFilter}
+          setStatusFilter={setCategoryFilter}
         />
       )}
 
@@ -719,4 +722,4 @@ const ServicesManagementPage = () => {
   );
 };
 
-export default ServicesManagementPage;
+export default withAuth(ServicesManagementPage, ["manager"]);

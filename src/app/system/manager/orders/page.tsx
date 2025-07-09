@@ -1,49 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import {
-  CalendarIcon,
-  ChevronDown,
-  ChevronUp,
-  Eye,
-  Filter,
-  Search,
-  ShoppingCart,
-  X,
-} from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Badge } from "@/components/ui/badge";
-import { formatCurrency } from "@/lib/utils";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import withAuth from "@/lib/hooks/useWithAuth";
+import Filters from "@/private/components/manager/orders/Filters";
+import OrderDetails from "@/private/components/manager/orders/OrderDetails";
+import OrdersTable from "@/private/components/manager/orders/OrdersTable";
+import EmptyFilter from "@/shared/components/state/EmptyFilter";
+import { CalendarIcon } from "lucide-react";
+import React, { useState } from "react";
 
 // Mock order data
 const mockOrders = [
@@ -71,7 +35,7 @@ const mockOrders = [
         image: "/images/image-9-pist9h4brl9fb6a1imhxr4xsqxo5cqvbwpn4fqxahy.jpg",
       },
     ],
-    status: "completed",
+    status: "declined",
     totalAmount: 320,
     shippingAddress: {
       street: "123 Main St",
@@ -132,7 +96,7 @@ const mockOrders = [
         image: "/images/image-10.jpg",
       },
     ],
-    status: "shipped",
+    status: "declined",
     totalAmount: 320,
     shippingAddress: {
       street: "789 Pine Rd",
@@ -159,7 +123,7 @@ const mockOrders = [
         image: "/images/image-7-pist9h4b63nhjv2vay2lfsj3kyn0pwhy8idbbim086.jpg",
       },
     ],
-    status: "pending",
+    status: "processing",
     totalAmount: 165,
     shippingAddress: {
       street: "101 Maple Blvd",
@@ -186,7 +150,7 @@ const mockOrders = [
         image: "/images/image-10.jpg",
       },
     ],
-    status: "cancelled",
+    status: "declined",
     totalAmount: 350,
     shippingAddress: {
       street: "222 Cedar St",
@@ -197,54 +161,6 @@ const mockOrders = [
     paymentMethod: "Cash on delivery",
   },
 ];
-
-// Status badge styling helper
-const getStatusBadge = (status: string) => {
-  switch (status) {
-    case "completed":
-      return (
-        <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
-          Completed
-        </Badge>
-      );
-    case "processing":
-      return (
-        <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
-          Processing
-        </Badge>
-      );
-    case "pending":
-      return (
-        <Badge className="bg-yellow-100 text-yellow-800 hover:bg-yellow-200">
-          Pending
-        </Badge>
-      );
-    case "shipped":
-      return (
-        <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200">
-          Shipped
-        </Badge>
-      );
-    case "cancelled":
-      return (
-        <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
-          Cancelled
-        </Badge>
-      );
-    default:
-      return <Badge variant="outline">{status}</Badge>;
-  }
-};
-
-// Format date for display
-const formatDate = (dateString: string) => {
-  const options: Intl.DateTimeFormatOptions = {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-  };
-  return new Date(dateString).toLocaleDateString("en-US", options);
-};
 
 const OrdersPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");
@@ -310,13 +226,11 @@ const OrdersPage: React.FC = () => {
     setStatusFilter(status);
   };
 
-  // View order details
   const viewOrderDetails = (order: any) => {
     setSelectedOrder(order);
     setIsDialogOpen(true);
   };
 
-  // Apply filters when dependencies change
   React.useEffect(() => {
     filterOrders();
   }, [searchTerm, statusFilter, sortField, sortDirection]);
@@ -326,7 +240,6 @@ const OrdersPage: React.FC = () => {
     setIsDialogOpen(false);
   };
 
-  // Update order status
   const updateOrderStatus = (orderId: string, newStatus: string) => {
     const updatedOrders = filteredOrders.map((order) =>
       order.id === orderId ? { ...order, status: newStatus } : order
@@ -334,7 +247,6 @@ const OrdersPage: React.FC = () => {
 
     setFilteredOrders(updatedOrders);
 
-    // Also update selected order if it's open in the dialog
     if (selectedOrder && selectedOrder.id === orderId) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
     }
@@ -342,7 +254,6 @@ const OrdersPage: React.FC = () => {
 
   return (
     <div className="space-y-6">
-      {/* Page header */}
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <h1 className="text-2xl font-bold tracking-tight">Quản lý đơn hàng</h1>
         <div className="flex gap-2">
@@ -354,282 +265,43 @@ const OrdersPage: React.FC = () => {
       </div>
 
       {/* Search and filters */}
-      <div className="flex flex-col md:flex-row gap-4">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-          <Input
-            type="search"
-            placeholder="Tìm kiếm theo ID hoặc khách hàng..."
-            className="pl-10"
-            value={searchTerm}
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-        </div>
-        <div className="flex gap-2">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="outline">
-                <Filter className="mr-2 h-4 w-4" />
-                {statusFilter ? `Status: ${statusFilter}` : "Tất cả trạng thái"}
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => handleStatusFilter(null)}>
-                Tất cả đơn hàng
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusFilter("pending")}>
-                Đơn hàng đang chờ
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => handleStatusFilter("processing")}
-              >
-                Đơn hàng đang xử lý
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusFilter("shipped")}>
-                Đơn hàng đã giao
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusFilter("completed")}>
-                Đơn hàng đã hoàn thành
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleStatusFilter("cancelled")}>
-                Đơn hàng đã hủy
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-
+      <Filters
+        searchTerm={searchTerm}
+        handleSearch={handleSearch}
+        statusFilter={statusFilter}
+        handleStatusFilter={handleStatusFilter}
+      />
       {/* Empty state */}
       {filteredOrders.length === 0 && (
-        <div className="text-center py-12 border rounded-md bg-white">
-          <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
-            <ShoppingCart className="h-6 w-6 text-gray-500" />
-          </div>
-          <h3 className="mt-4 text-lg font-semibold text-gray-900">
-            Không tìm thấy đơn hàng nào
-          </h3>
-          <p className="mt-2 text-sm text-gray-500">
-            Chúng tôi không tìm thấy bất kỳ đơn hàng nào phù hợp với tiêu chí
-            của bạn. Hãy thử điều chỉnh bộ lọc của bạn.
-          </p>
-          <div className="mt-6">
-            <Button
-              onClick={() => {
-                setSearchTerm("");
-                setStatusFilter(null);
-              }}
-              variant="outline"
-            >
-              Xóa bộ lọc
-            </Button>
-          </div>
-        </div>
+        <EmptyFilter
+          setSearchTerm={setSearchTerm}
+          setStatusFilter={setStatusFilter}
+        />
       )}
 
       {/* Orders table */}
       {filteredOrders.length > 0 && (
-        <div className="border rounded-md overflow-hidden bg-white">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Mã đơn hàng</TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => handleSort("date")}
-                >
-                  <div className="flex items-center">
-                    Date
-                    {sortField === "date" &&
-                      (sortDirection === "asc" ? (
-                        <ChevronUp className="ml-2 h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="ml-2 h-4 w-4" />
-                      ))}
-                  </div>
-                </TableHead>
-                <TableHead>Khách hàng</TableHead>
-                <TableHead
-                  className="cursor-pointer"
-                  onClick={() => handleSort("totalAmount")}
-                >
-                  <div className="flex items-center">
-                    Tổng tiền
-                    {sortField === "totalAmount" &&
-                      (sortDirection === "asc" ? (
-                        <ChevronUp className="ml-2 h-4 w-4" />
-                      ) : (
-                        <ChevronDown className="ml-2 h-4 w-4" />
-                      ))}
-                  </div>
-                </TableHead>
-                <TableHead>Trạng thái</TableHead>
-                <TableHead className="text-right">Hành động</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredOrders.map((order) => (
-                <TableRow key={order.id} className="hover:bg-gray-50">
-                  <TableCell className="font-medium">{order.id}</TableCell>
-                  <TableCell>{formatDate(order.date)}</TableCell>
-                  <TableCell>
-                    <div>
-                      <div className="font-medium">{order.customer.name}</div>
-                      <div className="text-sm text-gray-500">
-                        {order.customer.email}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{formatCurrency(order.totalAmount)}</TableCell>
-                  <TableCell>{getStatusBadge(order.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => viewOrderDetails(order)}
-                      className="hover:bg-gray-100"
-                    >
-                      <Eye className="mr-2 h-4 w-4" />
-                      Xem
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <OrdersTable
+          viewOrderDetails={viewOrderDetails}
+          sortField={sortField}
+          sortDirection={sortDirection}
+          handleSort={handleSort}
+          filteredOrders={filteredOrders}
+        />
       )}
 
       {/* Order details dialog */}
       {selectedOrder && (
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-3xl">
-            <DialogHeader>
-              <DialogTitle className="text-xl">
-                Chi tiết đơn hàng: {selectedOrder.id}
-              </DialogTitle>
-              <div className="flex justify-between items-center">
-                <span>Đặt vào {formatDate(selectedOrder.date)}</span>
-                <div className="flex items-center gap-2">
-                  <span className="text-gray-700">Trạng thái:</span>
-                  <Select
-                    value={selectedOrder.status}
-                    onValueChange={(value) =>
-                      updateOrderStatus(selectedOrder.id, value)
-                    }
-                  >
-                    <SelectTrigger className="w-[140px]">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Đang chờ</SelectItem>
-                      <SelectItem value="processing">Đang xử lý</SelectItem>
-                      <SelectItem value="shipped">Đã giao hàng</SelectItem>
-                      <SelectItem value="completed">Hoàn thành</SelectItem>
-                      <SelectItem value="cancelled">Đã hủy</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </DialogHeader>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Customer Info */}
-              <div>
-                <h3 className="font-medium text-lg mb-2">
-                  Thông tin khách hàng
-                </h3>
-                <div className="space-y-1">
-                  <p>
-                    <span className="font-medium">Tên:</span>{" "}
-                    {selectedOrder.customer.name}
-                  </p>
-                  <p>
-                    <span className="font-medium">Email:</span>{" "}
-                    {selectedOrder.customer.email}
-                  </p>
-                  <p>
-                    <span className="font-medium">Số điện thoại:</span>{" "}
-                    {selectedOrder.customer.phone}
-                  </p>
-                </div>
-
-                <h3 className="font-medium text-lg mt-4 mb-2">
-                  Địa chỉ giao hàng
-                </h3>
-                <div className="space-y-1">
-                  <p>{selectedOrder.shippingAddress.street}</p>
-                  <p>
-                    {selectedOrder.shippingAddress.city},{" "}
-                    {selectedOrder.shippingAddress.state}{" "}
-                    {selectedOrder.shippingAddress.zipCode}
-                  </p>
-                </div>
-
-                <h3 className="font-medium text-lg mt-4 mb-2">
-                  Phương thức thanh toán
-                </h3>
-                <p>{selectedOrder.paymentMethod}</p>
-              </div>
-
-              {/* Order Items */}
-              <div>
-                <h3 className="font-medium text-lg mb-2">
-                  Sản phẩm trong đơn hàng
-                </h3>
-                <div className="border rounded-md">
-                  {selectedOrder.items.map((item: any) => (
-                    <div
-                      key={item.id}
-                      className="flex items-center p-3 border-b last:border-b-0"
-                    >
-                      <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative mr-3">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="h-full w-full object-cover"
-                        />
-                      </div>
-                      <div className="flex-1">
-                        <p className="font-medium">{item.name}</p>
-                        <div className="flex justify-between text-sm text-gray-600">
-                          <p>Số lượng: {item.quantity}</p>
-                          <p>{formatCurrency(item.price)} mỗi cái</p>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                <div className="mt-4 space-y-1 text-right">
-                  <div className="flex justify-between">
-                    <span>Tổng tạm tính:</span>
-                    <span>{formatCurrency(selectedOrder.totalAmount)}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span>Vận chuyển:</span>
-                    <span>Miễn phí</span>
-                  </div>
-                  <div className="flex justify-between font-medium text-lg pt-2 border-t border-gray-200">
-                    <span>Tổng cộng:</span>
-                    <span>{formatCurrency(selectedOrder.totalAmount)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="flex justify-between sm:justify-between">
-              <Button variant="outline" onClick={closeDialog}>
-                Đóng
-              </Button>
-              <Button variant="default" className="bg-primary">
-                In hóa đơn
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <OrderDetails
+          isDialogOpen={isDialogOpen}
+          setIsDialogOpen={setIsDialogOpen}
+          selectedOrder={selectedOrder}
+          updateOrderStatus={updateOrderStatus}
+          closeDialog={closeDialog}
+        />
       )}
     </div>
   );
 };
 
-export default OrdersPage;
+export default withAuth(OrdersPage, ["manager"]);

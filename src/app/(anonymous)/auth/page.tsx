@@ -39,8 +39,8 @@ export default function AuthPage() {
 
       toast.success("Login successful");
       router.push("/");
-    } catch (err) {
-      setError("Invalid email or password. Please try again.");
+    } catch (error) {
+      setError("Invalid email or password. Please try again." + error);
     } finally {
       setIsLoading(false);
     }

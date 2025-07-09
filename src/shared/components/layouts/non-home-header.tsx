@@ -1,6 +1,5 @@
 "use client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,22 +9,19 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useCartStore } from "@/lib/stores/useCartStore";
+import useAuth from "@/lib/stores/useAuthStores";
 import {
   Clock,
   Facebook,
   Instagram,
   MapPin,
   Phone,
-  ShoppingCart,
   Twitter,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
-import { Product } from "@/lib/interfaces";
 import CartPreview from "../cart";
-import useAuth from "@/lib/stores/useAuthStores";
 
 interface MenuItem {
   label: string;
@@ -90,7 +86,7 @@ const NoneHomeHeader: React.FC = () => {
         <Link href={item.href}>
           <Button
             variant={"link"}
-            className="text-black font-medium cursor-pointer tracking-wide hover:text-primary focus:outline-none"
+            className="text-black  font-medium cursor-pointer tracking-wide hover:text-primary focus:outline-none"
           >
             {item.label}
           </Button>
@@ -98,7 +94,7 @@ const NoneHomeHeader: React.FC = () => {
       </li>
     );
   };
-  const { logout, user, isAuthenticated } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   return (
     <>
       {/* Top Info Bar */}

@@ -11,6 +11,7 @@ import ServiceHero from "@/private/components/services/ServiceHero";
 import ServiceIntro from "@/private/components/services/ServiceIntro";
 import ServiceSideGuide from "@/private/components/services/ServiceSideGuide";
 import ServiceTestimonial from "@/private/components/services/ServiceTestimonial";
+import PathCrumbs from "@/shared/components/layouts/path-crumbs";
 import React, { useState } from "react";
 
 const ServicesPage: React.FC = () => {
@@ -336,6 +337,7 @@ const ServicesPage: React.FC = () => {
     <div className="bg-gray-50 min-h-screen">
       <ServiceHero />
       <div className="container mx-auto px-4 py-12">
+        <PathCrumbs />
         <ServiceIntro />
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           <div className="lg:col-span-2 space-y-8" id="service-packages">

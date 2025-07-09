@@ -1,40 +1,16 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { ServiceCardProps } from "@/private/components/services/ServiceCard";
-import {
-  Calendar,
-  Check,
-  ChevronLeft,
-  ChevronRight,
-  Clock,
-  Heart,
-  Phone,
-  Share2,
-  ShoppingCart,
-  Users,
-  X,
-  CheckCircle,
-} from "lucide-react";
-import Image from "next/image";
+import OrderDialog from "@/private/components/services/slug/OrderDialog";
+import ServiceHero from "@/private/components/services/slug/ServiceHero";
+import ServiceSidebar from "@/private/components/services/slug/ServiceSidebar";
+import SuccessDialog from "@/private/components/services/slug/SuccessDialog";
+import PathCrumbs from "@/shared/components/layouts/path-crumbs";
+import { Check, ChevronLeft, Users } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 
-// Mock services data (same as on the services page)
 const services: ServiceCardProps[] = [
   {
     title: "Hằng Sống Premium Package",
@@ -336,34 +312,9 @@ const services: ServiceCardProps[] = [
   },
 ];
 
-// Helper to get category style
-const getCategoryStyle = (category: string) => {
-  switch (category) {
-    case "Premium":
-      return "bg-amber-100 text-primary border-amber-200";
-    case "Traditional":
-      return "bg-blue-100 text-blue-800 border-blue-200";
-    case "Basic":
-      return "bg-green-100 text-green-800 border-green-200";
-    case "Specialized":
-      return "bg-purple-100 text-purple-800 border-purple-200";
-    default:
-      return "bg-gray-100 text-gray-800 border-gray-200";
-  }
-};
-
-// Format price function
-const formatPrice = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
-    style: "currency",
-    currency: "USD",
-    maximumFractionDigits: 0,
-  }).format(amount);
-};
-
 const ServiceDetailPage = () => {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const [service, setService] = useState<ServiceCardProps | null>(null);
   const [relatedServices, setRelatedServices] = useState<ServiceCardProps[]>(
     []
@@ -377,7 +328,7 @@ const ServiceDetailPage = () => {
     name: "",
     phone: "",
     email: "",
-    date: "",
+    date: new Date(),
     notes: "",
   });
 
@@ -393,10 +344,8 @@ const ServiceDetailPage = () => {
   // Handle order submit
   const handleOrderSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Here you would typically send the order data to your API
     console.log("Order submitted:", { service: service?.title, ...orderForm });
 
-    // Close order dialog and open success dialog
     setIsOrderDialogOpen(false);
     setIsSuccessDialogOpen(true);
 
@@ -405,20 +354,18 @@ const ServiceDetailPage = () => {
       name: "",
       phone: "",
       email: "",
-      date: "",
+      date: new Date(),
       notes: "",
     });
   };
 
   useEffect(() => {
-    // Find the service based on the slug
     const slug = params.slug as string;
     const foundService = services.find((s) => s.slug === slug);
 
     if (foundService) {
       setService(foundService);
 
-      // Find related services (same category but not the same service)
       const related = services
         .filter(
           (s) =>
@@ -434,6 +381,7 @@ const ServiceDetailPage = () => {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
+        <PathCrumbs />
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
           <p className="mt-4 text-gray-500">Đang tải thông tin dịch vụ...</p>
@@ -468,48 +416,7 @@ const ServiceDetailPage = () => {
   return (
     <div className="bg-gray-50 min-h-screen pb-16">
       {/* Hero Section with Image */}
-      <div className="relative w-full h-[40vh] lg:h-[50vh]">
-        <Image
-          src={service.imageUrl}
-          alt={service.title}
-          fill
-          className="object-cover"
-          priority
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
-
-        {/* Back button */}
-        <div className="absolute top-6 left-6">
-          <Button
-            variant="outline"
-            size="sm"
-            className="bg-white/80 hover:bg-white"
-            onClick={() => router.back()}
-          >
-            <ChevronLeft className="mr-1 h-4 w-4" />
-            <span>Quay lại</span>
-          </Button>
-        </div>
-
-        <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
-          <div className="max-w-5xl mx-auto">
-            <Badge
-              className={`px-3 py-1 font-medium ${getCategoryStyle(
-                service.category
-              )}`}
-              variant="outline"
-            >
-              {service.category}
-            </Badge>
-            <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mt-2">
-              {service.title}
-            </h1>
-            <p className="text-white/90 mt-2 max-w-2xl">
-              {service.description}
-            </p>
-          </div>
-        </div>
-      </div>
+      <ServiceHero router={router} service={service} />
 
       <div className="max-w-5xl mx-auto px-4 -mt-6 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -688,232 +595,29 @@ const ServiceDetailPage = () => {
           </div>
 
           {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Price Card */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-semibold">Giá dịch vụ</h3>
-                <Badge
-                  variant="outline"
-                  className="bg-amber-50 text-amber-700 border-amber-200"
-                >
-                  {service.isFeatured ? "Nổi bật" : service.category}
-                </Badge>
-              </div>
-
-              <div className="mb-4">
-                <span className="text-3xl font-bold text-primary">
-                  {service.price ? formatPrice(service.price) : "Liên hệ"}
-                </span>
-              </div>
-
-              <Button className="w-full mb-3">
-                <Phone className="mr-2 h-4 w-4" />
-                Liên hệ tư vấn
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={() => setIsOrderDialogOpen(true)}
-              >
-                <ShoppingCart className="mr-2 h-4 w-4" />
-                Đặt dịch vụ
-              </Button>
-
-              <div className="mt-6 pt-6 border-t border-gray-100 flex justify-between text-gray-500">
-                <Button variant="ghost" size="sm" className="text-gray-500">
-                  <Heart className="mr-2 h-4 w-4" />
-                  <span className="text-sm">Lưu</span>
-                </Button>
-
-                <Button variant="ghost" size="sm" className="text-gray-500">
-                  <Share2 className="mr-2 h-4 w-4" />
-                  <span className="text-sm">Chia sẻ</span>
-                </Button>
-              </div>
-            </div>
-
-            {/* Contact Support Card */}
-            <div className="bg-white rounded-lg shadow-sm p-6">
-              <h3 className="font-semibold mb-4">Hỗ trợ 24/7</h3>
-              <div className="flex items-center mb-4">
-                <Avatar className="h-10 w-10 mr-4">
-                  <AvatarImage
-                    src="/undraw_pic-profile_nr49.svg"
-                    alt="Support Avatar"
-                  />
-                  <AvatarFallback>BC</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">Đội ngũ tư vấn viên</p>
-                  <p className="text-sm text-gray-500">Luôn sẵn sàng hỗ trợ</p>
-                </div>
-              </div>
-              <div className="space-y-2 mb-4">
-                <div className="flex items-center text-sm">
-                  <Phone className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>+84 (28) 3930 7374</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Clock className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>Phục vụ 24/7, cả ngày lễ</span>
-                </div>
-                <div className="flex items-center text-sm">
-                  <Calendar className="h-4 w-4 mr-2 text-gray-500" />
-                  <span>Đặt lịch tư vấn miễn phí</span>
-                </div>
-              </div>
-              <Button variant="outline" className="w-full">
-                Đặt lịch tư vấn
-              </Button>
-            </div>
-
-            {/* Related Services */}
-            {relatedServices.length > 0 && (
-              <div className="bg-white rounded-lg shadow-sm p-6">
-                <h3 className="font-semibold mb-4">Dịch vụ liên quan</h3>
-                <div className="space-y-4">
-                  {relatedServices.map((relService, idx) => (
-                    <Link href={`/services/${relService.slug}`} key={idx}>
-                      <div className="flex items-start hover:bg-gray-50 p-2 -mx-2 rounded-md transition-colors">
-                        <div className="relative h-16 w-16 rounded overflow-hidden flex-shrink-0">
-                          <Image
-                            src={relService.imageUrl}
-                            alt={relService.title}
-                            fill
-                            className="object-cover"
-                          />
-                        </div>
-                        <div className="ml-3">
-                          <h4 className="font-medium text-sm line-clamp-2">
-                            {relService.title}
-                          </h4>
-                          <p className="text-primary text-sm mt-1">
-                            {relService.price
-                              ? formatPrice(relService.price)
-                              : "Liên hệ"}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  ))}
-
-                  <Link href="/services">
-                    <Button variant="link" className="p-0 h-auto text-primary">
-                      Xem tất cả dịch vụ
-                      <ChevronRight className="ml-1 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            )}
-          </div>
+          <ServiceSidebar
+            service={service}
+            setIsOrderDialogOpen={setIsOrderDialogOpen}
+            relatedServices={relatedServices}
+          />
         </div>
       </div>
 
       {/* Order Dialog */}
-      <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Đặt dịch vụ</DialogTitle>
-            <DialogDescription>
-              Vui lòng điền thông tin dưới đây để đặt dịch vụ {service.title}.
-            </DialogDescription>
-          </DialogHeader>
-          <form onSubmit={handleOrderSubmit}>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="name">Họ và tên</Label>
-                <Input
-                  id="name"
-                  name="name"
-                  placeholder="Nguyễn Văn A"
-                  value={orderForm.name}
-                  onChange={handleOrderFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="phone">Số điện thoại</Label>
-                <Input
-                  id="phone"
-                  name="phone"
-                  type="tel"
-                  placeholder="0912 345 678"
-                  value={orderForm.phone}
-                  onChange={handleOrderFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="email@example.com"
-                  value={orderForm.email}
-                  onChange={handleOrderFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="date">Ngày sử dụng dịch vụ</Label>
-                <Input
-                  id="date"
-                  name="date"
-                  type="date"
-                  value={orderForm.date}
-                  onChange={handleOrderFormChange}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="notes">Ghi chú thêm (nếu có)</Label>
-                <Input
-                  id="notes"
-                  name="notes"
-                  placeholder="Các yêu cầu đặc biệt hoặc thông tin bổ sung"
-                  value={orderForm.notes}
-                  onChange={handleOrderFormChange}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsOrderDialogOpen(false)}
-              >
-                Hủy
-              </Button>
-              <Button type="submit">Xác nhận đặt dịch vụ</Button>
-            </DialogFooter>
-          </form>
-        </DialogContent>
-      </Dialog>
-
+      <OrderDialog
+        isOrderDialogOpen={isOrderDialogOpen}
+        setIsOrderDialogOpen={setIsOrderDialogOpen}
+        service={service}
+        orderForm={orderForm}
+        setOrderForm={setOrderForm}
+        handleOrderFormChange={handleOrderFormChange}
+        handleOrderSubmit={handleOrderSubmit}
+      />
       {/* Success Dialog */}
-      <Dialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
-        <DialogContent className="sm:max-w-md">
-          <div className="flex flex-col items-center justify-center py-6">
-            <div className="rounded-full bg-green-100 p-3 mb-4">
-              <CheckCircle className="h-10 w-10 text-green-600" />
-            </div>
-            <DialogTitle className="text-center mb-2">
-              Đặt dịch vụ thành công!
-            </DialogTitle>
-            <DialogDescription className="text-center mb-6">
-              Cảm ơn bạn đã sử dụng dịch vụ của Beacon Burial. Chúng tôi sẽ liên
-              hệ với bạn trong thời gian sớm nhất để xác nhận chi tiết.
-            </DialogDescription>
-            <Button onClick={() => setIsSuccessDialogOpen(false)}>
-              Đã hiểu
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <SuccessDialog
+        isSuccessDialogOpen={isSuccessDialogOpen}
+        setIsSuccessDialogOpen={setIsSuccessDialogOpen}
+      />
     </div>
   );
 };

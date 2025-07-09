@@ -1,33 +1,31 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  TableHeader,
-  TableRow,
-  TableHead,
-  TableBody,
-  TableCell,
-  Table,
-} from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
-import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
 import {
-  ChevronUp,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { formatCurrency } from "@/lib/utils";
+import {
   ChevronDown,
-  MoreHorizontal,
+  ChevronUp,
   Edit,
-  Trash2,
   Info,
-  PackageCheck,
-  PackageX,
+  MoreHorizontal,
+  Trash2,
 } from "lucide-react";
-import React from "react";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import React from "react";
 
 interface ListViewProps {
   filteredProducts: any[];
@@ -143,38 +141,19 @@ const ListView: React.FC<ListViewProps> = ({
                       onClick={() => viewProductDetails(product)}
                       className="cursor-pointer"
                     >
-                      <Info className="mr-2 h-4 w-4" /> View Details
+                      <Info className="mr-2 h-4 w-4" /> Xem chi tiết
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => editProduct(product)}
                       className="cursor-pointer"
                     >
-                      <Edit className="mr-2 h-4 w-4" /> Edit Product
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() =>
-                        toggleStatus(
-                          product.id,
-                          product.status === "active" ? "inactive" : "active"
-                        )
-                      }
-                      className="cursor-pointer"
-                    >
-                      {product.status === "active" ? (
-                        <>
-                          <PackageX className="mr-2 h-4 w-4" /> Deactivate
-                        </>
-                      ) : (
-                        <>
-                          <PackageCheck className="mr-2 h-4 w-4" /> Activate
-                        </>
-                      )}
+                      <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
                     </DropdownMenuItem>
                     <DropdownMenuItem
                       onClick={() => confirmDeleteProduct(product)}
                       className="text-destructive focus:text-destructive cursor-pointer"
                     >
-                      <Trash2 className="mr-2 h-4 w-4" /> Delete
+                      <Trash2 className="mr-2 h-4 w-4" /> Xóa
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>

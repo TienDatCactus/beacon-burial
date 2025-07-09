@@ -1,22 +1,17 @@
 "use client";
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
-} from "@/components/ui/breadcrumb";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Product } from "@/lib/interfaces";
-import { formatPrice, renderStars } from "@/lib/utils";
+import { useCartStore } from "@/lib/stores/useCartStore";
+import { formatCurrency, renderStars } from "@/lib/utils";
+import ProductCards from "@/shared/components/cards/ProductCards";
+import PathCrumbs from "@/shared/components/layouts/path-crumbs";
 import { Heart, MinusIcon, PlusIcon, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import ProductCards from "@/shared/components/cards/ProductCards";
 
 const mockProducts: Product[] = [
   {
@@ -69,9 +64,8 @@ export default function ProductPage() {
   const [product, setProduct] = useState<Product | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [selectedThumbnail, setSelectedThumbnail] = useState(0);
   const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
-
+  const { addItem } = useCartStore();
   // Fetch product data
   useEffect(() => {
     // In a real application, this would be an API call
@@ -103,19 +97,16 @@ export default function ProductPage() {
     fetchProduct();
   }, [slug]);
 
-  // Handle product not found
-  if (!isLoading && !product) {
-    notFound();
-  }
+  // // Handle product not found
+  // if (!isLoading && !product) {
+  //   notFound();
+  // }
 
   const incrementQuantity = () => setQuantity((prev) => prev + 1);
   const decrementQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   // Sample product images for the thumbnails
-  const productImages = product
-    ? [product.image, "/images/image-10.jpg", "/images/image-45-840x840.jpg"]
-    : [];
 
   if (isLoading) {
     return (
@@ -125,29 +116,10 @@ export default function ProductPage() {
     );
   }
 
-  //   if (!product) return null; // TypeScript guard
-
   return (
     <div className="bg-gray-50 py-12">
       <div className="container mx-auto px-4">
-        <Breadcrumb className="mb-12">
-          <BreadcrumbList>
-            <BreadcrumbItem>
-              <BreadcrumbLink href="/">Home</BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbLink href={`/category/${product?.category}`}>
-                {product?.category}
-              </BreadcrumbLink>
-            </BreadcrumbItem>
-            <BreadcrumbSeparator />
-            <BreadcrumbItem>
-              <BreadcrumbPage>{product?.name}</BreadcrumbPage>
-            </BreadcrumbItem>
-          </BreadcrumbList>
-        </Breadcrumb>
-
+        <PathCrumbs />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
           <div className="space-y-4">
             {/* Main Image */}
@@ -158,20 +130,20 @@ export default function ProductPage() {
                 width={1000}
                 height={1000}
                 quality={100}
-                className="object-cover w-full h-auto"
+                className="object-cover w-full h-full"
                 priority
               />
               <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-2 py-1">
-                SALE
+                {product?.category || "Danh mục"}
               </div>
-              <button className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
+              <Button className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
                 <Search size={18} />
-              </button>
+              </Button>
             </div>
 
             {/* Thumbnails */}
-            <div className="flex space-x-4">
-              {/* {product?..map((image, index) => (
+            {/* <div className="flex space-x-4">
+              {product?.image &&
                 <button
                   key={index}
                   onClick={() => setSelectedThumbnail(index)}
@@ -188,26 +160,25 @@ export default function ProductPage() {
                     className="object-cover"
                   />
                 </button>
-              ))} */}
-            </div>
+              ))}
+            </div> */}
           </div>
 
           <div>
             <div className="mb-4">
               <span className="inline-block bg-primary text-white text-xs px-2 py-1 mb-2">
-                SALE
+                {product?.category || "Danh mục"}
               </span>
               <h1 className="text-3xl ">{product?.name}</h1>
             </div>
 
             <div className="mb-6">
               <span className="text-gray-400 line-through mr-2">
-                $
-                {(product?.price && (product?.price * 1.15).toFixed(2)) ||
+                {(product?.price && formatCurrency(product?.price * 1.15)) ||
                   "0.00"}
               </span>
               <span className="text-xl font-medium">
-                ${product?.price?.toFixed(2)}
+                {formatCurrency(product?.price || 0)}
               </span>
             </div>
 
@@ -232,13 +203,14 @@ export default function ProductPage() {
 
             <div className="flex items-center space-x-4 mb-8">
               <div className="flex items-center border border-gray-300">
-                <button
+                <Button
                   onClick={decrementQuantity}
+                  variant={"outline"}
                   className="px-3 py-2 border-r border-gray-300 hover:bg-gray-100"
                 >
                   <MinusIcon size={16} />
-                </button>
-                <input
+                </Button>
+                <Input
                   type="number"
                   value={quantity}
                   onChange={(e) =>
@@ -247,16 +219,23 @@ export default function ProductPage() {
                   className="w-12 text-center py-2 focus:outline-none"
                   min="1"
                 />
-                <button
+                <Button
                   onClick={incrementQuantity}
-                  className="px-3 py-2 border-l border-gray-300 hover:bg-gray-100"
+                  variant={"outline"}
+                  className="px-3 py-2 border-r border-gray-300 hover:bg-gray-100"
                 >
                   <PlusIcon size={16} />
-                </button>
+                </Button>
               </div>
 
-              <Button className="bg-primary hover:bg-primary/60 text-white px-6">
-                Buy now
+              <Button
+                className="bg-primary hover:bg-primary/60 text-white px-6"
+                onClick={() => {
+                  if (!product) return;
+                  addItem(product, quantity);
+                }}
+              >
+                Thêm vào giỏ hàng
               </Button>
 
               <Button
@@ -270,7 +249,7 @@ export default function ProductPage() {
             {/* Product Metadata */}
             <div className="space-y-2 text-sm text-gray-700">
               <div>
-                <span className="font-medium">Category: </span>
+                <span className="font-medium">Danh mục: </span>
                 <Link
                   href={`/category/${product?.category}`}
                   className="text-primary hover:underline"
@@ -279,7 +258,7 @@ export default function ProductPage() {
                 </Link>
               </div>
               <div>
-                <span className="font-medium">Tags: </span>
+                <span className="font-medium">Thẻ: </span>
                 <Link
                   href="/tag/funeral"
                   className="text-primary hover:underline"
@@ -292,7 +271,7 @@ export default function ProductPage() {
                 </Link>
               </div>
               <div>
-                <span className="font-medium">Product ID: </span>
+                <span className="font-medium">Mã sản phẩm: </span>
                 <span>2377</span>
               </div>
             </div>
@@ -305,24 +284,24 @@ export default function ProductPage() {
               value="description"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
-              Description
+              Mô tả
             </TabsTrigger>
             <TabsTrigger
               value="reviews"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
             >
-              Reviews (1)
+              Đánh giá (1)
             </TabsTrigger>
             <TabsTrigger
               value="additional"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary  rounded-none"
             >
-              Additional information
+              Thông tin bổ sung
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="description" className="pt-6">
-            <h3 className="text-xl font-medium mb-4">Product Description</h3>
+            <h3 className="text-xl font-medium mb-4">Mô tả sản phẩm</h3>
             <div className="prose max-w-none">
               <p>
                 Our {product?.name} features a carefully curated selection of

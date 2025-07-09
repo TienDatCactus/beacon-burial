@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
-import React, { useRef, useState } from "react";
+import React from "react";
 const TeamCard: React.FC<{
   member: {
     name: string;
@@ -13,14 +13,15 @@ const TeamCard: React.FC<{
   };
   index: number;
 }> = (props) => {
-  const { member, index } = props;
+  const { member } = props;
   return (
     <motion.div
       whileHover={{ scale: 1.02 }}
       transition={{ type: "spring", stiffness: 300, damping: 20 }}
       className=" h-full w-full cursor-pointer space-y-4 group"
     >
-      <img
+      <Image
+        fill
         src={member.image}
         alt={member.name}
         className="w-full h-auto object-cover"

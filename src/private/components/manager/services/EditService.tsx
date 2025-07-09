@@ -9,19 +9,20 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@radix-ui/react-label";
 import { Progress } from "@/components/ui/progress";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@radix-ui/react-select";
-import { Switch } from "@radix-ui/react-switch";
+
 import { X, Plus } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 interface EditServiceProps {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
@@ -51,18 +52,18 @@ const EditService: React.FC<EditServiceProps> = ({
 }) => {
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-      <DialogContent className="max-w-5xl h-screen ">
+      <DialogContent className="max-w-5xl max-h-170 overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Edit Service Package</DialogTitle>
+          <DialogTitle>Cập nhật gói dịch vụ</DialogTitle>
           <DialogDescription>
-            Update the details for this service package
+            Cập nhật thông tin cho gói dịch vụ này
           </DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Service Package Name</Label>
+              <Label htmlFor="name">Tên gói dịch vụ</Label>
               <Input
                 id="name"
                 value={selectedService.name}
@@ -72,12 +73,12 @@ const EditService: React.FC<EditServiceProps> = ({
                     name: e.target.value,
                   })
                 }
-                placeholder="Enter service package name"
+                placeholder="Nhập tên gói dịch vụ"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Price (VND)</Label>
+              <Label htmlFor="price">Giá (VND)</Label>
               <Input
                 id="price"
                 type="number"
@@ -88,14 +89,14 @@ const EditService: React.FC<EditServiceProps> = ({
                     price: parseInt(e.target.value) || 0,
                   })
                 }
-                placeholder="Enter price"
+                placeholder="Nhập giá"
               />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="image">Image URL</Label>
+              <Label htmlFor="image">Hình ảnh</Label>
               <Input
                 id="image"
                 type="file"
@@ -111,11 +112,13 @@ const EditService: React.FC<EditServiceProps> = ({
                     reader.readAsDataURL(e.target.files[0]);
                   }
                 }}
-                placeholder="Enter image URL path"
+                placeholder="Nhập đường dẫn hình ảnh"
               />
               {selectedService.image && (
                 <div className="mt-2 border rounded-md p-2 bg-gray-50">
-                  <p className="text-xs text-gray-500 mb-1">Image Preview:</p>
+                  <p className="text-xs text-gray-500 mb-1">
+                    Hình ảnh xem trước:
+                  </p>
                   <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden">
                     <Image
                       width={800}
@@ -134,7 +137,7 @@ const EditService: React.FC<EditServiceProps> = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="popularity">Popularity Score (0-100)</Label>
+              <Label htmlFor="popularity">Điểm phổ biến (0-100)</Label>
               <Input
                 id="popularity"
                 type="number"
@@ -150,7 +153,7 @@ const EditService: React.FC<EditServiceProps> = ({
                     ),
                   })
                 }
-                placeholder="Enter popularity score (0-100)"
+                placeholder="Nhập điểm phổ biến (0-100)"
               />
               <div className="mt-1 flex items-center">
                 <Progress value={selectedService.popularityScore || 0} />
@@ -163,7 +166,7 @@ const EditService: React.FC<EditServiceProps> = ({
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Category</Label>
+              <Label htmlFor="category">Danh mục</Label>
               <Select
                 value={selectedService.category}
                 onValueChange={(value) =>
@@ -177,16 +180,19 @@ const EditService: React.FC<EditServiceProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Premium">Premium</SelectItem>
-                  <SelectItem value="Basic">Basic</SelectItem>
-                  <SelectItem value="Specialized">Specialized</SelectItem>
-                  <SelectItem value="Traditional">Traditional</SelectItem>
+                  <SelectItem value="Buddhism">
+                    Mai táng theo Phật giáo
+                  </SelectItem>
+                  <SelectItem value="Catholicism">
+                    Mai táng theo Công giáo
+                  </SelectItem>
+                  <SelectItem value="Taoism">Mai táng theo Đạo giáo</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="status">Status</Label>
+              <Label htmlFor="status">Trạng thái</Label>
               <div className="flex items-center gap-2 pt-2">
                 <Switch
                   id="status"
@@ -206,14 +212,16 @@ const EditService: React.FC<EditServiceProps> = ({
                       : "text-gray-500"
                   }
                 >
-                  {selectedService.status === "active" ? "Active" : "Inactive"}
+                  {selectedService.status === "active"
+                    ? "Hoạt động"
+                    : "Ngừng hoạt động"}
                 </Label>
               </div>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description">Mô tả</Label>
             <Textarea
               id="description"
               value={selectedService.description}
@@ -223,13 +231,13 @@ const EditService: React.FC<EditServiceProps> = ({
                   description: e.target.value,
                 })
               }
-              placeholder="Enter service package description"
-              rows={3}
+              placeholder="Nhập mô tả gói dịch vụ"
+              rows={4}
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Service Inclusions</Label>
+            <Label>Bao gồm trong gói dịch vụ</Label>
             <div className="border rounded-lg p-4 space-y-4">
               {selectedService.inclusions.map(
                 (inclusion: any, index: number) => (
@@ -238,19 +246,19 @@ const EditService: React.FC<EditServiceProps> = ({
                     className="grid grid-cols-1 md:grid-cols-[1fr,1fr,auto] gap-4 pb-4 border-b last:border-b-0 last:pb-0"
                   >
                     <div className="space-y-2">
-                      <Label htmlFor={`inclusion-name-${index}`}>Name</Label>
+                      <Label htmlFor={`inclusion-name-${index}`}>Tên</Label>
                       <Input
                         id={`inclusion-name-${index}`}
                         value={inclusion.name}
                         onChange={(e) =>
                           updateInclusion(index, "name", e.target.value)
                         }
-                        placeholder="Inclusion name"
+                        placeholder="Tên gói bao gồm"
                       />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor={`inclusion-description-${index}`}>
-                        Description
+                        Mô tả
                       </Label>
                       <Input
                         id={`inclusion-description-${index}`}
@@ -280,9 +288,12 @@ const EditService: React.FC<EditServiceProps> = ({
               {/* Add new inclusion form */}
               <div className="grid grid-cols-1 md:grid-cols-[1fr,1fr,auto] gap-4 pt-2 border-t">
                 <div className="space-y-2">
-                  <Label htmlFor="new-inclusion-name">New Inclusion Name</Label>
+                  <Label htmlFor="new-inclusion-name">
+                    Tên gói bao gồm mới
+                  </Label>
                   <Input
                     id="new-inclusion-name"
+                    className="placeholder:text-gray-500"
                     value={newInclusion.name}
                     onChange={(e) =>
                       setNewInclusion({
@@ -295,7 +306,7 @@ const EditService: React.FC<EditServiceProps> = ({
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="new-inclusion-description">
-                    New Inclusion Description
+                    Mô tả gói bao gồm mới
                   </Label>
                   <Input
                     id="new-inclusion-description"
@@ -306,6 +317,7 @@ const EditService: React.FC<EditServiceProps> = ({
                         description: e.target.value,
                       })
                     }
+                    className="placeholder:text-gray-500"
                     placeholder="E.g., High-quality wooden coffin with silk interior"
                   />
                 </div>
@@ -327,16 +339,14 @@ const EditService: React.FC<EditServiceProps> = ({
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button
             onClick={() => {
-              // If it's a new service, generate a unique ID
               if (!selectedService.id) {
                 selectedService.id = Date.now().toString();
               }
 
-              // Update existing service or add new service
               const serviceIndex = filteredServices.findIndex(
                 (s) => s.id === selectedService.id
               );
@@ -360,7 +370,7 @@ const EditService: React.FC<EditServiceProps> = ({
               selectedService.inclusions.length === 0
             }
           >
-            {selectedService.id ? "Save Changes" : "Create Package"}
+            {selectedService.id ? "Lưu" : "Tạo gói"}
           </Button>
         </DialogFooter>
       </DialogContent>

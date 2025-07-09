@@ -22,10 +22,10 @@ const ServiceTestimonial: React.FC = () => {
             </div>
           </div>
           <p className="text-gray-600 italic mb-4">
-            "Trong thời gian đau buồn của chúng tôi, đội ngũ nhân viên tại
+            &quot;Trong thời gian đau buồn của chúng tôi, đội ngũ nhân viên tại
             Beacon Burial đã cung cấp sự chăm sóc và chú ý đặc biệt đến từng chi
             tiết. Gói Hằng Sống đã mang đến cho cha chúng tôi lời từ biệt trang
-            trọng mà ông xứng đáng được nhận."
+            trọng mà ông xứng đáng được nhận.&quot;
           </p>
           <p className="font-medium">— Dat Ng.</p>
         </div>
@@ -41,9 +41,10 @@ const ServiceTestimonial: React.FC = () => {
             </div>
           </div>
           <p className="text-gray-600 italic mb-4">
-            "Lòng trắc ẩn và sự chuyên nghiệp mà mọi người thể hiện đã khiến
-            thời gian khó khăn trở nên dễ dàng hơn nhiều. Buổi lễ truyền thống
-            thật đẹp và chính xác là những gì mẹ chúng tôi mong muốn."
+            &quot;Lòng trắc ẩn và sự chuyên nghiệp mà mọi người thể hiện đã
+            khiến thời gian khó khăn trở nên dễ dàng hơn nhiều. Buổi lễ truyền
+            thống thật đẹp và chính xác là những gì mẹ chúng tôi mong
+            muốn.&quot;
           </p>
           <p className="font-medium">— Loc P.</p>
         </div>
@@ -59,9 +60,9 @@ const ServiceTestimonial: React.FC = () => {
             </div>
           </div>
           <p className="text-gray-600 italic mb-4">
-            "Tôi đánh giá cao giá cả minh bạch và thực tế là không có chi phí
-            bất ngờ nào. Dịch vụ hỏa táng được xử lý một cách tôn trọng và
-            nghiêm túc."
+            &quot;Tôi đánh giá cao giá cả minh bạch và thực tế là không có chi
+            phí bất ngờ nào. Dịch vụ hỏa táng được xử lý một cách tôn trọng và
+            nghiêm túc.&quot;
           </p>
           <p className="font-medium">— Minh L.</p>
         </div>

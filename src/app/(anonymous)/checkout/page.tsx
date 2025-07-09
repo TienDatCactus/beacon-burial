@@ -1,8 +1,6 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
@@ -14,13 +12,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Checkbox } from "@/components/ui/checkbox";
-import Link from "next/link";
-import { toast } from "sonner";
-import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
 import { Textarea } from "@/components/ui/textarea";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { CartItem } from "@/lib/interfaces";
+import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { toast } from "sonner";
 
 // Define checkout form types
 type CheckoutFormValues = {
@@ -43,17 +42,11 @@ type CheckoutFormValues = {
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const {
-    items: cartItems,
-    totalPrice,
-    totalItems,
-    clearCart,
-  } = useCartStore();
+  const { items: cartItems, totalPrice, clearCart } = useCartStore();
   const [total, setTotal] = useState(0);
-  const shipping = "Flat rate";
-  const shippingCost = 0; // Modify this if shipping has a cost
+  const shipping = "$0.00";
+  const shippingCost = 0;
 
-  // Initialize form with react-hook-form
   const {
     register,
     handleSubmit,
@@ -64,16 +57,10 @@ const CheckoutPage: React.FC = () => {
     defaultValues: {
       firstName: "",
       lastName: "",
-      companyName: "",
-      country: "United States (US)",
       streetAddress: "",
-      apartment: "",
       city: "",
-      state: "New York",
-      zipCode: "",
       phone: "",
       email: "",
-      shipToDifferentAddress: false,
       orderNotes: "",
       paymentMethod: "cash",
     },
@@ -86,7 +73,7 @@ const CheckoutPage: React.FC = () => {
 
   const onSubmit = async (data: CheckoutFormValues) => {
     setIsSubmitting(true);
-
+    console.log(data);
     try {
       await new Promise((resolve) => setTimeout(resolve, 1500));
       clearCart();
@@ -176,50 +163,6 @@ const CheckoutPage: React.FC = () => {
             </div>
 
             <div className="mt-6 space-y-2">
-              <Label htmlFor="companyName">Tên công ty (không bắt buộc)</Label>
-              <Input id="companyName" {...register("companyName")} />
-            </div>
-
-            <div className="mt-6 space-y-2">
-              <Label
-                htmlFor="country"
-                className="after:content-['*'] after:ml-0.5 after:text-red-500"
-              >
-                Quốc gia / Khu vực
-              </Label>
-              <Controller
-                name="country"
-                control={control}
-                rules={{ required: "Quốc gia là bắt buộc" }}
-                render={({ field }) => (
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
-                    <SelectTrigger className="w-full">
-                      <SelectValue placeholder="Chọn quốc gia" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectGroup>
-                        <SelectLabel>Quốc gia</SelectLabel>
-                        <SelectItem value="Hoa Kỳ (US)">Hoa Kỳ (US)</SelectItem>
-                        <SelectItem value="Canada">Canada</SelectItem>
-                        <SelectItem value="Vương Quốc Anh (UK)">
-                          Vương Quốc Anh (UK)
-                        </SelectItem>
-                        <SelectItem value="Úc">Úc</SelectItem>
-                        <SelectItem value="Việt Nam">Việt Nam</SelectItem>
-                      </SelectGroup>
-                    </SelectContent>
-                  </Select>
-                )}
-              />
-              {errors.country && (
-                <p className="text-red-500 text-sm">{errors.country.message}</p>
-              )}
-            </div>
-
-            <div className="mt-6 space-y-2">
               <Label
                 htmlFor="streetAddress"
                 className="after:content-['*'] after:ml-0.5 after:text-red-500"
@@ -239,13 +182,6 @@ const CheckoutPage: React.FC = () => {
                   {errors.streetAddress?.message}
                 </p>
               )}
-            </div>
-
-            <div className="mt-6 space-y-2">
-              <Label htmlFor="apartment">
-                Căn hộ, chung cư, v.v. (không bắt buộc)
-              </Label>
-              <Input id="apartment" {...register("apartment")} />
             </div>
 
             <div className="mt-6 space-y-2">
@@ -299,28 +235,7 @@ const CheckoutPage: React.FC = () => {
                 <p className="text-red-500 text-sm">{errors.state.message}</p>
               )}
             </div>
-            <div className="mt-6 space-y-2">
-              <Label
-                htmlFor="zipCode"
-                className="after:content-['*'] after:ml-0.5 after:text-red-500"
-              >
-                Mã bưu điện
-              </Label>
-              <Input
-                id="zipCode"
-                {...register("zipCode", {
-                  required: "Mã bưu điện là bắt buộc",
-                  pattern: {
-                    value: /^\d{5}(-\d{4})?$/,
-                    message: "Vui lòng nhập mã bưu điện hợp lệ",
-                  },
-                })}
-                className={errors.zipCode ? "border-red-500" : ""}
-              />
-              {errors.zipCode && (
-                <p className="text-red-500 text-sm">{errors.zipCode.message}</p>
-              )}
-            </div>
+
             <div className="mt-6 space-y-2">
               <Label
                 htmlFor="phone"
@@ -368,22 +283,7 @@ const CheckoutPage: React.FC = () => {
                 <p className="text-red-500 text-sm">{errors.email.message}</p>
               )}
             </div>
-            <div className="mt-6 flex items-center space-x-2">
-              <Controller
-                name="shipToDifferentAddress"
-                control={control}
-                render={({ field }) => (
-                  <Checkbox
-                    id="shipToDifferentAddress"
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                )}
-              />
-              <Label htmlFor="shipToDifferentAddress">
-                Giao hàng đến địa chỉ khác?
-              </Label>
-            </div>
+
             <div className="mt-6 space-y-2">
               <Label htmlFor="orderNotes">
                 Ghi chú đơn hàng (không bắt buộc)

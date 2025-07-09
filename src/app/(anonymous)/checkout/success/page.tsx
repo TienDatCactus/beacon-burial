@@ -3,10 +3,9 @@ import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 const CheckoutSuccessPage: React.FC = () => {
-  const router = useRouter();
+  // const router = useRouter();
 
   // Trong ứng dụng thực tế, bạn có thể xác minh trạng thái đơn hàng từ API
   useEffect(() => {

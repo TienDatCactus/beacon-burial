@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import React from "react";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 const GridView: React.FC<{
   filteredServices: any[];
   toggleStatus: (id: string, status: "active" | "inactive") => void;
@@ -46,10 +47,11 @@ const GridView: React.FC<{
         >
           <div className="aspect-video relative bg-gray-100">
             {service.image ? (
-              <img
+              <Image
                 src={service.image}
                 alt={service.name}
-                className="h-full w-full object-cover"
+                fill
+                className="h-100 w-full object-cover"
                 onError={(e) => {
                   (e.target as HTMLImageElement).onerror = null;
                   (e.target as HTMLImageElement).src = "/icons/image-off.svg";
@@ -67,7 +69,7 @@ const GridView: React.FC<{
                   : "bg-gray-100 text-gray-800"
               }`}
             >
-              {service.status === "active" ? "Active" : "Inactive"}
+              {service.status === "active" ? "Hoạt động" : "Ngừng hoạt động"}
             </Badge>
             <div className="absolute left-0 bottom-0 bg-white bg-opacity-90 px-3 py-1 m-2 rounded-md shadow-sm">
               <div className="text-lg font-bold text-primary">
@@ -75,27 +77,27 @@ const GridView: React.FC<{
               </div>
             </div>
           </div>
-          <CardHeader className="pb-3">
+          <CardHeader className="pb-3 ">
             <div className="flex justify-between items-start">
-              <CardTitle className="text-xl line-clamp-2">
+              <CardTitle className="text-xl line-clamp-1">
                 {service.name}
               </CardTitle>
               <Badge
                 variant={
-                  service.category === "Premium"
+                  service.category === "Mai táng theo Phật giáo"
                     ? "default"
-                    : service.category === "Basic"
+                    : service.category === "Mai táng theo Đạo giáo"
                     ? "outline"
-                    : service.category === "Traditional"
+                    : service.category === "Mai táng theo Công giáo"
                     ? "default"
                     : "secondary"
                 }
                 className={
-                  service.category === "Premium"
+                  service.category === "Mai táng theo Phật giáo"
                     ? "bg-primary/10 text-primary hover:bg-primary/20"
-                    : service.category === "Specialized"
+                    : service.category === "Mai táng theo Đạo giáo"
                     ? "bg-purple-100 text-purple-800 hover:bg-purple-200"
-                    : service.category === "Traditional"
+                    : service.category === "Mai táng theo Công giáo"
                     ? "bg-amber-100 text-amber-800 hover:bg-amber-200"
                     : ""
                 }
@@ -111,7 +113,7 @@ const GridView: React.FC<{
             <div className="space-y-1">
               <div className="text-sm text-gray-500 flex items-center">
                 <Check className="h-3.5 w-3.5 mr-1 text-primary" />
-                <span>{service.inclusions.length} service inclusions</span>
+                <span>Bao gồm {service.inclusions.length} gói dịch vụ</span>
               </div>
 
               {/* Preview a few inclusions */}
@@ -125,7 +127,7 @@ const GridView: React.FC<{
                   ))}
                 {service.inclusions.length > 3 && (
                   <li className="list-none text-xs text-primary italic">
-                    +{service.inclusions.length - 3} more inclusions
+                    +{service.inclusions.length - 3} gói dịch vụ khác
                   </li>
                 )}
               </ul>
@@ -135,7 +137,7 @@ const GridView: React.FC<{
             {service.popularityScore > 0 && (
               <div className="mt-2">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
-                  <span>Popularity</span>
+                  <span>Độ phổ biến</span>
                   <span>{service.popularityScore}%</span>
                 </div>
                 <div className="w-full bg-gray-100 rounded-full h-1.5">
@@ -162,7 +164,7 @@ const GridView: React.FC<{
                 size="sm"
                 onClick={() => viewServiceDetails(service)}
               >
-                View
+                Xem
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -172,13 +174,13 @@ const GridView: React.FC<{
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end">
                   <DropdownMenuItem onClick={() => editService(service)}>
-                    <Edit className="mr-2 h-4 w-4" /> Edit
+                    <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
                   </DropdownMenuItem>
                   <DropdownMenuItem
                     onClick={() => confirmDeleteService(service)}
                     className="text-destructive focus:text-destructive"
                   >
-                    <Trash2 className="mr-2 h-4 w-4" /> Delete
+                    <Trash2 className="mr-2 h-4 w-4" /> Xóa
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

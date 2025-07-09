@@ -1,17 +1,18 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { DialogHeader, DialogFooter } from "@/components/ui/dialog";
-import { formatCurrency } from "@/lib/utils";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@radix-ui/react-tabs";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { formatCurrency } from "@/lib/utils";
 import { PackageCheck } from "lucide-react";
-import React from "react";
-import { Badge } from "@/components/ui/badge";
 import Image from "next/image";
+import React from "react";
 
 interface DetailDialogProps {
   isViewDialogOpen: boolean;
@@ -52,7 +53,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
               {selectedService.category} Package
             </Badge>
             <div className="flex items-center gap-2">
-              <span className="text-gray-700">Status:</span>
+              <span className="text-gray-700">Trạng thái:</span>
               <Badge
                 variant={
                   selectedService.status === "active" ? "default" : "secondary"
@@ -63,7 +64,9 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                     : "bg-gray-100 text-gray-800"
                 }
               >
-                {selectedService.status === "active" ? "Active" : "Inactive"}
+                {selectedService.status === "active"
+                  ? "Hoạt động"
+                  : "Ngừng hoạt động"}
               </Badge>
             </div>
           </div>
@@ -71,8 +74,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
 
         <Tabs defaultValue="overview" className="mt-4">
           <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="inclusions">Inclusions</TabsTrigger>
+            <TabsTrigger value="overview">Thông tin chung</TabsTrigger>
+            <TabsTrigger value="inclusions">Nội dung bao gồm</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="space-y-4 pt-4">
@@ -101,7 +104,9 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                 </div>
                 <div>
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-medium text-gray-500">Price</h3>
+                    <h3 className="text-sm font-medium text-gray-500">
+                      Giá cả
+                    </h3>
                     <Badge
                       variant={
                         selectedService.category === "Premium"
@@ -130,7 +135,9 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                   </p>
                 </div>
                 <div>
-                  <h3 className="text-sm font-medium text-gray-500">Status</h3>
+                  <h3 className="text-sm font-medium text-gray-500">
+                    Trạng thái
+                  </h3>
                   <div className="mt-1 flex items-center gap-2">
                     <div
                       className={`h-2.5 w-2.5 rounded-full ${
@@ -141,8 +148,8 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                     ></div>
                     <span className="font-medium">
                       {selectedService.status === "active"
-                        ? "Active"
-                        : "Inactive"}
+                        ? "Đang hoạt động"
+                        : "Không hoạt động"}
                     </span>
                   </div>
                 </div>
@@ -151,37 +158,35 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
               <div className="space-y-4">
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Description
+                    Mô tả gói dịch vụ
                   </h3>
                   <p className="mt-1">{selectedService.description}</p>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Number of Inclusions
+                    Số mục bao gồm
                   </h3>
                   <p className="mt-1 font-semibold">
-                    {selectedService.inclusions.length} items
+                    {selectedService.inclusions.length} mục
                   </p>
                 </div>
 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
-                    Popularity
+                    Điểm phổ biến của gói dịch vụ
                   </h3>
                   <div className="mt-1">
                     <div className="flex justify-between text-xs mb-1">
-                      <span>Low Demand</span>
-                      <span>High Demand</span>
+                      <span>Thấp</span>
+                      <span>Cao</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-full bg-gray-100 rounded-full h-2.5">
-                        <div
-                          className="bg-primary h-2.5 rounded-full"
-                          style={{
-                            width: `${selectedService.popularityScore}%`,
-                          }}
-                        ></div>
+                        <Progress
+                          value={selectedService.popularityScore}
+                          className="h-2"
+                        />
                       </div>
                       <span className="text-sm font-medium">
                         {selectedService.popularityScore}%
@@ -193,14 +198,17 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
             </div>
           </TabsContent>
 
-          <TabsContent value="inclusions" className="pt-4">
+          <TabsContent
+            value="inclusions"
+            className="pt-4 max-h-100 overflow-y-auto"
+          >
             <div className="border rounded-lg p-4">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-medium">
-                  Service Package Inclusions
+                  Bao gồm trong gói dịch vụ
                 </h3>
                 <Badge className="bg-blue-100 text-blue-800">
-                  {selectedService.inclusions.length} items included
+                  Bao gồm {selectedService.inclusions.length} mục
                 </Badge>
               </div>
 
@@ -209,7 +217,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                   (inclusion: any, index: number) => (
                     <div
                       key={index}
-                      className="bg-gray-50 rounded-lg p-3 hover:bg-gray-100 transition-colors"
+                      className="bg-gray-50 border border-dashed border-gray-400 shadow-md rounded-xl p-3 hover:bg-gray-100 transition-colors"
                     >
                       <ServiceInclusionItem item={inclusion} />
                     </div>
@@ -219,26 +227,28 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
 
               <div className="mt-6 bg-primary/5 rounded-lg p-4">
                 <h4 className="text-sm font-medium text-primary mb-2">
-                  Package Details
+                  Chi tiết gói dịch vụ
                 </h4>
                 <ul className="list-disc pl-5 text-sm space-y-1 text-gray-600">
                   <li>
-                    Complete package suitable for{" "}
+                    Gói dịch vụ hoàn chỉnh phù hợp cho{" "}
                     {selectedService.category === "Premium"
-                      ? "premium ceremonies"
+                      ? "lễ nghi cao cấp"
                       : selectedService.category === "Basic"
-                      ? "basic ceremonies"
+                      ? "lễ nghi cơ bản"
                       : selectedService.category === "Traditional"
-                      ? "traditional cultural ceremonies"
-                      : "specialized needs"}
+                      ? "lễ nghi văn hóa truyền thống"
+                      : "nhu cầu chuyên biệt"}
                   </li>
                   <li>
-                    Professional staff assistance throughout the arrangement
-                    process
+                    Hỗ trợ từ nhân viên chuyên nghiệp trong suốt quá trình sắp
+                    xếp
                   </li>
-                  <li>All essential documentation and certificates included</li>
-                  <li>24/7 support hotline for families</li>
-                  <li>Package customization available upon request</li>
+                  <li>
+                    Tất cả tài liệu và chứng chỉ cần thiết đều được bao gồm
+                  </li>
+                  <li>Đường dây hỗ trợ 24/7 cho gia đình</li>
+                  <li>Có thể tùy chỉnh gói dịch vụ theo yêu cầu</li>
                 </ul>
               </div>
             </div>
@@ -247,7 +257,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
 
         <DialogFooter className="flex justify-between sm:justify-between mt-6">
           <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
-            Close
+            Đóng
           </Button>
           <Button
             variant="default"
@@ -256,7 +266,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
               editService(selectedService);
             }}
           >
-            Edit Service
+            Chỉnh sửa gói dịch vụ
           </Button>
         </DialogFooter>
       </DialogContent>

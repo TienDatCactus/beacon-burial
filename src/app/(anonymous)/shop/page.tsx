@@ -1,5 +1,14 @@
 "use client";
 import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationPrevious,
+  PaginationLink,
+  PaginationEllipsis,
+  PaginationNext,
+} from "@/components/ui/pagination";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -8,6 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Product } from "@/lib/interfaces";
 import ProductCards from "@/shared/components/cards/ProductCards";
+import PathCrumbs from "@/shared/components/layouts/path-crumbs";
 import { ChevronDown } from "lucide-react";
 import React from "react";
 
@@ -90,6 +100,7 @@ const Shop: React.FC = () => {
   return (
     <div className="bg-gray-50 p-20">
       <div className="container mx-auto px-4">
+        <PathCrumbs />
         <div className="flex flex-col space-y-4 items-center mb-12">
           <h1 className="text-6xl  text-center ">Cửa hàng</h1>
           <ChevronDown />
@@ -127,19 +138,22 @@ const Shop: React.FC = () => {
         </div>
 
         {/* Pagination */}
-        <div className="flex justify-center mt-12">
-          <nav aria-label="Pagination" className="flex gap-2">
-            <span className="px-3 py-1 bg-primary text-white font-semibold">
-              1
-            </span>
-            <a href="#" className="px-3 py-1 text-gray-700 hover:bg-gray-200">
-              2
-            </a>
-            <a href="#" className="px-3 py-1 text-gray-700 hover:bg-gray-200">
-              →
-            </a>
-          </nav>
-        </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationLink href="#">1</PaginationLink>
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationEllipsis />
+            </PaginationItem>
+            <PaginationItem>
+              <PaginationNext href="#" />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );

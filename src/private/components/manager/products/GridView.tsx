@@ -4,6 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { formatCurrency } from "@/lib/utils";
 import { Edit, Trash2 } from "lucide-react";
+import Image from "next/image";
 import React from "react";
 
 interface GridViewProps {
@@ -22,10 +23,11 @@ const GridView: React.FC<GridViewProps> = ({
           className="border rounded-md overflow-hidden bg-white shadow-sm hover:shadow transition-shadow"
         >
           <div className="h-48 w-full overflow-hidden relative">
-            <img
+            <Image
               src={product.image}
               alt={product.name}
               className="h-full w-full object-cover"
+              fill
             />
             <Badge
               variant={product.status === "active" ? "default" : "secondary"}

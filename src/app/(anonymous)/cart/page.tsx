@@ -9,7 +9,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Product } from "@/lib/interfaces";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { formatCurrency } from "@/lib/utils";
 import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
@@ -23,12 +22,12 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
 const CartPage: React.FC = () => {
   const { items, removeItem, clearCart, updateQuantity, subtotal, totalPrice } =
     useCartStore();
-  const [isLoading, setIsLoading] = useState(false);
+  // const [isLoading, setIsLoading] = useState(false);
   const [couponCode, setCouponCode] = useState("");
   const [couponApplied, setCouponApplied] = useState(false);
   const applyCoupon = () => {
@@ -40,14 +39,14 @@ const CartPage: React.FC = () => {
   const discount = couponApplied ? (subtotal || 0) * 0.1 : 0; // 10% discount when coupon applied
   const tax = subtotal || 0 > 0 ? 15.0 : 0;
 
-  if (isLoading) {
-    return (
-      <div className="container h-screen mx-auto px-4 py-16 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
-        <span className="ml-4 text-gray-600">Đang tải...</span>
-      </div>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+  //     <div className="container h-screen mx-auto px-4 py-16 flex items-center justify-center">
+  //       <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+  //       <span className="ml-4 text-gray-600">Đang tải...</span>
+  //     </div>
+  //   );
+  // }
   return (
     <div className=" py-12 mx-auto bg-gray-50">
       <div className="container mx-auto px-10">

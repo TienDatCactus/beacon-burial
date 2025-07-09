@@ -1,25 +1,23 @@
 "use client";
 import "@/app/globals.css";
-import { Toaster } from "@/components/ui/sonner";
-import { Merriweather } from "next/font/google";
-import Link from "next/link";
-import {
-  Package,
-  Users,
-  ShoppingCart,
-  Settings,
-  LogOut,
-  Menu,
-  X,
-  HandPlatter,
-  LayoutDashboard,
-  Bell,
-} from "lucide-react";
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Toaster } from "@/components/ui/sonner";
 import useAuth from "@/lib/stores/useAuthStores";
+import {
+  Bell,
+  HandPlatter,
+  LayoutDashboard,
+  LogOut,
+  Menu,
+  Package,
+  ShoppingCart,
+  X,
+} from "lucide-react";
+import { Merriweather } from "next/font/google";
+import Link from "next/link";
+import { useState } from "react";
 
 const merriweather = Merriweather({
   subsets: ["latin"],

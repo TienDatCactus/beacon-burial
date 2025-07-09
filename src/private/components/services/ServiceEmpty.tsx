@@ -28,7 +28,7 @@ const ServiceEmpty: React.FC<ServiceEmptyProps> = ({
       </div>
       <h3 className="text-lg font-medium">No services found</h3>
       <p className="text-gray-500 mt-2 mb-4">
-        We couldn't find any service packages matching your criteria.
+        We couldn&apos;t find any service packages matching your criteria.
       </p>
       <Button
         variant="outline"
