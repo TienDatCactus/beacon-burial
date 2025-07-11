@@ -86,8 +86,8 @@ const Header: React.FC = () => {
             <div className="flex-shrink-0">
               <Link href="/" className="block">
                 <Image
-                  src="/icons/logo-white-retina.webp"
-                  alt="Beacon"
+                  src="/icons/logo.png"
+                  alt="Thiên An Lạc"
                   width={1000}
                   height={1000}
                   className=" w-25 h-auto"
@@ -128,8 +128,8 @@ const Header: React.FC = () => {
             {/* Logo */}
             <Link href="/" className="block">
               <Image
-                src="/logo-white.png"
-                alt="Beacon"
+                src="/icons/logo.png"
+                alt="Thiên An Lạc"
                 width={147}
                 height={89}
                 className="h-12 w-auto"

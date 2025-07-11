@@ -1,3 +1,4 @@
+"use client";
 import ExtraProducts1Section from "@/private/components/home/extra-products-1-home";
 import HeroSection from "@/private/components/home/hero-home";
 import InfoSection from "@/private/components/home/info-home";

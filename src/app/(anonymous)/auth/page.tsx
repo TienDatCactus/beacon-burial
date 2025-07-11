@@ -58,8 +58,8 @@ export default function AuthPage() {
         <div className="text-center">
           <Link href="/" className="inline-block">
             <Image
-              src="/icons/logo-black-retina.webp"
-              alt="Beacon Burial Logo"
+              src="/icons/logo.png"
+              alt="Thiên An Lạc"
               width={140}
               height={60}
               className="mx-auto"

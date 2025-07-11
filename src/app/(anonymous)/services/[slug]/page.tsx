@@ -313,6 +313,7 @@ const services: ServiceCardProps[] = [
 ];
 
 const ServiceDetailPage = () => {
+  const slug = useParams().slug as string;
   const router = useRouter();
   const params = useParams();
   const [service, setService] = useState<ServiceCardProps | null>(null);
@@ -360,7 +361,6 @@ const ServiceDetailPage = () => {
   };
 
   useEffect(() => {
-    const slug = params.slug as string;
     const foundService = services.find((s) => s.slug === slug);
 
     if (foundService) {

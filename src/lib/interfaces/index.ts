@@ -41,3 +41,6 @@ export type Service = {
   isNew?: boolean;
   isPopular?: boolean;
 };
+
+export * from "./auth";
+export * from "./news";

@@ -22,8 +22,8 @@ const SuccessDialog: React.FC<{
             Đặt dịch vụ thành công!
           </DialogTitle>
           <DialogDescription className="text-center mb-6">
-            Cảm ơn bạn đã sử dụng dịch vụ của Beacon Burial. Chúng tôi sẽ liên
-            hệ với bạn trong thời gian sớm nhất để xác nhận chi tiết.
+            Cảm ơn bạn đã sử dụng dịch vụ của Thiên An Lạc. Chúng tôi sẽ liên hệ
+            với bạn trong thời gian sớm nhất để xác nhận chi tiết.
           </DialogDescription>
           <Button onClick={() => setIsSuccessDialogOpen(false)}>Đã hiểu</Button>
         </div>

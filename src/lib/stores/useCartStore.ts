@@ -163,7 +163,7 @@ export const useCartStore = create<CartStore>()(
       },
     }),
     {
-      name: "beacon-burial-cart",
+      name: "cart",
       version: 1,
       partialize: (state) => ({
         _id: state._id,

@@ -139,8 +139,8 @@ const NoneHomeHeader: React.FC = () => {
             <div className="flex-shrink-0">
               <Link href="/" className="block">
                 <Image
-                  src="/icons/logo-black-retina.webp"
-                  alt="Beacon"
+                  src="/icons/logo.png"
+                  alt="Thiên An Lạc"
                   width={200}
                   height={100}
                   className=" w-25 h-auto"
@@ -191,8 +191,8 @@ const NoneHomeHeader: React.FC = () => {
             {/* Logo */}
             <Link href="/" className="block">
               <Image
-                src="/icons/logo-white-retina.webp"
-                alt="Beacon"
+                src="/icons/logo.png"
+                alt="Thiên An Lạc"
                 width={147}
                 height={89}
                 className="h-10 w-auto"

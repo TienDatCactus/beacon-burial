@@ -21,9 +21,10 @@ const TeamCard: React.FC<{
       className=" h-full w-full cursor-pointer space-y-4 group"
     >
       <Image
-        fill
         src={member.image}
         alt={member.name}
+        width={300}
+        height={300}
         className="w-full h-auto object-cover"
       />
       <div>

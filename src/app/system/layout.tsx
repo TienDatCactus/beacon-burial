@@ -11,6 +11,7 @@ import {
   LayoutDashboard,
   LogOut,
   Menu,
+  Newspaper,
   Package,
   ShoppingCart,
   X,
@@ -96,6 +97,15 @@ export default function RootLayout({
                   >
                     <ShoppingCart className="mr-3 h-5 w-5" />
                     <span>Đơn hàng</span>
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/system/manager/news"
+                    className="flex items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100"
+                  >
+                    <Newspaper className="mr-3 h-5 w-5" />
+                    <span>Tin tức</span>
                   </Link>
                 </li>
               </ul>

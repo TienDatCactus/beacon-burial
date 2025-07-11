@@ -37,10 +37,10 @@ const CheckoutFailedPage: React.FC = () => {
             Nếu bạn tiếp tục gặp sự cố, vui lòng liên hệ với bộ phận hỗ trợ
             khách hàng tại{" "}
             <a
-              href="mailto:support@beaconburial.com"
+              href="mailto:support@thienanlac.com"
               className="text-primary hover:underline"
             >
-              support@beaconburial.com
+              support@thienanlac.com
             </a>
           </p>
         </div>

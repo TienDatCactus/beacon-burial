@@ -23,7 +23,7 @@ const ServiceTestimonial: React.FC = () => {
           </div>
           <p className="text-gray-600 italic mb-4">
             &quot;Trong thời gian đau buồn của chúng tôi, đội ngũ nhân viên tại
-            Beacon Burial đã cung cấp sự chăm sóc và chú ý đặc biệt đến từng chi
+            Thiên An Lạc đã cung cấp sự chăm sóc và chú ý đặc biệt đến từng chi
             tiết. Gói Hằng Sống đã mang đến cho cha chúng tôi lời từ biệt trang
             trọng mà ông xứng đáng được nhận.&quot;
           </p>
