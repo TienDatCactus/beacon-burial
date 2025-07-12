@@ -9,6 +9,7 @@ import {
 import { Facebook, Instagram } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 
 interface MenuItem {
@@ -18,6 +19,7 @@ interface MenuItem {
 
 const Header: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
     {
@@ -61,6 +63,10 @@ const Header: React.FC = () => {
   };
 
   const renderMenuItem = (item: MenuItem, isSubMenu: boolean = false) => {
+    // Check if this menu item matches current path
+    const isActive =
+      item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+
     return (
       <li
         key={item.label}
@@ -69,9 +75,17 @@ const Header: React.FC = () => {
         <Link href={item.href}>
           <Button
             variant={"link"}
-            className="text-white cursor-pointer tracking-wide hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-white"
+            className={`cursor-pointer tracking-wide focus:outline-none focus:ring-2 focus:ring-white
+              ${
+                isActive
+                  ? "text-yellow-400 font-semibold"
+                  : "text-white hover:text-gray-300"
+              }`}
           >
             {item.label}
+            {isActive && (
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-yellow-400"></span>
+            )}
           </Button>
         </Link>
       </li>

@@ -1,4 +1,6 @@
 import React from "react";
+import { formatCurrency } from "@/lib/utils/formatting";
+
 const PricingSection: React.FC = () => {
   const funeralServices = [
     {
@@ -53,7 +55,7 @@ const PricingSection: React.FC = () => {
                 <h3 className="text-2xl font-semibold mb-2">{service.title}</h3>
                 <div className="flex-1 border-t border-dotted border-gray-300 mx-2"></div>
                 <p className="text-xl text-gray-600 font-bold mb-4">
-                  ${service.price.toLocaleString()}
+                  {formatCurrency(service.price, "USD")}
                 </p>
               </div>
               <p className="text-lg text-gray-600 dark:text-gray-400 mb-4">

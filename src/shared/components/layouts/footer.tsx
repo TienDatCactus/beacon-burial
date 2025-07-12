@@ -9,9 +9,9 @@ const Footer: React.FC = () => {
   const footerItems = [
     {
       item: "Cơ sở",
-      emphasis: "+84 232123123",
-      link: "https://example.com",
-      children: ["Địa chỉ: 123 Đường ABC, Quận XYZ"],
+      emphasis: "0363347769",
+      link: "Thiên An Lạc",
+      children: ["Địa chỉ: 466 Âu Cơ, Quận Tây Hồ, Thành phố Hà Nội"],
     },
     {
       item: "Liên kết",

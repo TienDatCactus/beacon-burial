@@ -10,16 +10,10 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useAuth from "@/lib/stores/useAuthStores";
-import {
-  Clock,
-  Facebook,
-  Instagram,
-  MapPin,
-  Phone,
-  Twitter,
-} from "lucide-react";
+import { Facebook, Instagram, MapPin, Phone, Twitter } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import React, { useState } from "react";
 import CartPreview from "../cart";
 
@@ -31,6 +25,7 @@ interface MenuItem {
 
 const NoneHomeHeader: React.FC = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
 
   const menuItems: MenuItem[] = [
     {
@@ -78,6 +73,10 @@ const NoneHomeHeader: React.FC = () => {
   };
 
   const renderMenuItem = (item: MenuItem, isSubMenu: boolean = false) => {
+    // Check if this menu item matches current path
+    const isActive =
+      item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+
     return (
       <li
         key={item.label}
@@ -86,9 +85,17 @@ const NoneHomeHeader: React.FC = () => {
         <Link href={item.href}>
           <Button
             variant={"link"}
-            className="text-black  font-medium cursor-pointer tracking-wide hover:text-primary focus:outline-none"
+            className={`font-medium cursor-pointer tracking-wide focus:outline-none
+              ${
+                isActive
+                  ? "text-primary font-semibold"
+                  : "text-black hover:text-primary"
+              }`}
           >
             {item.label}
+            {isActive && (
+              <span className="absolute -bottom-1 left-0 w-full h-0.5 bg-primary"></span>
+            )}
           </Button>
         </Link>
       </li>
@@ -101,20 +108,13 @@ const NoneHomeHeader: React.FC = () => {
       <div className="bg-black text-white py-2">
         <div className="container mx-auto px-4 lg:px-10 flex flex-wrap justify-between items-center *:font-secondary">
           <div className="flex items-center space-x-8 text-sm">
-            <div className="flex items-center">
-              <Clock size={14} className="mr-2" />
-              <span>Mon - Fri 8:00 - 18:00 / Sunday 8:00 - 14:00</span>
-            </div>
             <div className="hidden md:flex items-center">
               <Phone size={14} className="mr-2" />
-              <span>1-800-458-56987</span>
+              <span>0363347769</span>
             </div>
             <div className="hidden lg:flex items-center">
               <MapPin size={14} className="mr-2" />
-              <span>
-                Khu Công nghệ cao Hòa Lạc, Km29 Đại lộ Thăng Long, huyện Thạch
-                Thất, Hà Nội
-              </span>
+              <span>466 Âu Cơ, Quận Tây Hồ, Thành phố Hà Nội</span>
             </div>
           </div>
           <div className="flex items-center space-x-4">
