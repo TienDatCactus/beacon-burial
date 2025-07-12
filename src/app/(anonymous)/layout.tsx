@@ -2,6 +2,7 @@ import "@/app/globals.css";
 import { Toaster } from "@/components/ui/sonner";
 import Footer from "@/shared/components/layouts/footer";
 import { PathAwareHeader } from "@/shared/components/layouts/path-aware";
+import Chatbox from "@/shared/components/chat/chatbox";
 import { Merriweather } from "next/font/google";
 import { Suspense } from "react";
 const merriweather = Merriweather({
@@ -34,6 +35,7 @@ export default function RootLayout({
           <PathAwareHeader />
           {children}
           <Footer />
+          <Chatbox />
           <Toaster richColors />
         </body>
       </Suspense>

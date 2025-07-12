@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Product } from "@/lib/interfaces";
 import { useCartStore } from "@/lib/stores/useCartStore";
 import { renderStars } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { Heart, ShoppingCart } from "lucide-react";
 import { motion } from "motion/react";
 import Image from "next/image";
@@ -48,10 +49,7 @@ const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
           {product.name}
         </h3>
         <p className="text-gray-500 text-base">
-          {product.price.toLocaleString("vi-VN", {
-            style: "currency",
-            currency: "VND",
-          })}
+          {formatCurrency(product.price)}
         </p>
         <div className="flex items-center justify-center space-x-1 ">
           <span className="flex">{renderStars(product.rating)}</span>

@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { formatDate } from "@/lib/utils/formatting";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
 
@@ -45,7 +46,7 @@ const CheckoutSuccessPage: React.FC = () => {
 
           <div className="flex justify-between mb-2">
             <span className="font-medium">Ngày:</span>
-            <span>{new Date().toLocaleDateString()}</span>
+            <span>{formatDate(new Date())}</span>
           </div>
 
           <div className="flex justify-between mb-2">
