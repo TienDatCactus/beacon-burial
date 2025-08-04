@@ -21,37 +21,68 @@ export default function AuthPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const login = useAuth((state: AuthState) => state.login);
+  const { login, restoreSession, isAuthenticated } = useAuth(
+    (state: AuthState) => state
+  );
+
+  // Check if user is already authenticated
+  useEffect(() => {
+    restoreSession();
+    if (isAuthenticated) {
+      router.push("/");
+    }
+  }, [isAuthenticated, router, restoreSession]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setIsLoading(true);
+
     try {
-      const result = await login({ email, password });
+      const result = await login({ email, password, remember });
+
       if (!result.success) {
-        toast.error(result.error, {
+        setError(result.error || "Đăng nhập thất bại");
+        toast.error(result.error || "Đăng nhập thất bại", {
           duration: 5000,
-          description: "Please check your credentials and try again.",
+          description: "Vui lòng kiểm tra thông tin đăng nhập và thử lại.",
         });
         return;
       }
 
-      toast.success("Login successful");
+      toast.success("Đăng nhập thành công", {
+        description: "Chào mừng bạn trở lại!",
+      });
       router.push("/");
-    } catch (error) {
-      setError("Invalid email or password. Please try again." + error);
+    } catch (error: any) {
+      const errorMessage = error.message || "Có lỗi xảy ra khi đăng nhập";
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
   };
+
+  // Load remembered email if available
   useEffect(() => {
-    if (error)
-      toast.error(error, {
-        duration: 5000,
-        position: "top-right",
-      });
-  }, [error]);
+    const rememberMe = localStorage.getItem("rememberMe") === "true";
+    const savedEmail = localStorage.getItem("savedEmail");
+
+    if (rememberMe && savedEmail) {
+      setEmail(savedEmail);
+      setRemember(true);
+    }
+  }, []);
+
+  // Save email when remember is checked
+  useEffect(() => {
+    if (remember && email) {
+      localStorage.setItem("savedEmail", email);
+    } else {
+      localStorage.removeItem("savedEmail");
+    }
+  }, [remember, email]);
+
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="sm:mx-auto sm:w-full sm:max-w-md z-10">
@@ -207,6 +238,13 @@ export default function AuthPage() {
             <div className="mt-6 ">
               <Button
                 variant="outline"
+                type="button"
+                onClick={() => {
+                  toast.info("Tính năng đăng nhập Google sẽ sớm có", {
+                    description:
+                      "Vui lòng sử dụng email và mật khẩu để đăng nhập.",
+                  });
+                }}
                 className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50"
               >
                 <svg
