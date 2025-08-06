@@ -5,17 +5,17 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { NewsItem } from "@/lib/interfaces";
+import { News } from "@/lib/interfaces";
 import { CalendarIcon, User2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { FC } from "react";
+import { FC } from "react";
 
 interface GridViewProps {
-  filteredNews: NewsItem[];
+  filteredNews: News[];
   togglePublishStatus: (newsId: string, newStatus: boolean) => void;
-  viewNewsDetails: (news: NewsItem) => void;
-  editNews: (news: NewsItem) => void;
-  confirmDeleteNews: (news: NewsItem) => void;
+  viewNewsDetails: (news: News) => void;
+  editNews: (news: News) => void;
+  confirmDeleteNews: (news: News) => void;
 }
 
 const GridView: FC<GridViewProps> = ({
@@ -28,13 +28,13 @@ const GridView: FC<GridViewProps> = ({
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {filteredNews.map((news) => (
-        <Card key={news.id} className="overflow-hidden">
+        <Card key={news._id} className="overflow-hidden">
           <div className="relative h-48 w-full">
-            {news.coverImage ? (
+            {news.image ? (
               <Image
                 width={400}
                 height={200}
-                src={news.coverImage}
+                src={news.image}
                 alt={news.title}
                 className="h-full w-full object-cover"
               />
@@ -46,12 +46,12 @@ const GridView: FC<GridViewProps> = ({
             <div className="absolute top-2 right-2">
               <span
                 className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                  news.isPublished
+                  news.status === "active"
                     ? "bg-green-100 text-green-800"
                     : "bg-amber-100 text-amber-800"
                 }`}
               >
-                {news.isPublished ? "Đã đăng" : "Nháp"}
+                {news.status === "active" ? "Đã đăng" : "Nháp"}
               </span>
             </div>
           </div>
@@ -64,12 +64,12 @@ const GridView: FC<GridViewProps> = ({
               <div className="flex items-center gap-4 text-sm text-muted-foreground">
                 <div className="flex items-center gap-1">
                   <User2Icon className="h-3.5 w-3.5" />
-                  <span>{news.author}</span>
+                  <span>{news.slug}</span>
                 </div>
                 <div className="flex items-center gap-1">
                   <CalendarIcon className="h-3.5 w-3.5" />
                   <span>
-                    {new Date(news.publishedAt).toLocaleDateString("vi-VN")}
+                    {new Date(news.created_at).toLocaleDateString("vi-VN")}
                   </span>
                 </div>
               </div>
@@ -101,9 +101,11 @@ const GridView: FC<GridViewProps> = ({
             <Button
               variant="outline"
               size="sm"
-              onClick={() => togglePublishStatus(news.id, !news.isPublished)}
+              onClick={() =>
+                togglePublishStatus(news._id, news.status !== "active")
+              }
             >
-              {news.isPublished ? "Hủy đăng" : "Đăng"}
+              {news.status === "active" ? "Hủy đăng" : "Đăng"}
             </Button>
             <Button
               variant="outline"

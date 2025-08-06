@@ -7,14 +7,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { NewsItem } from "@/lib/interfaces";
+import { News } from "@/lib/interfaces";
 import { AlertTriangleIcon } from "lucide-react";
 import React, { FC } from "react";
 
 interface DeleteDialogProps {
   isDeleteDialogOpen: boolean;
   setIsDeleteDialogOpen: (open: boolean) => void;
-  selectedNews: NewsItem | null;
+  selectedNews: News | null;
   deleteNews: () => void;
 }
 

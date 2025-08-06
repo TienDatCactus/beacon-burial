@@ -16,27 +16,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { NewsCategory, NewsItem } from "@/lib/interfaces";
-import { CalendarIcon } from "lucide-react";
-import React, { FC, useState } from "react";
-import { format } from "date-fns";
-import { vi } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { Calendar } from "@/components/ui/calendar";
+import React, { FC, useState } from "react";
+import { useNewsManagement } from "@/lib/hooks/useNews";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Switch } from "@/components/ui/switch";
+  CreateNewsData,
+  EditNewsData,
+  News,
+  NewsCategory,
+} from "@/lib/api/news";
+import { toast } from "sonner";
 
 interface EditDialogProps {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
-  selectedNews: NewsItem | null;
-  setFilteredNews: (news: NewsItem[]) => void;
-  filteredNews: NewsItem[];
-  setSelectedNews: (news: NewsItem | null) => void;
+  selectedNews: News | null;
+  setFilteredNews: (callback: () => void) => void; // Changed to callback function
+  filteredNews: News[];
+  setSelectedNews: (news: News | null) => void;
   categories: NewsCategory[];
 }
 
@@ -49,33 +46,28 @@ const EditDialog: FC<EditDialogProps> = ({
   setSelectedNews,
   categories,
 }) => {
-  const [formData, setFormData] = useState<Partial<NewsItem>>(
+  // Use the news management hook for API calls
+  const { createNews, updateNews, creating, updating } = useNewsManagement();
+
+  const [formData, setFormData] = useState<Partial<News>>(
     selectedNews || {
-      id: "",
+      category: undefined,
       title: "",
       slug: "",
       summary: "",
       content: "",
-      coverImage: "",
-      author: "",
-      publishedAt: new Date(),
-      tags: [],
-      isPublished: false,
-      category: categories[0]?.name || "",
     }
   );
 
-  const [tagsInput, setTagsInput] = useState(
-    (selectedNews?.tags || []).join(", ")
-  );
-
   const [errors, setErrors] = useState<Record<string, string>>({});
-
+  const [imagePreview, setImagePreview] = useState<string>(
+    formData.image || ""
+  );
   // Update form data when selected news changes
   React.useEffect(() => {
     if (selectedNews) {
       setFormData(selectedNews);
-      setTagsInput((selectedNews.tags || []).join(", "));
+      setImagePreview(selectedNews.image || "");
     }
   }, [selectedNews]);
 
@@ -84,7 +76,6 @@ const EditDialog: FC<EditDialogProps> = ({
   ) => {
     const { name, value } = e.target;
 
-    // Clear error when field is edited
     if (errors[name]) {
       setErrors((prev) => {
         const newErrors = { ...prev };
@@ -93,63 +84,45 @@ const EditDialog: FC<EditDialogProps> = ({
       });
     }
 
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
+    setFormData((prev: Partial<News>) => {
+      const updatedForm = { ...prev, [name]: value };
 
-    // Generate slug from title if this is the title field
-    if (name === "title" && (!formData.slug || formData.slug === "")) {
-      const slug = value
-        .toLowerCase()
-        .normalize("NFD")
-        .replace(/[\u0300-\u036f]/g, "")
-        .replace(/[đĐ]/g, "d")
-        .replace(/[^a-z0-9\s]/g, "")
-        .replace(/\s+/g, "-");
+      if (name === "title" && (!prev.slug || prev.slug.trim() === "")) {
+        const slug = value
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[đĐ]/g, "d")
+          .replace(/[^a-z0-9\s]/g, "")
+          .replace(/\s+/g, "-");
 
-      setFormData((prev) => ({
-        ...prev,
-        slug,
-      }));
-    }
+        updatedForm.slug = slug;
+      }
+
+      return updatedForm;
+    });
   };
 
-  const handleTagsChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setTagsInput(e.target.value);
-
-    const tagsArray = e.target.value
-      .split(",")
-      .map((tag) => tag.trim())
-      .filter((tag) => tag);
-
-    setFormData((prev) => ({
-      ...prev,
-      tags: tagsArray,
-    }));
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files && e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImagePreview(reader.result as string);
+        setFormData((prev: Partial<News>) => ({
+          ...prev,
+          image: reader.result as string,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
   };
 
   const handleSelectChange = (value: string, name: string) => {
-    setFormData((prev) => ({
+    setFormData((prev: Partial<News>) => ({
       ...prev,
       [name]: value,
     }));
-  };
-
-  const handleSwitchChange = (checked: boolean) => {
-    setFormData((prev) => ({
-      ...prev,
-      isPublished: checked,
-    }));
-  };
-
-  const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setFormData((prev) => ({
-        ...prev,
-        publishedAt: date,
-      }));
-    }
   };
 
   const validateForm = () => {
@@ -171,10 +144,6 @@ const EditDialog: FC<EditDialogProps> = ({
       newErrors.content = "Nội dung không được để trống";
     }
 
-    if (!formData.author?.trim()) {
-      newErrors.author = "Tác giả không được để trống";
-    }
-
     if (!formData.category?.trim()) {
       newErrors.category = "Danh mục không được để trống";
     }
@@ -183,39 +152,67 @@ const EditDialog: FC<EditDialogProps> = ({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!validateForm()) return;
 
-    const isNewNews = !formData.id || formData.id === "";
+    const isNewNews = !formData._id || formData._id === "";
 
-    if (isNewNews) {
-      // Create new news item
-      const newNews: NewsItem = {
-        ...formData,
-        id: `news-${Date.now()}`,
-        publishedAt: formData.publishedAt || new Date(),
-        updatedAt: new Date(),
-      } as NewsItem;
+    try {
+      if (isNewNews) {
+        // Create new news item using API
+        const newsData: CreateNewsData = {
+          title: formData.title!,
+          category: formData.category as
+            | "Hướng dẫn"
+            | "Kiến thức"
+            | "Chính sách",
+          summary: formData.summary!,
+          content: formData.content!,
+          image: formData.image || "",
+        };
 
-      setFilteredNews([newNews, ...filteredNews]);
-    } else {
-      // Update existing news
-      const updatedNews = {
-        ...formData,
-        updatedAt: new Date(),
-      } as NewsItem;
+        const result = await createNews(newsData);
+        if (result) {
+          toast.success("Tin tức đã được tạo thành công!");
+          setFilteredNews(() => {}); // Trigger refresh callback
+          setIsEditDialogOpen(false);
+          // Reset form
+          setFormData({
+            category: undefined,
+            title: "",
+            slug: "",
+            summary: "",
+            content: "",
+          });
+          setImagePreview("");
+        }
+      } else {
+        // Update existing news using API
+        const newsData: EditNewsData = {
+          title: formData.title!,
+          category: formData.category as
+            | "Hướng dẫn"
+            | "Kiến thức"
+            | "Chính sách",
+          summary: formData.summary!,
+          content: formData.content!,
+          image: formData.image || "",
+        };
 
-      setFilteredNews(
-        filteredNews.map((item) =>
-          item.id === updatedNews.id ? updatedNews : item
-        )
+        const result = await updateNews(formData._id!, newsData);
+        if (result) {
+          toast.success("Tin tức đã được cập nhật thành công!");
+          setFilteredNews(() => {}); // Trigger refresh callback
+          setSelectedNews(null);
+          setIsEditDialogOpen(false);
+        }
+      }
+    } catch (error) {
+      console.error("Error saving news:", error);
+      toast.error(
+        isNewNews ? "Không thể tạo tin tức" : "Không thể cập nhật tin tức"
       );
-
-      // Update selected news
-      setSelectedNews(updatedNews);
     }
-
-    setIsEditDialogOpen(false);
   };
 
   return (
@@ -223,7 +220,7 @@ const EditDialog: FC<EditDialogProps> = ({
       <DialogContent className="sm:max-w-[700px] max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {formData.id ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
+            {formData._id ? "Chỉnh sửa bài viết" : "Thêm bài viết mới"}
           </DialogTitle>
         </DialogHeader>
 
@@ -244,191 +241,160 @@ const EditDialog: FC<EditDialogProps> = ({
               <p className="text-red-500 text-xs mt-1">{errors.title}</p>
             )}
           </div>
+        </div>
+        {/* Slug */}
+        <div className="grid gap-2">
+          <Label htmlFor="slug" className="flex items-center gap-1">
+            Slug <span className="text-red-500">*</span>
+          </Label>
+          <Input
+            id="slug"
+            name="slug"
+            value={formData.slug || ""}
+            onChange={handleInputChange}
+            className={errors.slug ? "border-red-500" : ""}
+          />
+          {errors.slug && (
+            <p className="text-red-500 text-xs mt-1">{errors.slug}</p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Slug sẽ được sử dụng trong URL: /news/
+            {formData.slug || "your-slug"}
+          </p>
+        </div>
 
-          {/* Slug */}
-          <div className="grid gap-2">
-            <Label htmlFor="slug" className="flex items-center gap-1">
-              Slug <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="slug"
-              name="slug"
-              value={formData.slug || ""}
-              onChange={handleInputChange}
-              className={errors.slug ? "border-red-500" : ""}
-            />
-            {errors.slug && (
-              <p className="text-red-500 text-xs mt-1">{errors.slug}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Slug sẽ được sử dụng trong URL: /news/
-              {formData.slug || "your-slug"}
-            </p>
-          </div>
-
-          {/* Category */}
-          <div className="grid gap-2">
-            <Label htmlFor="category" className="flex items-center gap-1">
-              Danh mục <span className="text-red-500">*</span>
-            </Label>
-            <Select
-              value={formData.category || ""}
-              onValueChange={(value) => handleSelectChange(value, "category")}
+        {/* Category */}
+        <div className="grid gap-2">
+          <Label htmlFor="category" className="flex items-center gap-1">
+            Danh mục <span className="text-red-500">*</span>
+          </Label>
+          <Select
+            value={formData.category || ""}
+            onValueChange={(value) => handleSelectChange(value, "category")}
+          >
+            <SelectTrigger
+              className={cn("w-full", errors.category ? "border-red-500" : "")}
             >
-              <SelectTrigger
+              <SelectValue placeholder="Chọn danh mục" />
+            </SelectTrigger>
+            <SelectContent>
+              {categories.map((category) => (
+                <SelectItem key={category.id} value={category.name}>
+                  {category.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {errors.category && (
+            <p className="text-red-500 text-xs mt-1">{errors.category}</p>
+          )}
+        </div>
+
+        {/* Summary */}
+        <div className="grid gap-2">
+          <Label htmlFor="summary" className="flex items-center gap-1">
+            Tóm tắt <span className="text-red-500">*</span>
+          </Label>
+          <Textarea
+            id="summary"
+            name="summary"
+            value={formData.summary || ""}
+            onChange={handleInputChange}
+            rows={3}
+            className={errors.summary ? "border-red-500" : ""}
+          />
+          {errors.summary && (
+            <p className="text-red-500 text-xs mt-1">{errors.summary}</p>
+          )}
+        </div>
+
+        {/* Content */}
+        <div className="grid gap-2">
+          <Label htmlFor="content" className="flex items-center gap-1">
+            Nội dung <span className="text-red-500">*</span>
+          </Label>
+          <Textarea
+            id="content"
+            name="content"
+            value={formData.content || ""}
+            onChange={handleInputChange}
+            rows={8}
+            className={errors.content ? "border-red-500" : ""}
+          />
+          {errors.content && (
+            <p className="text-red-500 text-xs mt-1">{errors.content}</p>
+          )}
+          <p className="text-xs text-muted-foreground">
+            Hỗ trợ HTML cơ bản cho định dạng nội dung
+          </p>
+        </div>
+        {/* Cover Image */}
+        <div className="grid gap-2">
+          <Label htmlFor="coverImage">Ảnh đại diện</Label>
+          <Input
+            id="coverImage"
+            name="coverImage"
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+          />
+          <p className="text-xs text-muted-foreground">
+            Chọn ảnh từ máy tính của bạn
+          </p>
+          {imagePreview && (
+            <img
+              src={imagePreview}
+              alt="Xem trước ảnh đại diện"
+              className="mt-2 max-h-40 rounded border"
+            />
+          )}
+        </div>
+
+        {/* Publication Date */}
+        {/* <div className="grid gap-2">
+          <Label htmlFor="publishedAt">Ngày đăng</Label>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant={"outline"}
                 className={cn(
-                  "w-full",
-                  errors.category ? "border-red-500" : ""
+                  "w-full justify-start text-left font-normal",
+                  !formData.created_at && "text-muted-foreground"
                 )}
               >
-                <SelectValue placeholder="Chọn danh mục" />
-              </SelectTrigger>
-              <SelectContent>
-                {categories.map((category) => (
-                  <SelectItem key={category.id} value={category.name}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            {errors.category && (
-              <p className="text-red-500 text-xs mt-1">{errors.category}</p>
-            )}
-          </div>
-
-          {/* Summary */}
-          <div className="grid gap-2">
-            <Label htmlFor="summary" className="flex items-center gap-1">
-              Tóm tắt <span className="text-red-500">*</span>
-            </Label>
-            <Textarea
-              id="summary"
-              name="summary"
-              value={formData.summary || ""}
-              onChange={handleInputChange}
-              rows={3}
-              className={errors.summary ? "border-red-500" : ""}
-            />
-            {errors.summary && (
-              <p className="text-red-500 text-xs mt-1">{errors.summary}</p>
-            )}
-          </div>
-
-          {/* Content */}
-          <div className="grid gap-2">
-            <Label htmlFor="content" className="flex items-center gap-1">
-              Nội dung <span className="text-red-500">*</span>
-            </Label>
-            <Textarea
-              id="content"
-              name="content"
-              value={formData.content || ""}
-              onChange={handleInputChange}
-              rows={8}
-              className={errors.content ? "border-red-500" : ""}
-            />
-            {errors.content && (
-              <p className="text-red-500 text-xs mt-1">{errors.content}</p>
-            )}
-            <p className="text-xs text-muted-foreground">
-              Hỗ trợ HTML cơ bản cho định dạng nội dung
-            </p>
-          </div>
-
-          {/* Author */}
-          <div className="grid gap-2">
-            <Label htmlFor="author" className="flex items-center gap-1">
-              Tác giả <span className="text-red-500">*</span>
-            </Label>
-            <Input
-              id="author"
-              name="author"
-              value={formData.author || ""}
-              onChange={handleInputChange}
-              className={errors.author ? "border-red-500" : ""}
-            />
-            {errors.author && (
-              <p className="text-red-500 text-xs mt-1">{errors.author}</p>
-            )}
-          </div>
-
-          {/* Cover Image */}
-          <div className="grid gap-2">
-            <Label htmlFor="coverImage">Ảnh đại diện</Label>
-            <Input
-              id="coverImage"
-              name="coverImage"
-              value={formData.coverImage || ""}
-              onChange={handleInputChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Nhập đường dẫn URL của ảnh
-            </p>
-          </div>
-
-          {/* Tags */}
-          <div className="grid gap-2">
-            <Label htmlFor="tags">Tags</Label>
-            <Input
-              id="tags"
-              name="tags"
-              value={tagsInput}
-              onChange={handleTagsChange}
-            />
-            <p className="text-xs text-muted-foreground">
-              Phân tách các tags bằng dấu phẩy (,)
-            </p>
-          </div>
-
-          {/* Publication Date */}
-          <div className="grid gap-2">
-            <Label htmlFor="publishedAt">Ngày đăng</Label>
-            <Popover>
-              <PopoverTrigger asChild>
-                <Button
-                  variant={"outline"}
-                  className={cn(
-                    "w-full justify-start text-left font-normal",
-                    !formData.publishedAt && "text-muted-foreground"
-                  )}
-                >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
-                  {formData.publishedAt ? (
-                    format(formData.publishedAt, "PPP", { locale: vi })
-                  ) : (
-                    <span>Chọn ngày</span>
-                  )}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={formData.publishedAt}
-                  onSelect={handleDateChange}
-                  initialFocus
-                  locale={vi}
-                />
-              </PopoverContent>
-            </Popover>
-          </div>
-
-          {/* Publish Status */}
-          <div className="flex items-center justify-between gap-2 mt-2">
-            <Label htmlFor="isPublished">Đăng bài</Label>
-            <Switch
-              id="isPublished"
-              checked={formData.isPublished || false}
-              onCheckedChange={handleSwitchChange}
-            />
-          </div>
-        </div>
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {formData.created_at ? (
+                  format(formData.created_at, "PPP", { locale: vi })
+                ) : (
+                  <span>Chọn ngày</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={
+                  typeof formData.created_at === "string"
+                    ? new Date(formData.created_at)
+                    : formData.created_at
+                }
+                onSelect={handleDateChange}
+                locale={vi}
+              />
+            </PopoverContent>
+          </Popover>
+        </div> */}
 
         <DialogFooter>
           <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
             Hủy
           </Button>
-          <Button onClick={handleSubmit}>
-            {formData.id ? "Cập nhật" : "Thêm bài viết"}
+          <Button onClick={handleSubmit} disabled={creating || updating}>
+            {creating || updating
+              ? "Đang xử lý..."
+              : formData._id
+              ? "Cập nhật"
+              : "Thêm bài viết"}
           </Button>
         </DialogFooter>
       </DialogContent>

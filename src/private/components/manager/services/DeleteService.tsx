@@ -6,16 +6,13 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { Service } from "@/lib/api/service";
 import React from "react";
 interface DeleteServiceProps {
   isDeleteDialogOpen: boolean;
   setIsDeleteDialogOpen: (open: boolean) => void;
-  selectedService: {
-    id: string;
-    name: string;
-    description: string;
-  };
-  deleteService: () => void;
+  selectedService: Service;
+  deleteService: () => Promise<void>;
 }
 const DeleteService: React.FC<DeleteServiceProps> = ({
   isDeleteDialogOpen,
@@ -34,7 +31,7 @@ const DeleteService: React.FC<DeleteServiceProps> = ({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <p className="font-medium">{selectedService.name}</p>
+          <p className="font-medium">{selectedService.title}</p>
           <p className="text-sm text-gray-500">{selectedService.description}</p>
         </div>
         <DialogFooter>

@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dialog";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Service } from "@/lib/api/service";
 import { formatCurrency } from "@/lib/utils";
 import { PackageCheck } from "lucide-react";
 import Image from "next/image";
@@ -17,8 +18,8 @@ import React from "react";
 interface DetailDialogProps {
   isViewDialogOpen: boolean;
   setIsViewDialogOpen: (open: boolean) => void;
-  selectedService: any;
-  editService: (service: any) => void;
+  selectedService: Service;
+  editService: (service: Service) => void;
   ServiceInclusionItem: React.FC<{ item: any }>;
 }
 const DetailDialog: React.FC<DetailDialogProps> = ({
@@ -32,7 +33,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
     <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
       <DialogContent className="max-w-4xl">
         <DialogHeader>
-          <DialogTitle className="text-xl">{selectedService.name}</DialogTitle>
+          <DialogTitle className="text-xl">{selectedService.title}</DialogTitle>
           <div className="flex justify-between items-center">
             <Badge
               variant={
@@ -83,12 +84,12 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
               {/* Package image */}
               <div className="space-y-4">
                 <div className="aspect-video relative rounded-md overflow-hidden border">
-                  {selectedService.image ? (
+                  {selectedService.imageUrl ? (
                     <Image
                       width={800}
                       height={450}
-                      src={selectedService.image}
-                      alt={selectedService.name}
+                      src={selectedService.imageUrl[0]}
+                      alt={selectedService.title}
                       className="h-full w-full object-cover"
                       onError={(e) => {
                         (e.target as HTMLImageElement).onerror = null;
@@ -171,7 +172,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                     {selectedService.inclusions.length} mục
                   </p>
                 </div>
-
+                {/* 
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">
                     Điểm phổ biến của gói dịch vụ
@@ -193,7 +194,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
                       </span>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
           </TabsContent>

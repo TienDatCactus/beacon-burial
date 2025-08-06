@@ -21,17 +21,14 @@ export default function AuthPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const { login, restoreSession, isAuthenticated } = useAuth(
-    (state: AuthState) => state
-  );
+  const { login, isAuthenticated } = useAuth((state: AuthState) => state);
 
   // Check if user is already authenticated
   useEffect(() => {
-    restoreSession();
     if (isAuthenticated) {
       router.push("/");
     }
-  }, [isAuthenticated, router, restoreSession]);
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

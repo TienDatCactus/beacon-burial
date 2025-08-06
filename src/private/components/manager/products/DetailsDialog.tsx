@@ -12,10 +12,11 @@ import { Edit, PackageX, PackageCheck } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import ProductFeatureItem from "./ProductFeatureItem";
+import { Product } from "@/lib/api/product";
 const DetailsDialog: React.FC<{
   isViewDialogOpen: boolean;
   setIsViewDialogOpen: (open: boolean) => void;
-  selectedProduct: any;
+  selectedProduct: Product;
   editProduct: (product: any) => void;
   toggleStatus: (id: string, status: "active" | "inactive") => void;
 }> = ({
@@ -38,12 +39,17 @@ const DetailsDialog: React.FC<{
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
           <div>
             <div className="relative aspect-square rounded-md overflow-hidden bg-gray-100 mb-4">
-              <Image
-                src={selectedProduct.image}
-                alt={selectedProduct.name}
-                fill
-                className="object-cover"
-              />
+              {!!selectedProduct.image &&
+                selectedProduct.image.length > 0 &&
+                selectedProduct.image.map((img, index) => (
+                  <Image
+                    key={index}
+                    src={img || "https://placehold.co/600x400"}
+                    alt={selectedProduct.name}
+                    fill
+                    className="object-cover"
+                  />
+                ))}
               <div className="absolute top-2 right-2">
                 <Badge
                   className={
@@ -63,12 +69,12 @@ const DetailsDialog: React.FC<{
                 <p>{selectedProduct.category}</p>
               </div>
               <div>
-                <h3 className="text-sm font-medium text-gray-500">SKU</h3>
-                <p>{selectedProduct.sku}</p>
+                <h3 className="text-sm font-medium text-gray-500">Slug</h3>
+                <p>{selectedProduct.slug}</p>
               </div>
               <div>
                 <h3 className="text-sm font-medium text-gray-500">Số lượng</h3>
-                <p>Còn {selectedProduct.stock} sản phẩm</p>
+                <p>Còn {selectedProduct.quantity} sản phẩm</p>
               </div>
             </div>
           </div>
@@ -93,7 +99,7 @@ const DetailsDialog: React.FC<{
               <p className="text-gray-700">{selectedProduct.description}</p>
             </div>
 
-            {selectedProduct.features &&
+            {/* {selectedProduct.features &&
               selectedProduct.features.length > 0 && (
                 <div>
                   <h3 className="text-sm font-medium text-gray-500 mb-1">
@@ -127,7 +133,7 @@ const DetailsDialog: React.FC<{
                   </span>
                 </div>
               </div>
-            )}
+            )} */}
           </div>
         </div>
 
@@ -148,7 +154,7 @@ const DetailsDialog: React.FC<{
             }
             onClick={() => {
               toggleStatus(
-                selectedProduct.id,
+                selectedProduct._id,
                 selectedProduct.status === "active" ? "inactive" : "active"
               );
             }}

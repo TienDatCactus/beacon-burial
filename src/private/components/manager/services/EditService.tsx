@@ -9,12 +9,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Textarea } from "@/components/ui/textarea";
 
-import { X, Plus } from "lucide-react";
-import Image from "next/image";
-import React from "react";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -24,33 +21,111 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
+import { Service } from "@/lib/api/service";
+import { Product } from "@/lib/api/product";
+import { useProducts } from "@/lib/hooks/useProducts";
+import { Plus, X } from "lucide-react";
+import Image from "next/image";
+import React, { useState, useEffect } from "react";
 interface EditServiceProps {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
-  selectedService: any; // Replace with your service type
-  setSelectedService: (service: any) => void;
-  filteredServices: any[]; // Replace with your service type array
-  setFilteredServices: (services: any[]) => void;
-  newInclusion: { name: string; description: string };
-
-  setNewInclusion: (inclusion: { name: string; description: string }) => void;
-  addInclusion: () => void;
-  updateInclusion: (index: number, field: string, value: string) => void;
-  removeInclusion: (index: number) => void;
+  selectedService: Service;
+  setSelectedService: (service: Service) => void;
+  onSave: (serviceData: Service, isEdit: boolean) => Promise<void>;
 }
 const EditService: React.FC<EditServiceProps> = ({
   isEditDialogOpen,
   setIsEditDialogOpen,
   selectedService,
   setSelectedService,
-  filteredServices,
-  setFilteredServices,
-  newInclusion,
-  setNewInclusion,
-  addInclusion,
-  updateInclusion,
-  removeInclusion,
+  onSave,
 }) => {
+  // Get active products for inclusions
+  const { products, loading: productsLoading } = useProducts({
+    limit: 100, // Get more products for selection
+  });
+
+  // Filter only active products
+  const activeProducts = products.filter(
+    (product) => product.status === "active"
+  );
+
+  // Local state for product selection
+  const [selectedProductId, setSelectedProductId] = useState<string>("");
+
+  // Add product to inclusions
+  const addProductInclusion = () => {
+    const selectedProduct = activeProducts.find(
+      (p) => p._id === selectedProductId
+    );
+    if (selectedProduct) {
+      // Get current inclusion IDs (handle both string IDs and objects)
+      const currentInclusionIds = selectedService.inclusions.map(
+        (inclusion) => {
+          if (
+            typeof inclusion === "object" &&
+            inclusion !== null &&
+            "_id" in inclusion
+          ) {
+            return (inclusion as any)._id;
+          }
+          return inclusion as string;
+        }
+      );
+
+      if (!currentInclusionIds.includes(selectedProductId)) {
+        setSelectedService({
+          ...selectedService,
+          inclusions: [...selectedService.inclusions, selectedProductId],
+        });
+        setSelectedProductId(""); // Reset selection
+      }
+    }
+  };
+
+  // Remove product from inclusions
+  const removeProductInclusion = (productId: string) => {
+    setSelectedService({
+      ...selectedService,
+      inclusions: selectedService.inclusions.filter((inclusion) => {
+        // Handle both string IDs and objects
+        if (
+          typeof inclusion === "object" &&
+          inclusion !== null &&
+          "_id" in inclusion
+        ) {
+          return (inclusion as any)._id !== productId;
+        }
+        return inclusion !== productId;
+      }),
+    });
+  };
+
+  // Get product details by ID - handle both string IDs and objects in inclusions
+  const getProductById = (productId: string): Product | undefined => {
+    return activeProducts.find((p) => p._id === productId);
+  };
+
+  // Helper function to get product ID from inclusion (string or object)
+  const getInclusionId = (inclusion: any): string => {
+    if (
+      typeof inclusion === "object" &&
+      inclusion !== null &&
+      "_id" in inclusion
+    ) {
+      return inclusion._id;
+    }
+    return inclusion as string;
+  };
+
+  // Helper function to check if product is already included
+  const isProductIncluded = (productId: string): boolean => {
+    return selectedService.inclusions.some((inclusion) => {
+      const inclusionId = getInclusionId(inclusion);
+      return inclusionId === productId;
+    });
+  };
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogContent className="max-w-5xl max-h-170 overflow-y-auto">
@@ -67,11 +142,11 @@ const EditService: React.FC<EditServiceProps> = ({
               <Label htmlFor="name">Tên gói dịch vụ</Label>
               <Input
                 id="name"
-                value={selectedService.name}
+                value={selectedService.title}
                 onChange={(e) =>
                   setSelectedService({
                     ...selectedService,
-                    name: e.target.value,
+                    title: e.target.value,
                   })
                 }
                 placeholder="Nhập tên gói dịch vụ"
@@ -95,7 +170,7 @@ const EditService: React.FC<EditServiceProps> = ({
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
               <Label htmlFor="image">Hình ảnh</Label>
               <Input
@@ -107,7 +182,7 @@ const EditService: React.FC<EditServiceProps> = ({
                     reader.onload = (event) => {
                       setSelectedService({
                         ...selectedService,
-                        image: event.target?.result as string,
+                        imageUrl: [event.target?.result as string],
                       });
                     };
                     reader.readAsDataURL(e.target.files[0]);
@@ -115,18 +190,18 @@ const EditService: React.FC<EditServiceProps> = ({
                 }}
                 placeholder="Nhập đường dẫn hình ảnh"
               />
-              {selectedService.image && (
-                <div className="mt-2 border rounded-md p-2 bg-gray-50">
+              {selectedService.imageUrl && (
+                <div className="mt-2 border rounded-md p-2 bg-gray-50 ">
                   <p className="text-xs text-gray-500 mb-1">
                     Hình ảnh xem trước:
                   </p>
-                  <div className="aspect-video w-full bg-gray-100 rounded overflow-hidden">
+                  <div className="aspect-video w-full max-h-60  bg-gray-100 rounded overflow-hidden">
                     <Image
                       width={800}
                       height={450}
-                      src={selectedService.image}
+                      src={selectedService.imageUrl[0] || ""}
                       alt="Preview"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-contain max-h-60"
                       onError={(e) =>
                         ((e.target as HTMLImageElement).src =
                           "/icons/image-off.svg")
@@ -137,7 +212,7 @@ const EditService: React.FC<EditServiceProps> = ({
               )}
             </div>
 
-            <div className="space-y-2">
+            {/* <div className="space-y-2">
               <Label htmlFor="popularity">Điểm phổ biến (0-100)</Label>
               <Input
                 id="popularity"
@@ -162,7 +237,7 @@ const EditService: React.FC<EditServiceProps> = ({
                   {selectedService.popularityScore || 0}%
                 </span>
               </div>
-            </div>
+            </div> */}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -181,13 +256,15 @@ const EditService: React.FC<EditServiceProps> = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Buddhism">
+                  <SelectItem value="Phật giáo">
                     Mai táng theo Phật giáo
                   </SelectItem>
-                  <SelectItem value="Catholicism">
+                  <SelectItem value="Công giáo">
                     Mai táng theo Công giáo
                   </SelectItem>
-                  <SelectItem value="Taoism">Mai táng theo Đạo giáo</SelectItem>
+                  <SelectItem value="Hồi giáo">
+                    Mai táng theo Đạo giáo
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -238,101 +315,114 @@ const EditService: React.FC<EditServiceProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label>Bao gồm trong gói dịch vụ</Label>
+            <Label>Sản phẩm bao gồm trong gói dịch vụ</Label>
             <div className="border rounded-lg p-4 space-y-4">
-              {selectedService.inclusions.map(
-                (inclusion: any, index: number) => (
-                  <div
-                    key={index}
-                    className="grid grid-cols-1 md:grid-cols-[1fr,1fr,auto] gap-4 pb-4 border-b last:border-b-0 last:pb-0"
-                  >
-                    <div className="space-y-2">
-                      <Label htmlFor={`inclusion-name-${index}`}>Tên</Label>
-                      <Input
-                        id={`inclusion-name-${index}`}
-                        value={inclusion.name}
-                        onChange={(e) =>
-                          updateInclusion(index, "name", e.target.value)
-                        }
-                        placeholder="Tên gói bao gồm"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor={`inclusion-description-${index}`}>
-                        Mô tả
-                      </Label>
-                      <Input
-                        id={`inclusion-description-${index}`}
-                        value={inclusion.description}
-                        onChange={(e) =>
-                          updateInclusion(index, "description", e.target.value)
-                        }
-                        placeholder="Inclusion description"
-                      />
-                    </div>
-                    <div className="flex items-end pb-2">
-                      {selectedService.inclusions.length > 1 && (
+              {/* Display selected products */}
+              {selectedService.inclusions.length > 0 ? (
+                selectedService.inclusions.map(
+                  (inclusion: any, index: number) => {
+                    const productId = getInclusionId(inclusion);
+                    const product = getProductById(productId);
+                    if (!product) return null;
+
+                    return (
+                      <div
+                        key={productId}
+                        className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded overflow-hidden bg-gray-200">
+                            <Image
+                              src={product.image?.[0] || "/icons/image-off.svg"}
+                              alt={product.name}
+                              width={48}
+                              height={48}
+                              className="w-full h-full object-cover"
+                              onError={(e) =>
+                                ((e.target as HTMLImageElement).src =
+                                  "/icons/image-off.svg")
+                              }
+                            />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-sm">
+                              {product.name}
+                            </h4>
+                            <p className="text-xs text-gray-500">
+                              {product.category}
+                            </p>
+                            <p className="text-xs font-semibold text-green-600">
+                              {product.price.toLocaleString("vi-VN")} VND
+                            </p>
+                          </div>
+                        </div>
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => removeInclusion(index)}
+                          onClick={() => removeProductInclusion(productId)}
                           className="text-destructive hover:text-destructive hover:bg-destructive/10"
                         >
                           <X className="h-4 w-4" />
                         </Button>
-                      )}
-                    </div>
-                  </div>
+                      </div>
+                    );
+                  }
                 )
+              ) : (
+                <p className="text-gray-500 text-sm text-center py-4">
+                  Chưa có sản phẩm nào được chọn
+                </p>
               )}
 
-              {/* Add new inclusion form */}
-              <div className="grid grid-cols-1 md:grid-cols-[1fr,1fr,auto] gap-4 pt-2 border-t">
-                <div className="space-y-2">
-                  <Label htmlFor="new-inclusion-name">
-                    Tên gói bao gồm mới
-                  </Label>
-                  <Input
-                    id="new-inclusion-name"
-                    className="placeholder:text-gray-500"
-                    value={newInclusion.name}
-                    onChange={(e) =>
-                      setNewInclusion({
-                        ...newInclusion,
-                        name: e.target.value,
-                      })
-                    }
-                    placeholder="E.g., Premium Coffin"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="new-inclusion-description">
-                    Mô tả gói bao gồm mới
-                  </Label>
-                  <Input
-                    id="new-inclusion-description"
-                    value={newInclusion.description}
-                    onChange={(e) =>
-                      setNewInclusion({
-                        ...newInclusion,
-                        description: e.target.value,
-                      })
-                    }
-                    className="placeholder:text-gray-500"
-                    placeholder="E.g., High-quality wooden coffin with silk interior"
-                  />
-                </div>
-                <div className="flex items-end pb-2">
+              {/* Add new product form */}
+              <div className="border-t pt-4">
+                <Label htmlFor="product-select">Thêm sản phẩm</Label>
+                <div className="flex gap-2 mt-2">
+                  <Select
+                    value={selectedProductId}
+                    onValueChange={setSelectedProductId}
+                    disabled={productsLoading}
+                  >
+                    <SelectTrigger className="flex-1">
+                      <SelectValue
+                        placeholder={
+                          productsLoading
+                            ? "Đang tải sản phẩm..."
+                            : "Chọn sản phẩm để thêm vào gói"
+                        }
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {activeProducts
+                        .filter((product) => !isProductIncluded(product._id))
+                        .map((product) => (
+                          <SelectItem key={product._id} value={product._id}>
+                            <div className="flex items-center gap-2">
+                              <span>{product.name}</span>
+                              <span className="text-xs text-gray-500">
+                                ({product.price.toLocaleString("vi-VN")} VND)
+                              </span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                    </SelectContent>
+                  </Select>
                   <Button
                     variant="outline"
-                    size="icon"
-                    onClick={addInclusion}
-                    disabled={!newInclusion.name}
+                    onClick={addProductInclusion}
+                    disabled={!selectedProductId || productsLoading}
                     className="bg-primary/10 hover:bg-primary/20 text-primary"
                   >
                     <Plus className="h-4 w-4" />
                   </Button>
                 </div>
+                {activeProducts.filter((p) => !isProductIncluded(p._id))
+                  .length === 0 && (
+                  <p className="text-xs text-gray-500 mt-2">
+                    Tất cả sản phẩm đang hoạt động đã được thêm vào gói hoặc
+                    không có sản phẩm nào khả dụng.
+                  </p>
+                )}
               </div>
             </div>
           </div>
@@ -343,35 +433,14 @@ const EditService: React.FC<EditServiceProps> = ({
             Hủy
           </Button>
           <Button
-            onClick={() => {
-              if (!selectedService.id) {
-                selectedService.id = Date.now().toString();
-              }
-
-              const serviceIndex = filteredServices.findIndex(
-                (s) => s.id === selectedService.id
-              );
-
-              if (serviceIndex > -1) {
-                // Update existing service
-                const updatedServices = [...filteredServices];
-                updatedServices[serviceIndex] = selectedService;
-                setFilteredServices(updatedServices);
-              } else {
-                // Add new service
-                setFilteredServices([...filteredServices, selectedService]);
-              }
-
-              // Close dialog
-              setIsEditDialogOpen(false);
-            }}
+            onClick={() => onSave(selectedService, !!selectedService._id)}
             disabled={
-              !selectedService.name ||
+              !selectedService.title ||
               selectedService.price <= 0 ||
               selectedService.inclusions.length === 0
             }
           >
-            {selectedService.id ? "Lưu" : "Tạo gói"}
+            {selectedService._id ? "Lưu" : "Tạo gói"}
           </Button>
         </DialogFooter>
       </DialogContent>

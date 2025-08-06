@@ -19,12 +19,12 @@ const GridView: React.FC<GridViewProps> = ({
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {filteredProducts.map((product) => (
         <div
-          key={product.id}
+          key={product._id}
           className="border rounded-md overflow-hidden bg-white shadow-sm hover:shadow transition-shadow"
         >
           <div className="h-48 w-full overflow-hidden relative">
             <Image
-              src={product.image}
+              src={product.image[0] || "https://placehold.co/600x400"}
               alt={product.name}
               className="h-full w-full object-cover"
               fill

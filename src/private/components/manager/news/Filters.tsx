@@ -9,20 +9,21 @@ import {
 } from "@/components/ui/select";
 import { NewsCategory } from "@/lib/interfaces";
 import { GridIcon, ListIcon, SearchIcon } from "lucide-react";
-import { FC } from "react";
+import { Dispatch, FC, SetStateAction } from "react";
 
 interface FiltersProps {
+  categories: NewsCategory[];
   categoryFilter: string | null;
   currentView: "list" | "grid";
   setCurrentView: (view: "list" | "grid") => void;
   searchTerm: string;
   handleSearch: (term: string) => void;
   handleCategoryFilter: (category: string | null) => void;
-  setStatusFilter: (status: string | null) => void;
-  categories: NewsCategory[];
+  setStatusFilter: Dispatch<SetStateAction<"active" | "inactive" | null>>;
 }
 
 const Filters: FC<FiltersProps> = ({
+  categories,
   categoryFilter,
   currentView,
   setCurrentView,
@@ -30,7 +31,6 @@ const Filters: FC<FiltersProps> = ({
   handleSearch,
   handleCategoryFilter,
   setStatusFilter,
-  categories,
 }) => {
   return (
     <div className="flex flex-col gap-4 md:flex-row md:items-center justify-between">
@@ -69,7 +69,9 @@ const Filters: FC<FiltersProps> = ({
         {/* Status filter */}
         <Select
           onValueChange={(value) =>
-            setStatusFilter(value === "" ? null : value)
+            setStatusFilter(
+              value === "all" ? null : (value as "active" | "inactive")
+            )
           }
         >
           <SelectTrigger className="w-full md:w-[180px]">

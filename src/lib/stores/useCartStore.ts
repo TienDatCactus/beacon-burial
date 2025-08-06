@@ -1,8 +1,8 @@
 "use client";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { Cart, CartItem, Product } from "../interfaces";
 import { toast } from "sonner";
+import { Product } from "../api/product";
 
 // Extended interface for the cart store with actions
 interface CartStore extends Cart {

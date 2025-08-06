@@ -8,8 +8,15 @@ import Filters from "@/private/components/manager/products/Filters";
 import GridView from "@/private/components/manager/products/GridView";
 import ListView from "@/private/components/manager/products/ListView";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
+import {
+  useProducts,
+  useProductManagement,
+  useProductCategories,
+} from "@/lib/hooks/useProducts";
+import { Product } from "@/lib/api/product";
 import { Plus } from "lucide-react";
-import React, { useEffect, useState } from "react";
+import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
 import withAuth from "./../../../../lib/hooks/useWithAuth";
 
 // Mock products data
@@ -122,40 +129,58 @@ const mockProducts = [
 ];
 
 const ProductManagementPage: React.FC = () => {
+  // Custom hooks for API integration
+  const {
+    products,
+    loading: productsLoading,
+    error: productsError,
+    pagination,
+    searchByKeyword,
+    filterByCategory,
+    goToPage,
+    resetFilters,
+    refreshProducts,
+  } = useProducts({ limit: 9 }); // 9 products per page as specified
+
+  const {
+    loading: managementLoading,
+    createProduct,
+    updateProduct,
+    toggleProductStatus,
+  } = useProductManagement();
+
+  const { categories } = useProductCategories();
+
+  // Local state for UI management
   const [searchTerm, setSearchTerm] = useState("");
   const [currentView, setCurrentView] = useState<"list" | "grid">("list");
   const [sortField, setSortField] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [filteredProducts, setFilteredProducts] = useState(mockProducts);
-  const [selectedProduct, setSelectedProduct] = useState<any | null>(null);
+  const [filteredProducts, setFilteredProducts] = useState<Product[]>([]);
+  const [selectedProduct, setSelectedProduct] = useState<Product>();
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
-  // Filter products based on search term and category
-  const getFilteredProducts = (
-    products: typeof mockProducts,
-    search: string,
-    category: string | null,
-    status: string | null
-  ) => {
-    const term = search.trim().toLowerCase();
+  // Update filtered products when products change
+  useEffect(() => {
+    setFilteredProducts(products);
+  }, [products]);
 
-    return products.filter((product) => {
-      const matchesSearch =
-        !term ||
-        product.name?.toLowerCase().includes(term) ||
-        product.sku?.toLowerCase().includes(term) ||
-        product.description?.toLowerCase().includes(term);
+  // Handle search input changes with debounce
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchByKeyword(searchTerm.trim());
+      } else if (searchTerm === "") {
+        refreshProducts();
+      }
+    }, 500);
 
-      const matchesCategory = !category || product.category === category;
-      const matchesStatus = !status || product.status === status;
-
-      return matchesSearch && matchesCategory && matchesStatus;
-    });
-  };
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm, searchByKeyword, refreshProducts]);
 
   // Handle search input changes
   const handleSearch = (term: string) => {
@@ -165,17 +190,35 @@ const ProductManagementPage: React.FC = () => {
   // Handle category filter changes
   const handleCategoryFilter = (category: string | null) => {
     setCategoryFilter(category);
+    if (category) {
+      filterByCategory(category);
+    } else {
+      refreshProducts();
+    }
   };
 
-  // Handle sorting
+  // Handle status filter
+  const handleStatusFilter = (status: string | null) => {
+    setStatusFilter(status);
+    // Note: The API doesn't seem to support status filtering directly
+    // We'll filter on the frontend for now
+    if (status) {
+      setFilteredProducts(
+        products.filter((product) => product.status === status)
+      );
+    } else {
+      setFilteredProducts(products);
+    }
+  };
+
   const handleSort = (field: string) => {
     const isAsc = sortField === field && sortDirection === "asc";
     setSortDirection(isAsc ? "desc" : "asc");
     setSortField(field);
 
     const sorted = [...filteredProducts].sort((a, b) => {
-      const valA = a[field as keyof typeof a];
-      const valB = b[field as keyof typeof b];
+      const valA = a[field as keyof Product];
+      const valB = b[field as keyof Product];
 
       if (typeof valA === "string" && typeof valB === "string") {
         return isAsc ? valB.localeCompare(valA) : valA.localeCompare(valB);
@@ -187,55 +230,111 @@ const ProductManagementPage: React.FC = () => {
     setFilteredProducts(sorted);
   };
 
-  // Toggle product status
-  const toggleStatus = (productId: string, newStatus: string) => {
-    const updatedProducts = filteredProducts.map((product) =>
-      product.id === productId ? { ...product, status: newStatus } : product
+  // Toggle product status using API
+  const handleToggleStatus = async (
+    productId: string,
+    currentStatus: string
+  ) => {
+    console.log(
+      `Toggling status for product ${productId} from ${currentStatus}`
     );
-    setFilteredProducts(updatedProducts);
-
-    if (selectedProduct && selectedProduct.id === productId) {
-      setSelectedProduct({ ...selectedProduct, status: newStatus });
+    const success = await toggleProductStatus(productId);
+    if (success) {
+      refreshProducts(); // Refresh the products list
     }
   };
 
   // View product details
-  const viewProductDetails = (product: any) => {
+  const viewProductDetails = (product: Product) => {
     setSelectedProduct(product);
     setIsViewDialogOpen(true);
   };
 
   // Edit product
-  const editProduct = (product: any) => {
+  const editProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsEditDialogOpen(true);
   };
 
   // Delete product confirmation
-  const confirmDeleteProduct = (product: any) => {
+  const confirmDeleteProduct = (product: Product) => {
     setSelectedProduct(product);
     setIsDeleteDialogOpen(true);
   };
 
-  // Delete product
-  const deleteProduct = () => {
-    const updatedProducts = filteredProducts.filter(
-      (product) => product.id !== selectedProduct?.id
-    );
-    setFilteredProducts(updatedProducts);
+  const deleteProduct = async () => {
+    toast.error("Tính năng xóa sản phẩm chưa được hỗ trợ bởi API");
     setIsDeleteDialogOpen(false);
   };
 
-  // Apply filters when dependencies change
-  useEffect(() => {
-    const filtered = getFilteredProducts(
-      mockProducts,
-      searchTerm,
-      categoryFilter,
-      statusFilter
+  // Create new product
+  const handleCreateProduct = () => {
+    const newProduct: Partial<Product> = {
+      _id: "",
+      name: "",
+      slug: "",
+      price: 0,
+      status: "active",
+      image: [],
+      category: categories[0] || "",
+      description: "",
+      quantity: 0,
+      isFeatured: false,
+    };
+    setSelectedProduct(newProduct as Product);
+    setIsEditDialogOpen(true);
+  };
+
+  // Handle save product (create or update)
+  const handleSaveProduct = async (productData: any, isEdit: boolean) => {
+    let success = false;
+    if (isEdit && selectedProduct?._id) {
+      success = await updateProduct(selectedProduct._id, productData);
+    } else {
+      success = await createProduct(productData);
+    }
+
+    if (success) {
+      setIsEditDialogOpen(false);
+      refreshProducts(); // Refresh the products list
+    }
+
+    return success;
+  };
+
+  // Show loading state
+  if (productsLoading && filteredProducts.length === 0) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-gray-500">Đang tải sản phẩm...</p>
+          </div>
+        </div>
+      </div>
     );
-    setFilteredProducts(filtered);
-  }, [searchTerm, categoryFilter, statusFilter]);
+  }
+
+  // Show error state
+  if (productsError) {
+    return (
+      <div className="space-y-6">
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center">
+            <p className="text-red-500">{productsError}</p>
+            <Button
+              onClick={refreshProducts}
+              className="mt-4"
+              variant="outline"
+            >
+              Thử lại
+            </Button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -251,24 +350,7 @@ const ProductManagementPage: React.FC = () => {
         </div>
         <Button
           className="bg-primary hover:bg-primary/80"
-          onClick={() => {
-            setSelectedProduct({
-              id: "",
-              name: "",
-              slug: "",
-              sku: "",
-              price: 0,
-              status: "active",
-              image: "",
-              category: "Flowers",
-              description: "",
-              stock: 0,
-              features: [""],
-              popularityScore: 0,
-              isFeatured: false,
-            });
-            setIsEditDialogOpen(true);
-          }}
+          onClick={handleCreateProduct}
         >
           <Plus className="mr-2 h-4 w-4" /> Thêm sản phẩm
         </Button>
@@ -299,7 +381,7 @@ const ProductManagementPage: React.FC = () => {
           sortField={sortField || ""}
           sortDirection={sortDirection}
           handleSort={handleSort}
-          toggleStatus={toggleStatus}
+          toggleStatus={handleToggleStatus}
           viewProductDetails={viewProductDetails}
           editProduct={editProduct}
           confirmDeleteProduct={confirmDeleteProduct}
@@ -310,7 +392,7 @@ const ProductManagementPage: React.FC = () => {
       {filteredProducts.length > 0 && currentView === "grid" && (
         <GridView
           filteredProducts={filteredProducts}
-          toggleStatus={toggleStatus}
+          toggleStatus={handleToggleStatus}
         />
       )}
 
@@ -321,19 +403,18 @@ const ProductManagementPage: React.FC = () => {
           isViewDialogOpen={isViewDialogOpen}
           setIsViewDialogOpen={setIsViewDialogOpen}
           selectedProduct={selectedProduct}
-          toggleStatus={toggleStatus}
+          toggleStatus={handleToggleStatus}
         />
       )}
 
       {/* Edit/Add product dialog */}
       {selectedProduct && (
         <EditDialog
-          filteredProducts={filteredProducts}
           isEditDialogOpen={isEditDialogOpen}
           setIsEditDialogOpen={setIsEditDialogOpen}
           selectedProduct={selectedProduct}
-          setFilteredProducts={setFilteredProducts}
           setSelectedProduct={setSelectedProduct}
+          handleSaveProduct={handleSaveProduct}
         />
       )}
 
@@ -350,4 +431,4 @@ const ProductManagementPage: React.FC = () => {
   );
 };
 
-export default withAuth(ProductManagementPage, ["manager"]);
+export default withAuth(ProductManagementPage, ["admin"]);

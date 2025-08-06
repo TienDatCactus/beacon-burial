@@ -1,17 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { NewsItem } from "@/lib/interfaces";
+import { News } from "@/lib/interfaces";
 import Image from "next/image";
 import React, { FC } from "react";
 
 interface ListViewProps {
-  filteredNews: NewsItem[];
+  filteredNews: News[];
   sortField: string;
   sortDirection: "asc" | "desc";
   handleSort: (field: string) => void;
   togglePublishStatus: (newsId: string, newStatus: boolean) => void;
-  viewNewsDetails: (news: NewsItem) => void;
-  editNews: (news: NewsItem) => void;
-  confirmDeleteNews: (news: NewsItem) => void;
+  viewNewsDetails: (news: News) => void;
+  editNews: (news: News) => void;
+  confirmDeleteNews: (news: News) => void;
 }
 
 const ListView: FC<ListViewProps> = ({
@@ -75,16 +75,16 @@ const ListView: FC<ListViewProps> = ({
           <tbody className="[&_tr:last-child]:border-0">
             {filteredNews.map((news) => (
               <tr
-                key={news.id}
+                key={news._id}
                 className="border-b transition-colors hover:bg-muted/50 data-[state=selected]:bg-muted"
               >
                 <td className="p-4 align-middle">
                   <div className="flex items-center gap-3">
-                    {news.coverImage && (
+                    {news.image && (
                       <Image
                         width={40}
                         height={40}
-                        src={news.coverImage}
+                        src={news.image}
                         alt={news.title}
                         className="h-10 w-10 rounded object-cover"
                       />
@@ -95,30 +95,30 @@ const ListView: FC<ListViewProps> = ({
                   </div>
                 </td>
                 <td className="p-4 align-middle">{news.category}</td>
-                <td className="p-4 align-middle">{news.author}</td>
+                <td className="p-4 align-middle">{news.slug}</td>
                 <td className="p-4 align-middle">
-                  {new Date(news.publishedAt).toLocaleDateString("vi-VN")}
+                  {new Date(news.created_at).toLocaleDateString("vi-VN")}
                 </td>
                 <td className="p-4 align-middle">
                   <div className="flex items-center gap-2">
                     <span
                       className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                        news.isPublished
+                        news.status === "active"
                           ? "bg-green-100 text-green-800"
                           : "bg-amber-100 text-amber-800"
                       }`}
                     >
-                      {news.isPublished ? "Đã đăng" : "Nháp"}
+                      {news.status === "active" ? "Đã đăng" : "Nháp"}
                     </span>
                     <Button
                       variant="ghost"
                       size="sm"
                       className="ml-2 px-2 h-7"
                       onClick={() =>
-                        togglePublishStatus(news.id, !news.isPublished)
+                        togglePublishStatus(news._id, news.status !== "active")
                       }
                     >
-                      {news.isPublished ? "Hủy đăng" : "Đăng"}
+                      {news.status === "active" ? "Hủy đăng" : "Đăng"}
                     </Button>
                   </div>
                 </td>

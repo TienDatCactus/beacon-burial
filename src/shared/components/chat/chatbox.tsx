@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MessagesSquare, X, MinusSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { randomUUID } from "crypto";
 
 interface Message {
   id: string;
@@ -72,7 +73,7 @@ const Chatbox = () => {
 
     // Add user message
     const userMessage: Message = {
-      id: `user-${Date.now()}`,
+      id: `user-${randomUUID()}`,
       content: inputValue.trim(),
       role: "user",
       timestamp: new Date(),
@@ -117,7 +118,7 @@ const Chatbox = () => {
       // Add bot response to messages
       // For UI purposes, we continue to use 'assistant' role
       const botResponse: Message = {
-        id: `assistant-${Date.now()}`,
+        id: `assistant-${randomUUID()}`,
         content: data.response || "Không nhận được phản hồi hợp lệ từ máy chủ.",
         role: "assistant",
         timestamp: new Date(),
@@ -129,7 +130,7 @@ const Chatbox = () => {
       setMessages((prev) => [
         ...prev,
         {
-          id: `error-${Date.now()}`,
+          id: `error-${randomUUID()}`,
           content: "Xin lỗi, đã xảy ra lỗi khi xử lý tin nhắn của bạn.",
           role: "assistant",
           timestamp: new Date(),

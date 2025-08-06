@@ -14,12 +14,13 @@ import { Edit, Info, PackageCheck, Trash2 } from "lucide-react";
 import React from "react";
 
 import Image from "next/image";
+import { Service } from "@/lib/api/service";
 interface TableViewProps {
-  filteredServices: any[];
+  filteredServices: Service[];
   toggleStatus: (id: string, status: "active" | "inactive") => void;
-  viewServiceDetails: (service: any) => void;
-  editService: (service: any) => void;
-  confirmDeleteService: (service: any) => void;
+  viewServiceDetails: (service: Service) => void;
+  editService: (service: Service) => void;
+  confirmDeleteService: (service: Service) => void;
 }
 const TableView: React.FC<TableViewProps> = ({
   filteredServices,
@@ -37,21 +38,20 @@ const TableView: React.FC<TableViewProps> = ({
             <TableHead>Danh mục</TableHead>
             <TableHead>Giá</TableHead>
             <TableHead>Trạng thái</TableHead>
-            <TableHead>Độ phổ biến</TableHead>
             <TableHead>Thành phần</TableHead>
             <TableHead className="text-right">Hành động</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {filteredServices.map((service) => (
-            <TableRow key={service.id} className="hover:bg-gray-50 h-20">
+            <TableRow key={service._id} className="hover:bg-gray-50 h-20">
               <TableCell>
                 <div className="flex items-center gap-3">
-                  {service.image ? (
+                  {service.imageUrl ? (
                     <div className="h-10 w-10 rounded overflow-hidden bg-gray-100 flex-shrink-0">
                       <Image
-                        src={service.image}
-                        alt={service.name}
+                        src={service.imageUrl[0]}
+                        alt={service.title}
                         width={40}
                         height={40}
                         className="h-full w-full object-cover"
@@ -68,7 +68,7 @@ const TableView: React.FC<TableViewProps> = ({
                     </div>
                   )}
                   <div>
-                    <div className="font-medium">{service.name}</div>
+                    <div className="font-medium">{service.title}</div>
                     <div className="text-sm text-gray-500 truncate max-w-50">
                       {service.description}
                     </div>
@@ -111,12 +111,12 @@ const TableView: React.FC<TableViewProps> = ({
               <TableCell>
                 <div className="flex items-center gap-2">
                   <Switch
-                    id={`status-${service.id}`}
+                    id={`status-${service._id}`}
                     checked={service.status === "active"}
                     onCheckedChange={(checked) =>
-                      toggleStatus(service.id, checked ? "active" : "inactive")
+                      toggleStatus(service._id, checked ? "active" : "inactive")
                     }
-                    aria-label={`Toggle ${service.name} status`}
+                    aria-label={`Toggle ${service.title} status`}
                   />
                   <Badge
                     variant={
@@ -135,7 +135,7 @@ const TableView: React.FC<TableViewProps> = ({
                 </div>
               </TableCell>
 
-              <TableCell>
+              {/* <TableCell>
                 <div className="flex items-center gap-2 w-[100px]">
                   <div className="w-full bg-gray-100 rounded-full h-2">
                     <div
@@ -145,7 +145,7 @@ const TableView: React.FC<TableViewProps> = ({
                   </div>
                   <span className="text-sm">{service.popularityScore}%</span>
                 </div>
-              </TableCell>
+              </TableCell> */}
 
               <TableCell>
                 <div className="flex items-center">

@@ -2,6 +2,7 @@
 
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import withAuth from "@/lib/hooks/useWithAuth";
+import { useDashboardStatistics } from "@/lib/hooks/useDashboard";
 import CustomersTab from "@/private/components/manager/CustomersTab";
 import DashboardHeader from "@/private/components/manager/DashboardHeader";
 import DashboardMetrics from "@/private/components/manager/DashboardMetrics";
@@ -84,13 +85,20 @@ const mockSummaryData = {
 
 const SalesDashboard = () => {
   const [dateRange, setDateRange] = useState("last30days");
+  const { refreshStatistics, loading: dashboardLoading } =
+    useDashboardStatistics();
 
   return (
     <div className="space-y-6">
       {/* Page header */}
-      <DashboardHeader dateRange={dateRange} setDateRange={setDateRange} />
+      <DashboardHeader
+        dateRange={dateRange}
+        setDateRange={setDateRange}
+        onRefresh={refreshStatistics}
+        isRefreshing={dashboardLoading}
+      />
       {/* Key metrics summary */}
-      <DashboardMetrics mockSummaryData={mockSummaryData} />
+      <DashboardMetrics />
       {/* Sales analysis tabs */}
       <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
@@ -113,4 +121,4 @@ const SalesDashboard = () => {
   );
 };
 
-export default withAuth(SalesDashboard, ["manager"]);
+export default withAuth(SalesDashboard, ["admin"]);

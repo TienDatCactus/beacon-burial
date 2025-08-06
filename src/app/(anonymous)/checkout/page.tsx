@@ -42,7 +42,7 @@ type CheckoutFormValues = {
 const CheckoutPage: React.FC = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { items: cartItems, totalPrice, clearCart } = useCartStore();
+  const { cartItems, clearCart } = useCartStore();
   const [total, setTotal] = useState(0);
   const shipping = "$0.00";
   const shippingCost = 0;

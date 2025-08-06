@@ -38,14 +38,17 @@ const Filters: React.FC<{
             <DropdownMenuItem onClick={() => handleStatusFilter(null)}>
               Tất cả đơn hàng
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("processing")}>
-              Đơn hàng đang xử lý
+            <DropdownMenuItem onClick={() => handleStatusFilter("Pending")}>
+              Đang chờ xử lý
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("accepted")}>
-              Đơn hàng đã xác nhận
+            <DropdownMenuItem onClick={() => handleStatusFilter("Waiting")}>
+              Đang chờ
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusFilter("declined")}>
-              Đơn hàng đã từ chối
+            <DropdownMenuItem onClick={() => handleStatusFilter("Accept")}>
+              Đã chấp nhận
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusFilter("Deny")}>
+              Đã từ chối
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

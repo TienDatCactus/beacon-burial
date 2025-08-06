@@ -29,15 +29,12 @@ const useAuth = create<AuthState>()(
       login: async (credentials: LoginCredentials & { remember?: boolean }) => {
         try {
           const result = await apiLogin(credentials);
-
           if (result.success && result.data) {
             set({
-              user: result.data.user || null,
-              token: result.data.token || null,
+              user: result.data.user,
+              token: result.data.accessToken,
               isAuthenticated: true,
             });
-
-            // Store remember preference if provided
             if (credentials.remember) {
               localStorage.setItem("rememberMe", "true");
             } else {
@@ -59,12 +56,15 @@ const useAuth = create<AuthState>()(
         try {
           const result = await apiLogout();
 
-          set({
-            user: null,
-            token: null,
-            isAuthenticated: false,
-          });
-
+          localStorage.removeItem("rememberMe");
+          if (result.success) {
+            set({
+              user: null,
+              token: null,
+              isAuthenticated: false,
+            });
+            window.location.href = "/";
+          }
           return result;
         } catch (error: any) {
           console.error("Logout error:", error);
@@ -121,12 +121,12 @@ const useAuth = create<AuthState>()(
       restoreSession: () => {
         const token = getAuthToken();
         const isAuth = checkIsAuthenticated();
-
+        const state = get();
         if (token && isAuth) {
           set({
             token,
             isAuthenticated: true,
-            // Có thể thêm gọi API lấy user nếu cần
+            user: state.user,
           });
         } else {
           set({
@@ -144,6 +144,9 @@ const useAuth = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
+      migrate: async (persistedState, version) => {
+        return persistedState;
+      },
     }
   )
 );

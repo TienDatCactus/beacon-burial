@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { Product } from "@/lib/api/product";
 
 import { X, Plus } from "lucide-react";
 import Image from "next/image";
@@ -26,27 +27,25 @@ import React from "react";
 const EditDialog: React.FC<{
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
-  selectedProduct: any;
-  setSelectedProduct: (product: any) => void;
-  filteredProducts: any[];
-  setFilteredProducts: (products: any[]) => void;
+  selectedProduct: Product;
+  setSelectedProduct: (product: Product) => void;
+  handleSaveProduct: (productData: Product, isEdit: boolean) => void;
 }> = ({
   isEditDialogOpen,
   setIsEditDialogOpen,
   selectedProduct,
   setSelectedProduct,
-  filteredProducts,
-  setFilteredProducts,
+  handleSaveProduct,
 }) => {
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {selectedProduct.id ? "Chinh sửa sản phẩm" : "Thêm sản phẩm mới"}
+            {selectedProduct._id ? "Chinh sửa sản phẩm" : "Thêm sản phẩm mới"}
           </DialogTitle>
           <DialogDescription>
-            {selectedProduct.id
+            {selectedProduct._id
               ? "Cập nhật thông tin sản phẩm bên dưới."
               : "Điền thông tin sản phẩm để tạo sản phẩm mới."}
           </DialogDescription>
@@ -76,15 +75,15 @@ const EditDialog: React.FC<{
 
             <div>
               <Label className="mb-1" htmlFor="sku">
-                SKU
+                Slug
               </Label>
               <Input
-                id="sku"
-                value={selectedProduct.sku}
+                id="slug"
+                value={selectedProduct.slug}
                 onChange={(e) =>
                   setSelectedProduct({
                     ...selectedProduct,
-                    sku: e.target.value,
+                    slug: e.target.value,
                   })
                 }
               />
@@ -114,11 +113,11 @@ const EditDialog: React.FC<{
               <Input
                 id="stock"
                 type="number"
-                value={selectedProduct.stock}
+                value={selectedProduct.quantity}
                 onChange={(e) =>
                   setSelectedProduct({
                     ...selectedProduct,
-                    stock: parseInt(e.target.value) || 0,
+                    quantity: parseInt(e.target.value) || 0,
                   })
                 }
               />
@@ -141,10 +140,15 @@ const EditDialog: React.FC<{
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="Flowers">Vòng hoa – Hoa tươi</SelectItem>
-                  <SelectItem value="Memorials">Trang phục tang lễ</SelectItem>
-                  <SelectItem value="Urns">Đồ thờ cúng</SelectItem>
-                  <SelectItem value="Caskets">Quan tài</SelectItem>
+                  <SelectItem value="Quan tài an táng">
+                    Quan tài an táng
+                  </SelectItem>
+                  <SelectItem value="Quan tài hỏa táng">
+                    Quan tài hỏa táng
+                  </SelectItem>
+                  <SelectItem value="Tiểu quách">Tiểu quách</SelectItem>
+                  <SelectItem value="Hũ tro cốt">Hũ tro cốt</SelectItem>
+                  <SelectItem value="Áo quan">Áo quan</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -158,7 +162,7 @@ const EditDialog: React.FC<{
                 onValueChange={(value) =>
                   setSelectedProduct({
                     ...selectedProduct,
-                    status: value,
+                    status: value === "active" ? "active" : "inactive",
                   })
                 }
               >
@@ -186,7 +190,7 @@ const EditDialog: React.FC<{
               <Label htmlFor="featured">Sản phẩm nổi bật</Label>
             </div>
 
-            <div>
+            {/* <div>
               <Label className="mb-1" htmlFor="popularity">
                 Điểm phổ biến (0-100)
               </Label>
@@ -203,7 +207,7 @@ const EditDialog: React.FC<{
                   })
                 }
               />
-            </div>
+            </div> */}
           </div>
 
           <div className="space-y-4">
@@ -212,30 +216,58 @@ const EditDialog: React.FC<{
                 Hình ảnh sản phẩm
               </Label>
               <Input
-                id="image"
+                id="images"
                 type="file"
+                multiple // ✅ Cho phép chọn nhiều ảnh
+                accept="image/*"
                 onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
+                  const files = e.target.files;
+                  if (!files) return;
+
+                  const imageArray: string[] = [];
+
+                  Array.from(files).forEach((file) => {
                     const reader = new FileReader();
                     reader.onload = (event) => {
-                      setSelectedProduct({
-                        ...selectedProduct,
-                        image: event.target?.result as string,
-                      });
+                      if (event.target?.result) {
+                        imageArray.push(event.target.result as string);
+                        // Khi đọc hết tất cả ảnh thì cập nhật state
+                        if (imageArray.length === files.length) {
+                          setSelectedProduct({
+                            ...selectedProduct,
+                            image: [
+                              ...(selectedProduct.image || []),
+                              ...imageArray,
+                            ],
+                          });
+                        }
+                      }
                     };
-                    reader.readAsDataURL(e.target.files[0]);
-                  }
+                    reader.readAsDataURL(file);
+                  });
                 }}
-                placeholder="Nhập đường dẫn hình ảnh"
+                placeholder="Chọn nhiều ảnh"
               />
+
               {selectedProduct.image && (
-                <div className="mt-2 relative aspect-video rounded-md overflow-hidden bg-gray-100">
-                  <Image
-                    src={selectedProduct.image}
-                    alt="Product preview"
-                    fill
-                    className="object-cover"
-                  />
+                <div className="mt-2 relative  rounded-md overflow-y-scroll h-80">
+                  {!!selectedProduct.image &&
+                  selectedProduct.image.length > 0 ? (
+                    <div className="grid grid-cols-2 gap-2 flex-wrap ">
+                      {selectedProduct.image.map((img, index) => (
+                        <Image
+                          key={index}
+                          src={img}
+                          alt="Product preview"
+                          height={100}
+                          width={100}
+                          className="object-contain w-full h-full rounded-md"
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">No image uploaded</p>
+                  )}
                 </div>
               )}
             </div>
@@ -257,7 +289,7 @@ const EditDialog: React.FC<{
               />
             </div>
 
-            <div>
+            {/* <div>
               <Label className="mb-1">Các đặc điểm nổi bật</Label>
               <div className="space-y-2 mt-2">
                 {selectedProduct.features.map(
@@ -310,7 +342,7 @@ const EditDialog: React.FC<{
                   <Plus className="h-4 w-4 mr-2" /> Thêm đặc điểm
                 </Button>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 
@@ -319,25 +351,11 @@ const EditDialog: React.FC<{
             Hủy
           </Button>
           <Button
-            onClick={() => {
-              if (selectedProduct.id) {
-                // Update existing product
-                const updatedProducts = filteredProducts.map((product) =>
-                  product.id === selectedProduct.id ? selectedProduct : product
-                );
-                setFilteredProducts(updatedProducts);
-              } else {
-                // Add new product
-                const newProduct = {
-                  ...selectedProduct,
-                  id: `${Math.floor(Math.random() * 1000)}`,
-                };
-                setFilteredProducts([...filteredProducts, newProduct]);
-              }
-              setIsEditDialogOpen(false);
-            }}
+            onClick={() =>
+              handleSaveProduct(selectedProduct, !!selectedProduct._id)
+            }
           >
-            {selectedProduct.id ? "Lưu thay đổi" : "Thêm sản phẩm"}
+            {selectedProduct._id ? "Lưu thay đổi" : "Thêm sản phẩm"}
           </Button>
         </DialogFooter>
       </DialogContent>

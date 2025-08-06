@@ -35,7 +35,7 @@ const DeleteDialog: React.FC<{
         <div className="flex items-center p-4 bg-gray-50 rounded-md border">
           <div className="relative w-12 h-12 rounded overflow-hidden bg-gray-100 mr-4">
             <Image
-              src={selectedProduct.image}
+              src={selectedProduct.image[0] || "https://placehold.co/600x400"}
               alt={selectedProduct.name}
               fill
               className="object-cover"

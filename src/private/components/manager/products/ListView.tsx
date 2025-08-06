@@ -87,14 +87,14 @@ const ListView: React.FC<ListViewProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredProducts.map((product) => (
-            <TableRow key={product.id}>
+          {filteredProducts.map((product, index) => (
+            <TableRow key={index}>
               <TableCell>
                 <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative">
                   <Image
                     width={48}
                     height={48}
-                    src={product.image}
+                    src={product.image[0] || "https://placehold.co/600x400"}
                     alt={product.name}
                     className="h-full w-full object-cover"
                   />
@@ -109,7 +109,7 @@ const ListView: React.FC<ListViewProps> = ({
                     id={`status-${product.id}`}
                     checked={product.status === "active"}
                     onCheckedChange={(checked) =>
-                      toggleStatus(product.id, checked ? "active" : "inactive")
+                      toggleStatus(product._id, checked ? "active" : "inactive")
                     }
                     aria-label={`Toggle ${product.name} status`}
                   />

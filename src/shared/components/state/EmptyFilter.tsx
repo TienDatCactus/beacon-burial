@@ -3,7 +3,7 @@ import { ShoppingCart } from "lucide-react";
 import React from "react";
 const EmptyFilter: React.FC<{
   setSearchTerm: (term: string) => void;
-  setStatusFilter: (status: string | null) => void;
+  setStatusFilter?: (status: string | null) => void;
 }> = ({ setSearchTerm, setStatusFilter }) => {
   return (
     <div className="text-center py-12 border rounded-md bg-white">
@@ -21,7 +21,7 @@ const EmptyFilter: React.FC<{
         <Button
           onClick={() => {
             setSearchTerm("");
-            setStatusFilter(null);
+            if (setStatusFilter) setStatusFilter(null);
           }}
           variant="outline"
         >

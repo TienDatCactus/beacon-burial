@@ -22,7 +22,7 @@ export interface ApiResponse<T = any> {
 
 // Login response
 export interface LoginResponse {
-  token?: string;
+  accessToken?: string;
   user?: User;
   message?: string;
 }
@@ -51,7 +51,6 @@ export interface AuthState {
     credentials: LoginCredentials & { remember?: boolean }
   ) => Promise<ApiResponse<LoginResponse>>;
   logout: () => Promise<ApiResponse>;
-  restoreSession: () => void;
   forgetPassword: (request: ForgetPasswordRequest) => Promise<ApiResponse>;
   verifyOtp: (request: VerifyOtpRequest) => Promise<ApiResponse>;
   resetPassword: (request: ResetPasswordRequest) => Promise<ApiResponse>;

@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { NewsItem } from "@/lib/interfaces";
+import { News } from "@/lib/interfaces";
 import { CalendarIcon, TagIcon, User2Icon } from "lucide-react";
 import Image from "next/image";
 import React, { FC } from "react";
@@ -14,9 +14,9 @@ import React, { FC } from "react";
 interface DetailsDialogProps {
   isViewDialogOpen: boolean;
   setIsViewDialogOpen: (open: boolean) => void;
-  selectedNews: NewsItem | null;
+  selectedNews: News | null;
   togglePublishStatus: (newsId: string, newStatus: boolean) => void;
-  editNews: (news: NewsItem) => void;
+  editNews: (news: News) => void;
 }
 
 const DetailsDialog: FC<DetailsDialogProps> = ({
@@ -38,12 +38,12 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
         </DialogHeader>
 
         {/* Cover image */}
-        {selectedNews.coverImage && (
+        {selectedNews.image && (
           <div className="w-full h-64 mb-4 overflow-hidden rounded-md">
             <Image
               width={700}
               height={400}
-              src={selectedNews.coverImage}
+              src={selectedNews.image}
               alt={selectedNews.title}
               className="w-full h-full object-cover"
             />
@@ -54,21 +54,21 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-4">
           <div className="flex items-center gap-1">
             <User2Icon className="h-4 w-4" />
-            <span>{selectedNews.author}</span>
+            <span>{selectedNews.slug}</span>
           </div>
           <div className="flex items-center gap-1">
             <CalendarIcon className="h-4 w-4" />
             <span>
               Ngày đăng:{" "}
-              {new Date(selectedNews.publishedAt).toLocaleDateString("vi-VN")}
+              {new Date(selectedNews.created_at).toLocaleDateString("vi-VN")}
             </span>
           </div>
-          {selectedNews.updatedAt && (
+          {selectedNews.updated_at && (
             <div className="flex items-center gap-1">
               <CalendarIcon className="h-4 w-4" />
               <span>
                 Cập nhật:{" "}
-                {new Date(selectedNews.updatedAt).toLocaleDateString("vi-VN")}
+                {new Date(selectedNews.updated_at).toLocaleDateString("vi-VN")}
               </span>
             </div>
           )}
@@ -95,7 +95,7 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
         </div>
 
         {/* Tags */}
-        {selectedNews.tags && selectedNews.tags.length > 0 && (
+        {/* {selectedNews.tags && selectedNews.tags.length > 0 && (
           <div className="mb-4">
             <h3 className="font-semibold mb-1 flex items-center gap-1">
               <TagIcon className="h-4 w-4" />
@@ -112,7 +112,7 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
               ))}
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Publication status */}
         <div className="mb-4">
@@ -120,12 +120,12 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
           <div className="flex items-center gap-2">
             <span
               className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                selectedNews.isPublished
+                selectedNews.status === "active"
                   ? "bg-green-100 text-green-800"
                   : "bg-amber-100 text-amber-800"
               }`}
             >
-              {selectedNews.isPublished ? "Đã đăng" : "Nháp"}
+              {selectedNews.status === "active" ? "Đã đăng" : "Nháp"}
             </span>
           </div>
         </div>
@@ -134,10 +134,13 @@ const DetailsDialog: FC<DetailsDialogProps> = ({
           <Button
             variant="outline"
             onClick={() =>
-              togglePublishStatus(selectedNews.id, !selectedNews.isPublished)
+              togglePublishStatus(
+                selectedNews._id,
+                selectedNews.status !== "active"
+              )
             }
           >
-            {selectedNews.isPublished ? "Hủy đăng" : "Đăng"}
+            {selectedNews.status === "active" ? "Hủy đăng" : "Đăng"}
           </Button>
           <Button
             onClick={() => {

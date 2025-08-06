@@ -2,254 +2,115 @@
 
 import { Button } from "@/components/ui/button";
 import withAuth from "@/lib/hooks/useWithAuth";
+import {
+  useOrders,
+  useOrderDetails,
+  useOrderManagement,
+} from "@/lib/hooks/useOrders";
 import Filters from "@/private/components/manager/orders/Filters";
 import OrderDetails from "@/private/components/manager/orders/OrderDetails";
 import OrdersTable from "@/private/components/manager/orders/OrdersTable";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
 import { CalendarIcon } from "lucide-react";
 import React, { useState } from "react";
-
-// Mock order data
-const mockOrders = [
-  {
-    id: "ORD-2025-1001",
-    date: "2025-06-25",
-    customer: {
-      name: "John Smith",
-      email: "john.smith@example.com",
-      phone: "555-123-4567",
-    },
-    items: [
-      {
-        id: "1",
-        name: "Traditional Arrangement",
-        price: 165,
-        quantity: 1,
-        image: "/images/image-7-pist9h4b63nhjv2vay2lfsj3kyn0pwhy8idbbim086.jpg",
-      },
-      {
-        id: "2",
-        name: "Pink & Lilac Bouquet",
-        price: 155,
-        quantity: 1,
-        image: "/images/image-9-pist9h4brl9fb6a1imhxr4xsqxo5cqvbwpn4fqxahy.jpg",
-      },
-    ],
-    status: "declined",
-    totalAmount: 320,
-    shippingAddress: {
-      street: "123 Main St",
-      city: "Springfield",
-      state: "IL",
-      zipCode: "62704",
-    },
-    paymentMethod: "Cash on delivery",
-  },
-  {
-    id: "ORD-2025-1002",
-    date: "2025-06-26",
-    customer: {
-      name: "Emily Johnson",
-      email: "emily.johnson@example.com",
-      phone: "555-234-5678",
-    },
-    items: [
-      {
-        id: "3",
-        name: "Rose and Freesia Bouquet",
-        price: 145,
-        quantity: 2,
-        image: "/images/image-45-840x840.jpg",
-      },
-    ],
-    status: "processing",
-    totalAmount: 290,
-    shippingAddress: {
-      street: "456 Oak Ave",
-      city: "Riverside",
-      state: "CA",
-      zipCode: "92501",
-    },
-    paymentMethod: "Cash on delivery",
-  },
-  {
-    id: "ORD-2025-1003",
-    date: "2025-06-27",
-    customer: {
-      name: "Michael Brown",
-      email: "michael.brown@example.com",
-      phone: "555-345-6789",
-    },
-    items: [
-      {
-        id: "4",
-        name: "White Rose Bouquet",
-        price: 145,
-        quantity: 1,
-        image: "/images/image-10.jpg",
-      },
-      {
-        id: "5",
-        name: "Memorial Tribute",
-        price: 175,
-        quantity: 1,
-        image: "/images/image-10.jpg",
-      },
-    ],
-    status: "declined",
-    totalAmount: 320,
-    shippingAddress: {
-      street: "789 Pine Rd",
-      city: "Portland",
-      state: "OR",
-      zipCode: "97205",
-    },
-    paymentMethod: "Cash on delivery",
-  },
-  {
-    id: "ORD-2025-1004",
-    date: "2025-06-28",
-    customer: {
-      name: "Sarah Wilson",
-      email: "sarah.wilson@example.com",
-      phone: "555-456-7890",
-    },
-    items: [
-      {
-        id: "1",
-        name: "Traditional Arrangement",
-        price: 165,
-        quantity: 1,
-        image: "/images/image-7-pist9h4b63nhjv2vay2lfsj3kyn0pwhy8idbbim086.jpg",
-      },
-    ],
-    status: "processing",
-    totalAmount: 165,
-    shippingAddress: {
-      street: "101 Maple Blvd",
-      city: "Boston",
-      state: "MA",
-      zipCode: "02108",
-    },
-    paymentMethod: "Cash on delivery",
-  },
-  {
-    id: "ORD-2025-1005",
-    date: "2025-06-24",
-    customer: {
-      name: "David Lee",
-      email: "david.lee@example.com",
-      phone: "555-567-8901",
-    },
-    items: [
-      {
-        id: "5",
-        name: "Memorial Tribute",
-        price: 175,
-        quantity: 2,
-        image: "/images/image-10.jpg",
-      },
-    ],
-    status: "declined",
-    totalAmount: 350,
-    shippingAddress: {
-      street: "222 Cedar St",
-      city: "Chicago",
-      state: "IL",
-      zipCode: "60601",
-    },
-    paymentMethod: "Cash on delivery",
-  },
-];
+import { Order, OrderFilters } from "@/lib/api/order";
 
 const OrdersPage: React.FC = () => {
+  // Real API hooks
+  const { orders, pagination, loading, error, fetchOrders, refreshOrders } =
+    useOrders();
+  const { order: selectedOrderDetails, fetchOrderDetails } = useOrderDetails();
+  const { updating, updateStatus } = useOrderManagement();
+
+  // Local state for UI
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortField, setSortField] = useState<string>("date");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
-  const [filteredOrders, setFilteredOrders] = useState([...mockOrders]);
-  const [statusFilter, setStatusFilter] = useState<string | null>(null);
-  const [selectedOrder, setSelectedOrder] = useState<any | null>(null);
+  const [statusFilter, setStatusFilter] = useState<
+    "Accept" | "Deny" | "Waiting"
+  >();
+  const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const filterOrders = () => {
-    let filtered = [...mockOrders];
-
-    // Apply search filter
-    if (searchTerm.trim()) {
-      filtered = filtered.filter(
-        (order) =>
-          order.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          order.customer.name
-            .toLowerCase()
-            .includes(searchTerm.toLowerCase()) ||
-          order.customer.email.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply status filter
-    if (statusFilter) {
-      filtered = filtered.filter((order) => order.status === statusFilter);
-    }
-
-    // Apply sorting
-    filtered.sort((a, b) => {
-      if (sortField === "date") {
-        const dateA = new Date(a.date).getTime();
-        const dateB = new Date(b.date).getTime();
-        return sortDirection === "asc" ? dateA - dateB : dateB - dateA;
-      } else if (sortField === "totalAmount") {
-        return sortDirection === "asc"
-          ? a.totalAmount - b.totalAmount
-          : b.totalAmount - a.totalAmount;
-      } else {
-        return 0;
-      }
-    });
-
-    setFilteredOrders(filtered);
+  // Handle search
+  const handleSearch = (value: string) => {
+    setSearchTerm(value);
+    applyFilters(value, statusFilter ?? null);
   };
 
-  // Handle search input changes
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-  };
-
-  // Handle sorting
-  const handleSort = (field: string) => {
-    const isAsc = sortField === field && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
-    setSortField(field);
-  };
-
-  // Handle status filter changes
+  // Handle status filter
   const handleStatusFilter = (status: string | null) => {
-    setStatusFilter(status);
+    const statusValue = status as "Accept" | "Deny" | "Waiting";
+    setStatusFilter(statusValue ?? null);
+    applyFilters(searchTerm, statusValue);
   };
 
-  const viewOrderDetails = (order: any) => {
+  // Apply filters and fetch data
+  const applyFilters = (
+    keyword: string,
+    status: "Accept" | "Deny" | "Waiting" | null
+  ) => {
+    const filters: OrderFilters = {
+      page: 1,
+      limit: 5,
+    };
+
+    if (keyword.trim()) {
+      filters.keyword = keyword.trim();
+    }
+
+    if (status) {
+      filters.status = status;
+    }
+
+    fetchOrders(filters);
+  };
+
+  // View order details
+  const viewOrderDetails = async (order: Order) => {
     setSelectedOrder(order);
+    await fetchOrderDetails(order._id);
     setIsDialogOpen(true);
   };
 
-  React.useEffect(() => {
-    filterOrders();
-  }, [searchTerm, statusFilter, sortField, sortDirection]);
+  // Update order status
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus: "Accept" | "Deny" | "Waiting"
+  ) => {
+    const result = await updateStatus(orderId, { status: newStatus });
+    if (result) {
+      refreshOrders();
+      if (selectedOrder && selectedOrder._id === orderId) {
+        setSelectedOrder({ ...selectedOrder, status: newStatus });
+      }
+    }
+  };
 
   // Close dialog
   const closeDialog = () => {
     setIsDialogOpen(false);
+    setSelectedOrder(null);
   };
 
-  const updateOrderStatus = (orderId: string, newStatus: string) => {
-    const updatedOrders = filteredOrders.map((order) =>
-      order.id === orderId ? { ...order, status: newStatus } : order
-    );
+  // Handle pagination
+  const handlePageChange = (page: number) => {
+    const filters: OrderFilters = {
+      page,
+      limit: 5,
+    };
 
-    setFilteredOrders(updatedOrders);
-
-    if (selectedOrder && selectedOrder.id === orderId) {
-      setSelectedOrder({ ...selectedOrder, status: newStatus });
+    if (searchTerm.trim()) {
+      filters.keyword = searchTerm.trim();
     }
+
+    if (statusFilter) {
+      filters.status = statusFilter;
+    }
+
+    fetchOrders(filters);
+  };
+
+  const handleSort = (field: string) => {
+    console.log("Sorting by:", field);
   };
 
   return (
@@ -268,26 +129,81 @@ const OrdersPage: React.FC = () => {
       <Filters
         searchTerm={searchTerm}
         handleSearch={handleSearch}
-        statusFilter={statusFilter}
+        statusFilter={statusFilter as string | null}
         handleStatusFilter={handleStatusFilter}
       />
+
+      {/* Loading state */}
+      {loading && (
+        <div className="flex justify-center py-8">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+            <p className="mt-2 text-gray-600">Đang tải đơn hàng...</p>
+          </div>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && !loading && (
+        <div className="text-center py-8">
+          <p className="text-red-600">Có lỗi xảy ra: {error}</p>
+          <Button
+            onClick={() => refreshOrders()}
+            variant="outline"
+            className="mt-2"
+          >
+            Thử lại
+          </Button>
+        </div>
+      )}
+
       {/* Empty state */}
-      {filteredOrders.length === 0 && (
+      {!loading && !error && orders.length === 0 && (
         <EmptyFilter
           setSearchTerm={setSearchTerm}
-          setStatusFilter={setStatusFilter}
+          setStatusFilter={(status) => handleStatusFilter(status)}
         />
       )}
 
       {/* Orders table */}
-      {filteredOrders.length > 0 && (
-        <OrdersTable
-          viewOrderDetails={viewOrderDetails}
-          sortField={sortField}
-          sortDirection={sortDirection}
-          handleSort={handleSort}
-          filteredOrders={filteredOrders}
-        />
+      {!loading && !error && orders.length > 0 && (
+        <>
+          <OrdersTable
+            viewOrderDetails={viewOrderDetails}
+            sortField="createdAt"
+            sortDirection="desc"
+            handleSort={handleSort}
+            filteredOrders={orders}
+            onUpdateStatus={updateOrderStatus}
+            updating={updating}
+          />
+
+          {/* Pagination */}
+          {pagination.totalPages > 1 && (
+            <div className="flex justify-center items-center space-x-2 mt-6">
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.currentPage - 1)}
+                disabled={pagination.currentPage === 1}
+              >
+                Trước
+              </Button>
+
+              <span className="text-sm text-gray-600">
+                Trang {pagination.currentPage} / {pagination.totalPages}(
+                {pagination.totalItems} đơn hàng)
+              </span>
+
+              <Button
+                variant="outline"
+                onClick={() => handlePageChange(pagination.currentPage + 1)}
+                disabled={pagination.currentPage === pagination.totalPages}
+              >
+                Sau
+              </Button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Order details dialog */}
@@ -296,7 +212,9 @@ const OrdersPage: React.FC = () => {
           isDialogOpen={isDialogOpen}
           setIsDialogOpen={setIsDialogOpen}
           selectedOrder={selectedOrder}
-          updateOrderStatus={updateOrderStatus}
+          updateOrderStatus={(orderId, newStatus) =>
+            updateOrderStatus(orderId, newStatus as "Accept" | "Deny")
+          }
           closeDialog={closeDialog}
         />
       )}
@@ -304,4 +222,4 @@ const OrdersPage: React.FC = () => {
   );
 };
 
-export default withAuth(OrdersPage, ["manager"]);
+export default withAuth(OrdersPage, ["admin", "manager"]);

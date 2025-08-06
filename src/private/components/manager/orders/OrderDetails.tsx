@@ -7,6 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Select } from "@/components/ui/select";
+import { Order } from "@/lib/api/order";
 import { formatCurrency } from "@/lib/utils";
 import {
   SelectTrigger,
@@ -21,7 +22,7 @@ import React from "react";
 const OrderDetails: React.FC<{
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
-  selectedOrder: any;
+  selectedOrder: Order;
   updateOrderStatus: (id: string, status: string) => void;
   closeDialog: () => void;
 }> = ({
@@ -36,31 +37,18 @@ const OrderDetails: React.FC<{
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle className="text-xl">
-            Chi tiết đơn hàng: {selectedOrder.id}
+            Chi tiết đơn hàng: {selectedOrder._id}
           </DialogTitle>
           <div className="flex justify-between items-center">
             <span>
-              Đặt vào {format(selectedOrder.date, "PPP", { locale: vi })}
+              Cập nhật vào{" "}
+              {format(new Date(selectedOrder.updated_at), "PPP", {
+                locale: vi,
+              })}
             </span>
             <div className="flex items-center gap-2">
               <span className="text-gray-700">Trạng thái:</span>
-              <Select
-                value={selectedOrder.status}
-                onValueChange={(value) =>
-                  updateOrderStatus(selectedOrder.id, value)
-                }
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Status" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="pending">Đang chờ</SelectItem>
-                  <SelectItem value="processing">Đang xử lý</SelectItem>
-                  <SelectItem value="shipped">Đã giao hàng</SelectItem>
-                  <SelectItem value="completed">Hoàn thành</SelectItem>
-                  <SelectItem value="cancelled">Đã hủy</SelectItem>
-                </SelectContent>
-              </Select>
+              <p>{selectedOrder.status}</p>
             </div>
           </div>
         </DialogHeader>
@@ -72,68 +60,74 @@ const OrderDetails: React.FC<{
             <div className="space-y-1">
               <p>
                 <span className="font-medium">Tên:</span>{" "}
-                {selectedOrder.customer.name}
+                {selectedOrder.firstName} {selectedOrder.lastName}
               </p>
               <p>
                 <span className="font-medium">Email:</span>{" "}
-                {selectedOrder.customer.email}
+                {selectedOrder.email}
               </p>
               <p>
                 <span className="font-medium">Số điện thoại:</span>{" "}
-                {selectedOrder.customer.phone}
+                {selectedOrder.phone}
               </p>
             </div>
 
             <h3 className="font-medium text-lg mt-4 mb-2">Địa chỉ giao hàng</h3>
             <div className="space-y-1">
-              <p>{selectedOrder.shippingAddress.street}</p>
+              <p>{selectedOrder.address}</p>
               <p>
-                {selectedOrder.shippingAddress.city},{" "}
-                {selectedOrder.shippingAddress.state}{" "}
-                {selectedOrder.shippingAddress.zipCode}
+                {selectedOrder.city}, {selectedOrder.province}
               </p>
             </div>
 
-            <h3 className="font-medium text-lg mt-4 mb-2">
-              Phương thức thanh toán
-            </h3>
-            <p>{selectedOrder.paymentMethod}</p>
+            {/* Note */}
+            {selectedOrder.note && (
+              <>
+                <h3 className="font-medium text-lg mt-4 mb-2">Ghi chú</h3>
+                <p className="text-gray-600">{selectedOrder.note}</p>
+              </>
+            )}
           </div>
 
           {/* Order Items */}
           <div>
             <h3 className="font-medium text-lg mb-2">
-              Sản phẩm trong đơn hàng
+              Sản phẩm và dịch vụ trong đơn hàng
             </h3>
             <div className="border rounded-md">
-              {selectedOrder.items.map((item: any) => (
+              {selectedOrder.productId.map((product: any) => (
                 <div
-                  key={item.id}
+                  key={product._id}
                   className="flex items-center p-3 border-b last:border-b-0"
                 >
                   <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative mr-3">
                     <Image
                       fill
-                      src={item.image}
-                      alt={item.name}
+                      src={product.image[0] || "/placeholder-image.jpg"}
+                      alt={product.name}
                       className="h-full w-full object-cover"
                     />
                   </div>
                   <div className="flex-1">
-                    <p className="font-medium">{item.name}</p>
+                    <div className="flex items-center gap-2">
+                      <p className="font-medium">{product.name}</p>
+                      <span className="px-2 py-1 text-xs rounded-full w-24 text-center bg-green-100 text-green-800">
+                        Sản phẩm
+                      </span>
+                    </div>
                     <div className="flex justify-between text-sm text-gray-600">
-                      <p>Số lượng: {item.quantity}</p>
-                      <p>{formatCurrency(item.price)} mỗi cái</p>
+                      <p>Số lượng: {product.quantity}</p>
+                      <p>{formatCurrency(product.price)} mỗi cái</p>
                     </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div className="mt-4 space-y-1 text-right">
+            {/* <div className="mt-4 space-y-1 text-right">
               <div className="flex justify-between">
                 <span>Tổng tạm tính:</span>
-                <span>{formatCurrency(selectedOrder.totalAmount)}</span>
+                <span>{formatCurrency(selectedOrder.)}</span>
               </div>
               <div className="flex justify-between">
                 <span>Vận chuyển:</span>
@@ -143,7 +137,7 @@ const OrderDetails: React.FC<{
                 <span>Tổng cộng:</span>
                 <span>{formatCurrency(selectedOrder.totalAmount)}</span>
               </div>
-            </div>
+            </div> */}
           </div>
         </div>
 

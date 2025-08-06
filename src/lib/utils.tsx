@@ -43,20 +43,20 @@ export const getCategoryStyle = (category: string) => {
 
 export const getStatusBadge = (status: string) => {
   switch (status) {
-    case "accepted":
+    case "Accept":
       return (
         <Badge className="bg-green-100 text-green-800 hover:bg-green-200">
           Chấp thuận
         </Badge>
       );
-    case "processing":
+    case "Waiting":
       return (
         <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200">
           Đang xử lý
         </Badge>
       );
 
-    case "declined":
+    case "Deny":
       return (
         <Badge className="bg-red-100 text-red-800 hover:bg-red-200">
           Từ chối

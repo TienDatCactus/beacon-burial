@@ -5,27 +5,19 @@ import { useRouter } from "next/navigation";
 // Higher Order Component for route protection
 const withAuth = (Component: any, allowedRoles: string[] = []) => {
   return function AuthWrapped(props: any) {
-    const { user, isAuthenticated, restoreSession } = useAuth();
+    const { user, isAuthenticated } = useAuth();
     const router = useRouter();
-
     useEffect(() => {
-      // Try to restore session from localStorage on mount
-      restoreSession();
-    }, [restoreSession]);
-
-    useEffect(() => {
-      if (!isAuthenticated) {
-        router.push("/auth");
-      } else if (
+      if (
         allowedRoles.length > 0 &&
         user &&
         !allowedRoles.includes(user.role || "")
       ) {
-        router.push("/403"); // Unauthorized page
+        router.push("/");
       }
     }, [isAuthenticated, user, router]);
 
-    if (!isAuthenticated) {
+    if (!user || !isAuthenticated) {
       return (
         <div className="container h-screen mx-auto px-4 py-16 flex items-center justify-center">
           <div className="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
@@ -62,13 +54,8 @@ const withAuth = (Component: any, allowedRoles: string[] = []) => {
  * Redirects to login page if user is not authenticated
  */
 export function useRequireAuth(redirectTo: string = "/auth") {
-  const { isAuthenticated, restoreSession } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // Try to restore session from localStorage on mount
-    restoreSession();
-  }, [restoreSession]);
 
   useEffect(() => {
     if (!isAuthenticated) {
@@ -84,13 +71,8 @@ export function useRequireAuth(redirectTo: string = "/auth") {
  * Useful for login/register pages
  */
 export function useRedirectIfAuthenticated(redirectTo: string = "/") {
-  const { isAuthenticated, restoreSession } = useAuth();
+  const { isAuthenticated } = useAuth();
   const router = useRouter();
-
-  useEffect(() => {
-    // Try to restore session from localStorage on mount
-    restoreSession();
-  }, [restoreSession]);
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -105,12 +87,7 @@ export function useRedirectIfAuthenticated(redirectTo: string = "/") {
  * Hook to get authentication status and user info
  */
 export function useAuthStatus() {
-  const { user, isAuthenticated, token, restoreSession } = useAuth();
-
-  useEffect(() => {
-    // Try to restore session from localStorage on mount
-    restoreSession();
-  }, [restoreSession]);
+  const { user, isAuthenticated, token } = useAuth();
 
   return {
     user,

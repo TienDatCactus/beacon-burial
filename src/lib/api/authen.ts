@@ -8,7 +8,7 @@ export interface LoginCredentials {
 }
 
 export interface LoginResponse {
-  token?: string;
+  accessToken?: string;
   user?: {
     id: string;
     email: string;
@@ -60,15 +60,13 @@ export async function login(
         error: data.message || "Đăng nhập thất bại",
       };
     }
-
-    // Store token in localStorage if login successful
-    if (data.token) {
-      localStorage.setItem("authToken", data.token);
+    if (data.data.accessToken) {
+      localStorage.setItem("authToken", data.data.accessToken);
     }
 
     return {
       success: true,
-      data,
+      data: data.data,
       message: "Đăng nhập thành công",
     };
   } catch (error) {
