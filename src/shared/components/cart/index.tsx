@@ -46,7 +46,11 @@ const CartPreview: React.FC = () => {
                     className="grid grid-cols-1 lg:grid-cols-3 gap-2 items-center justify-between"
                   >
                     <Image
-                      src={item.product.image}
+                      src={
+                        Array.isArray(item.product.image)
+                          ? item.product.image[0] || "/icons/image-off.svg"
+                          : item.product.image || "/icons/image-off.svg"
+                      }
                       alt={item.product.name}
                       width={60}
                       height={50}

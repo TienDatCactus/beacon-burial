@@ -46,13 +46,63 @@ const EditService: React.FC<EditServiceProps> = ({
     limit: 100, // Get more products for selection
   });
 
-  // Filter only active products
+  // Filter only active products for new selections
   const activeProducts = products.filter(
     (product) => product.status === "active"
   );
 
+  // All products (including inactive) for displaying existing inclusions
+  const allProducts = products;
+
   // Local state for product selection
   const [selectedProductId, setSelectedProductId] = useState<string>("");
+
+  // Normalize inclusions when component opens to ensure consistency
+  useEffect(() => {
+    if (isEditDialogOpen && selectedService && selectedService.inclusions) {
+      console.log(
+        "EditService - Original inclusions:",
+        selectedService.inclusions
+      );
+
+      // Convert mixed inclusions (objects/strings) to just product ID strings
+      const normalizedInclusions = selectedService.inclusions.map(
+        (inclusion) => {
+          if (
+            typeof inclusion === "object" &&
+            inclusion !== null &&
+            "_id" in inclusion
+          ) {
+            return (inclusion as any)._id;
+          }
+          return inclusion as string;
+        }
+      );
+
+      console.log("EditService - Normalized inclusions:", normalizedInclusions);
+      console.log(
+        "EditService - Active products available:",
+        activeProducts.length
+      );
+
+      // Only update if the inclusions are different (to avoid infinite loop)
+      const currentInclusionIds =
+        selectedService.inclusions.map(getInclusionId);
+      const needsNormalization = normalizedInclusions.some(
+        (id, index) => id !== currentInclusionIds[index]
+      );
+
+      if (needsNormalization) {
+        console.log(
+          "EditService - Updating service with normalized inclusions"
+        );
+        setSelectedService({
+          ...selectedService,
+          inclusions: normalizedInclusions,
+        });
+      }
+    }
+  }, [isEditDialogOpen, selectedService?._id]); // Only run when dialog opens or service changes
 
   // Add product to inclusions
   const addProductInclusion = () => {
@@ -103,8 +153,9 @@ const EditService: React.FC<EditServiceProps> = ({
   };
 
   // Get product details by ID - handle both string IDs and objects in inclusions
+  // Search in all products (including inactive) to show existing inclusions
   const getProductById = (productId: string): Product | undefined => {
-    return activeProducts.find((p) => p._id === productId);
+    return allProducts.find((p) => p._id === productId);
   };
 
   // Helper function to get product ID from inclusion (string or object)
@@ -347,6 +398,11 @@ const EditService: React.FC<EditServiceProps> = ({
                           <div>
                             <h4 className="font-medium text-sm">
                               {product.name}
+                              {product.status === "inactive" && (
+                                <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                  Ngừng hoạt động
+                                </span>
+                              )}
                             </h4>
                             <p className="text-xs text-gray-500">
                               {product.category}

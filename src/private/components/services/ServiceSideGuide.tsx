@@ -2,9 +2,8 @@ import { Button } from "@/components/ui/button";
 import React from "react";
 import { ServiceCardProps } from "./ServiceCard";
 import { formatCurrency } from "@/lib/utils";
-const ServiceSideGuide: React.FC<{ services: ServiceCardProps[] }> = ({
-  services,
-}) => {
+import { Service } from "@/lib/api/service";
+const ServiceSideGuide: React.FC<{ services: Service[] }> = ({ services }) => {
   return (
     <>
       {" "}

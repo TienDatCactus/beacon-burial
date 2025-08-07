@@ -1,13 +1,11 @@
 import { Button } from "@/components/ui/button";
+import { Service } from "@/lib/api/service";
+import { formatCurrency } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { ServiceCardProps } from "./ServiceCard";
-import { formatCurrency } from "@/lib/utils";
-interface ServiceFeaturedProps {
-  services: ServiceCardProps[];
-}
-const ServiceFeatured: React.FC<ServiceFeaturedProps> = ({ services }) => {
+
+const ServiceFeatured: React.FC<{ services: Service[] }> = ({ services }) => {
   return (
     <div className="bg-white border border-amber-200 rounded-lg overflow-hidden shadow-sm">
       <div className="bg-amber-50 border-b border-amber-200 py-3 px-4">
@@ -20,7 +18,7 @@ const ServiceFeatured: React.FC<ServiceFeaturedProps> = ({ services }) => {
             <div key={idx} className="space-y-4">
               <div className="aspect-video relative rounded-md overflow-hidden">
                 <Image
-                  src={featured.imageUrl}
+                  src={featured.imageUrl[0] || "/icons/image-off.svg"}
                   alt={featured.title}
                   fill
                   className="object-cover"

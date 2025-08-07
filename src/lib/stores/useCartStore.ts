@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { toast } from "sonner";
+import { Cart, CartItem } from "../interfaces";
 import { Product } from "../api/product";
 
 // Extended interface for the cart store with actions

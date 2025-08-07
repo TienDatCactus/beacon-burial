@@ -1,5 +1,6 @@
 import { API_BASE_URL } from "@/lib/constants";
 import useAuth from "../stores/useAuthStores";
+import { toast } from "sonner";
 
 export async function fetchWithAuth(
   endpoint: string,
@@ -21,8 +22,8 @@ export async function fetchWithAuth(
     const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
     // ✅ Bắt mọi 401 và logout
     if (response.status === 401) {
-      console.warn("401 Unauthorized - Logging out");
       useAuth.getState().logout(); // Gọi hàm logout trong Zustand
+      toast.error("Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.");
       throw new Error("Unauthorized");
     }
 

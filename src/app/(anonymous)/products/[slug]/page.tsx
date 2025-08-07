@@ -1,211 +1,227 @@
 "use client";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Product } from "@/lib/interfaces";
+import { useProduct, useProducts } from "@/lib/hooks/useProducts";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { formatCurrency, renderStars } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import ProductCards from "@/shared/components/cards/ProductCards";
 import PathCrumbs from "@/shared/components/layouts/path-crumbs";
-import { Heart, MinusIcon, PlusIcon, Search } from "lucide-react";
+import { Heart, Loader2, MinusIcon, PlusIcon, Star } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const mockProducts: Product[] = [
-  {
-    _id: "1",
-    name: "Traditional Arrangement",
-    slug: "traditional-arrangement",
-    price: 165.0,
-    image: "/images/image-7-pist9h4b63nhjv2vay2lfsj3kyn0pwhy8idbbim086.jpg",
-    rating: 5,
-    description:
-      "A beautiful traditional flower arrangement for all occasions.",
-    category: "Arrangement",
-  },
-  {
-    _id: "2",
-    name: "Modern Arrangement",
-    slug: "modern-arrangement",
-    price: 156.0,
-    image: "/images/image-9-pist9h4brl9fb6a1imhxr4xsqxo5cqvbwpn4fqxahy.jpg",
-    rating: 5,
-    description: "Contemporary floral arrangement with seasonal fresh flowers.",
-    category: "Arrangement",
-  },
-  {
-    _id: "3",
-    name: "Rose and Freesia Bouquet",
-    slug: "rose-and-freesia-bouquet",
-    price: 155.0,
-    image: "/images/image-45-840x840.jpg",
-    rating: 5,
-    description:
-      "Elegant bouquet featuring roses and freesias for special moments.",
-    category: "Bouquet",
-  },
-  {
-    _id: "4",
-    name: "Gentleness & Admiration",
-    slug: "gentleness-admiration",
-    price: 225.0,
-    image: "/images/image-10.jpg",
-    rating: 4,
-    description:
-      "A premium bouquet expressing genuine admiration and gentleness.",
-    category: "Premium",
-  },
-];
+import { toast } from "sonner";
 
 export default function ProductPage() {
-  const slug = useParams().slug as string;
-  const [product, setProduct] = useState<Product | null>(null);
+  const params = useParams();
+  const router = useRouter();
+  const slug = params.slug as string;
+
   const [isLoading, setIsLoading] = useState(true);
   const [quantity, setQuantity] = useState(1);
-  const [relatedProducts, setRelatedProducts] = useState<Product[]>([]);
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+  console.log(slug);
+  // Get all products to find by id and get related products
+  const { fetchProduct, product } = useProduct();
+  const { products } = useProducts();
   const { addItem } = useCartStore();
-  // Fetch product data
+
+  // Find product by id and get related products
   useEffect(() => {
-    // In a real application, this would be an API call
-    const fetchProduct = () => {
-      setIsLoading(true);
-      try {
-        // Simulate API delay
-        setTimeout(() => {
-          const foundProduct = mockProducts.find((p) => p.slug === slug);
-          if (foundProduct) {
-            setProduct(foundProduct);
-            const related = mockProducts
-              .filter(
-                (p) =>
-                  p.category === foundProduct.category &&
-                  p._id !== foundProduct._id
-              )
-              .slice(0, 3);
-            setRelatedProducts(related);
-          }
-          setIsLoading(false);
-        }, 300);
-      } catch (error) {
-        console.error("Error fetching product:", error);
-        setIsLoading(false);
-      }
-    };
-
-    fetchProduct();
-  }, [slug]);
-
-  // // Handle product not found
-  // if (!isLoading && !product) {
-  //   notFound();
-  // }
+    if (!product) {
+      fetchProduct(slug);
+    }
+    setIsLoading(false);
+  }, [product, slug, fetchProduct]);
+  console.log(product);
+  // Get related products (from same category)
+  const relatedProducts = products
+    .filter(
+      (p) =>
+        p.category === product?.category &&
+        p._id !== product?._id &&
+        p.status === "active"
+    )
+    .slice(0, 3);
 
   const incrementQuantity = () => setQuantity((prev) => prev + 1);
   const decrementQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  // Sample product images for the thumbnails
+  const handleAddToCart = () => {
+    if (!product) return;
 
+    addItem(product, quantity);
+
+    toast.success(`Đã thêm ${quantity} ${product.name} vào giỏ hàng`);
+  };
+
+  const handleWishlistToggle = () => {
+    setIsWishlisted(!isWishlisted);
+    toast.success(
+      isWishlisted
+        ? "Đã xóa khỏi danh sách yêu thích"
+        : "Đã thêm vào danh sách yêu thích"
+    );
+  };
+
+  const renderStars = (rating: number) => {
+    return Array.from({ length: 5 }, (_, i) => (
+      <Star
+        key={i}
+        className={`h-4 w-4 ${
+          i < rating
+            ? "fill-yellow-400 text-yellow-400"
+            : "fill-gray-200 text-gray-200"
+        }`}
+      />
+    ));
+  };
+
+  // Loading state
   if (isLoading) {
     return (
-      <div className="container mx-auto px-4 py-16 flex items-center justify-center">
-        <div className="w-16 h-16 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+      <div className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+              <p className="text-gray-500">Đang tải sản phẩm...</p>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
+
+  // Product not found
+  if (!product) {
+    return (
+      <div className="bg-gray-50 py-12">
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="text-center">
+              <p className="text-gray-500 mb-4">Không tìm thấy sản phẩm</p>
+              <Button onClick={() => router.push("/shop")}>
+                Quay lại cửa hàng
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  const productImages = Array.isArray(product.image)
+    ? product.image
+    : [product.image];
 
   return (
     <div className="bg-gray-50 py-12">
       <div className="container mx-auto px-4">
         <PathCrumbs />
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 mb-16">
+          {/* Product Images */}
           <div className="space-y-4">
             {/* Main Image */}
-            <div className="relative aspect-square overflow-hidden bg-white">
+            <div className="relative aspect-square overflow-hidden bg-white rounded-lg">
               <Image
-                src={product?.image || "/images/image-10.jpg"}
-                alt={product?.name || "Product Image"}
+                src={
+                  productImages[selectedImageIndex] || "/icons/image-off.svg"
+                }
+                alt={product.name}
                 width={1000}
                 height={1000}
                 quality={100}
                 className="object-cover w-full h-full"
                 priority
+                onError={(e) => {
+                  const target = e.target as HTMLImageElement;
+                  target.src = "/icons/image-off.svg";
+                }}
               />
               <div className="absolute top-4 left-4 bg-primary text-white text-xs font-bold px-2 py-1">
-                {product?.category || "Danh mục"}
+                {product.category}
               </div>
-              <Button className="absolute bottom-4 right-4 bg-white p-2 rounded-full shadow-md hover:bg-gray-100">
-                <Search size={18} />
-              </Button>
+              <span
+                className={`absolute top-4 right-4 px-2 py-1 text-xs font-bold rounded ${
+                  product.status === "active"
+                    ? "bg-green-100 text-green-800"
+                    : "bg-red-100 text-red-800"
+                }`}
+              >
+                {product.status === "active" ? "Có sẵn" : "Hết hàng"}
+              </span>
             </div>
 
-            {/* Thumbnails */}
-            {/* <div className="flex space-x-4">
-              {product?.image &&
-                <button
-                  key={index}
-                  onClick={() => setSelectedThumbnail(index)}
-                  className={`relative aspect-square w-24 border-2 ${
-                    selectedThumbnail === index
-                      ? "border-amber-500"
-                      : "border-transparent"
-                  }`}
-                >
-                  <Image
-                    src={image}
-                    alt={`${product?.name} thumbnail ${index + 1}`}
-                    fill
-                    className="object-cover"
-                  />
-                </button>
-              ))}
-            </div> */}
+            {/* Thumbnail Images */}
+            {productImages.length > 1 && (
+              <div className="flex space-x-4">
+                {productImages.map((image, index) => (
+                  <button
+                    key={index}
+                    onClick={() => setSelectedImageIndex(index)}
+                    className={`relative aspect-square w-24 border-2 rounded-lg overflow-hidden ${
+                      selectedImageIndex === index
+                        ? "border-primary"
+                        : "border-gray-200"
+                    }`}
+                  >
+                    <Image
+                      src={image || "/icons/image-off.svg"}
+                      alt={`${product.name} ${index + 1}`}
+                      fill
+                      className="object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.src = "/icons/image-off.svg";
+                      }}
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
+          {/* Product Info */}
           <div>
             <div className="mb-4">
               <span className="inline-block bg-primary text-white text-xs px-2 py-1 mb-2">
-                {product?.category || "Danh mục"}
+                {product.category}
               </span>
-              <h1 className="text-3xl ">{product?.name}</h1>
+              <h1 className="text-3xl font-bold">{product.name}</h1>
             </div>
 
             <div className="mb-6">
-              <span className="text-gray-400 line-through mr-2">
-                {(product?.price && formatCurrency(product?.price * 1.15)) ||
-                  "0.00"}
-              </span>
-              <span className="text-xl font-medium">
-                {formatCurrency(product?.price || 0)}
+              <span className="text-3xl font-bold text-primary">
+                {formatCurrency(product.price)}
               </span>
             </div>
 
             <div className="flex mb-6">
               <div className="flex">
-                {product?.rating && renderStars(product?.rating)}
+                {renderStars(5)}{" "}
+                {/* Default 5 stars since rating is not in Product interface */}
               </div>
+              <span className="text-sm text-gray-600 ml-2">(5 đánh giá)</span>
             </div>
 
             <div className="mb-8 prose">
               <p className="text-gray-600">
-                Dicta sunt explicabo. Nemo enim ipsam voluptatem voluptas sit
-                odit aut fugit, sed quia consequuntur. Lorem ipsum modem eirmod
-                dolor.
-              </p>
-              <p className="text-gray-600 mt-4">
-                Aqua sit amet, elit, sed diam nonumy eirmod tempor invidunt
-                labore et dolore magna aliquam erat, sed diam voluptua. At vero
-                accusam et justo duo dolores et ea rebum.
+                {product.description || "Mô tả sản phẩm sẽ được cập nhật sớm."}
               </p>
             </div>
 
             <div className="flex items-center space-x-4 mb-8">
-              <div className="flex items-center border border-gray-300">
+              <div className="flex items-center border border-gray-300 rounded-lg">
                 <Button
                   onClick={decrementQuantity}
-                  variant={"outline"}
+                  variant="ghost"
+                  size="sm"
+                  disabled={quantity <= 1}
                   className="px-3 py-2 border-r border-gray-300 hover:bg-gray-100"
                 >
                   <MinusIcon size={16} />
@@ -216,24 +232,23 @@ export default function ProductPage() {
                   onChange={(e) =>
                     setQuantity(Math.max(1, parseInt(e.target.value) || 1))
                   }
-                  className="w-12 text-center py-2 focus:outline-none"
+                  className="w-16 text-center border-0 focus:ring-0"
                   min="1"
                 />
                 <Button
                   onClick={incrementQuantity}
-                  variant={"outline"}
-                  className="px-3 py-2 border-r border-gray-300 hover:bg-gray-100"
+                  variant="ghost"
+                  size="sm"
+                  className="px-3 py-2 border-l border-gray-300 hover:bg-gray-100"
                 >
                   <PlusIcon size={16} />
                 </Button>
               </div>
 
               <Button
-                className="bg-primary hover:bg-primary/60 text-white px-6"
-                onClick={() => {
-                  if (!product) return;
-                  addItem(product, quantity);
-                }}
+                className="bg-primary hover:bg-primary/80 text-white px-6 flex-1"
+                onClick={handleAddToCart}
+                disabled={product.status !== "active"}
               >
                 Thêm vào giỏ hàng
               </Button>
@@ -241,8 +256,12 @@ export default function ProductPage() {
               <Button
                 variant="outline"
                 className="p-2 border border-gray-300 hover:bg-gray-100"
+                onClick={handleWishlistToggle}
               >
-                <Heart size={20} />
+                <Heart
+                  size={20}
+                  className={isWishlisted ? "fill-red-500 text-red-500" : ""}
+                />
               </Button>
             </div>
 
@@ -250,29 +269,23 @@ export default function ProductPage() {
             <div className="space-y-2 text-sm text-gray-700">
               <div>
                 <span className="font-medium">Danh mục: </span>
-                <Link
-                  href={`/category/${product?.category}`}
-                  className="text-primary hover:underline"
-                >
-                  {product?.category}
-                </Link>
+                <span className="text-primary">{product.category}</span>
               </div>
               <div>
-                <span className="font-medium">Thẻ: </span>
-                <Link
-                  href="/tag/funeral"
-                  className="text-primary hover:underline"
+                <span className="font-medium">Trạng thái: </span>
+                <span
+                  className={
+                    product.status === "active"
+                      ? "text-green-600"
+                      : "text-red-600"
+                  }
                 >
-                  funeral
-                </Link>
-                ,{" "}
-                <Link href="/tag/item" className="text-primary hover:underline">
-                  item
-                </Link>
+                  {product.status === "active" ? "Có sẵn" : "Hết hàng"}
+                </span>
               </div>
               <div>
                 <span className="font-medium">Mã sản phẩm: </span>
-                <span>2377</span>
+                <span>{product._id}</span>
               </div>
             </div>
           </div>
@@ -304,23 +317,18 @@ export default function ProductPage() {
             <h3 className="text-xl font-medium mb-4">Mô tả sản phẩm</h3>
             <div className="prose max-w-none">
               <p>
-                Our {product?.name} features a carefully curated selection of
-                premium flowers that are perfect for expressing your sympathy
-                and support during difficult times. Each arrangement is
-                handcrafted by our expert florists using only the freshest
-                flowers available.
+                {product.name} được thiết kế đặc biệt để phù hợp với các dịch vụ
+                tang lễ và các buổi tưởng niệm. Sản phẩm được chế tác tỉ mỉ từ
+                những vật liệu chất lượng cao, mang đến sự trang nghiêm và ý
+                nghĩa sâu sắc.
               </p>
               <p className="mt-4">
-                The gentle color palette and thoughtful composition create a
-                calming presence that conveys respect and remembrance. Suitable
-                for funeral services, memorial gatherings, or as a heartfelt
-                gesture to someone experiencing loss.
+                {product.description || "Mô tả chi tiết sẽ được cập nhật sớm."}
               </p>
               <p className="mt-4">
-                All our flowers are sourced from sustainable growers and
-                delivered with care and compassion. We understand the importance
-                of these moments and strive to provide arrangements that honor
-                both memories and emotions with dignity.
+                Chúng tôi cam kết cung cấp những sản phẩm chất lượng, được làm
+                từ những nguyên liệu tốt nhất và được kiểm tra kỹ lưỡng trước
+                khi giao đến tay khách hàng.
               </p>
             </div>
           </TabsContent>
@@ -354,27 +362,39 @@ export default function ProductPage() {
               <tbody>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 pr-4 font-medium">
-                    Dimensions
+                    Tên sản phẩm
                   </th>
-                  <td className="py-3">40 × 30 × 20 cm</td>
+                  <td className="py-3">{product.name}</td>
                 </tr>
                 <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 pr-4 font-medium">Weight</th>
-                  <td className="py-3">2 kg</td>
+                  <th className="text-left py-3 pr-4 font-medium">Danh mục</th>
+                  <td className="py-3">{product.category}</td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 font-medium">Giá</th>
+                  <td className="py-3">{formatCurrency(product.price)}</td>
                 </tr>
                 <tr className="border-b border-gray-200">
                   <th className="text-left py-3 pr-4 font-medium">
-                    Flower types
-                  </th>
-                  <td className="py-3">Roses, Lilies, Carnations</td>
-                </tr>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 pr-4 font-medium">
-                    Care instructions
+                    Trạng thái
                   </th>
                   <td className="py-3">
-                    Change water daily, keep away from direct sunlight
+                    <span
+                      className={`px-2 py-1 rounded text-xs ${
+                        product.status === "active"
+                          ? "bg-green-100 text-green-800"
+                          : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {product.status === "active" ? "Có sẵn" : "Hết hàng"}
+                    </span>
                   </td>
+                </tr>
+                <tr className="border-b border-gray-200">
+                  <th className="text-left py-3 pr-4 font-medium">
+                    Mã sản phẩm
+                  </th>
+                  <td className="py-3">{product._id}</td>
                 </tr>
               </tbody>
             </table>
@@ -384,8 +404,10 @@ export default function ProductPage() {
         {/* Related Products */}
         {relatedProducts.length > 0 && (
           <div>
-            <h2 className="text-6xl mb-8">Related Products</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <h2 className="text-2xl font-bold text-center mb-8">
+              Sản phẩm liên quan
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
               {relatedProducts.map((product) => (
                 <ProductCards key={product._id} product={product} />
               ))}

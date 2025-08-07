@@ -1,25 +1,18 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import {
+  adminAddProduct,
+  adminChangeProductStatus,
+  adminEditProduct,
+  getFeaturedProducts,
+  getProductById,
+  getProductList,
   Product,
   ProductFormData,
   ProductListQuery,
-  ProductListResponse,
-  ApiResponse,
-  getProductList,
-  getProductById,
-  addProduct,
-  editProduct,
-  changeProductStatus,
-  adminAddProduct,
-  adminEditProduct,
-  adminChangeProductStatus,
   searchProducts,
-  getProductsByCategory,
-  getProductsByPriceRange,
-  getFeaturedProducts,
 } from "@/lib/api/product";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
 // Hook for managing product list with filters and pagination
@@ -42,7 +35,8 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
       setError(null);
 
       try {
-        const result = await getProductList({ ...query, ...searchQuery });
+        const finalQuery = { ...query, ...searchQuery };
+        const result = await getProductList(finalQuery);
 
         if (result.success && result.data) {
           setProducts(result.data.products);
@@ -53,6 +47,8 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
             hasNextPage: result.data.hasNextPage,
             hasPrevPage: result.data.hasPrevPage,
           });
+          // Update query state only if search was successful
+          setQuery(finalQuery);
         } else {
           setError(result.error || "Không thể tải danh sách sản phẩm");
           toast.error(result.error || "Không thể tải danh sách sản phẩm");
@@ -66,6 +62,39 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
       }
     },
     [query]
+  );
+  // Stable search function that doesn't change on every render
+  const searchProducts = useCallback(
+    async (searchQuery: ProductListQuery) => {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const result = await getProductList(searchQuery);
+
+        if (result.success && result.data) {
+          setProducts(result.data.products);
+          setPagination({
+            currentPage: result.data.currentPage,
+            totalPages: result.data.totalPages,
+            totalProducts: result.data.totalProducts,
+            hasNextPage: result.data.hasNextPage,
+            hasPrevPage: result.data.hasPrevPage,
+          });
+          setQuery(searchQuery);
+        } else {
+          setError(result.error || "Không thể tải danh sách sản phẩm");
+          toast.error(result.error || "Không thể tải danh sách sản phẩm");
+        }
+      } catch (err) {
+        const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
+        setError(errorMessage);
+        toast.error(errorMessage);
+      } finally {
+        setLoading(false);
+      }
+    },
+    [] // No dependencies to make it stable
   );
 
   const searchByKeyword = useCallback(
@@ -131,6 +160,7 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
     resetFilters,
     refreshProducts,
     fetchProducts,
+    searchProducts, // Add the stable search function
   };
 }
 
@@ -148,6 +178,7 @@ export function useProduct(productId?: string) {
       const result = await getProductById(id);
 
       if (result.success && result.data) {
+        console.log("cac" + JSON.stringify(result.data, null, 2));
         setProduct(result.data);
       } else {
         setError(result.error || "Không thể tải thông tin sản phẩm");
@@ -302,41 +333,6 @@ export function useFeaturedProducts(limit: number = 6) {
 }
 
 // Hook for product categories (helper)
-export function useProductCategories() {
-  const [categories, setCategories] = useState<string[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  const fetchCategories = useCallback(async () => {
-    setLoading(true);
-
-    try {
-      // Get all products and extract unique categories
-      const result = await getProductList({ limit: 1000 }); // Get all products
-
-      if (result.success && result.data) {
-        const uniqueCategories = Array.from(
-          new Set(result.data.products.map((product) => product.category))
-        ).filter(Boolean);
-
-        setCategories(uniqueCategories);
-      }
-    } catch (err) {
-      console.error("Error fetching categories:", err);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchCategories();
-  }, [fetchCategories]);
-
-  return {
-    categories,
-    loading,
-    refreshCategories: fetchCategories,
-  };
-}
 
 // Hook for product search with debounce
 export function useProductSearch(debounceMs: number = 300) {

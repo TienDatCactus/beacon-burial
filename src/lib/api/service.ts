@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../constants";
 import { fetchWithAuth } from "../hooks/useFetch";
 
 // Service interfaces
@@ -20,20 +21,6 @@ export interface ServiceFilters {
   priceRange?: string; // Format: "min-max" e.g., "1000-30000"
   page?: number;
   limit?: number;
-}
-
-export interface Product {
-  _id: string;
-  name: string;
-  slug: string;
-  price: number;
-  image: string[];
-  description: string;
-  category: string;
-  status: "active" | "inactive";
-  quantity: number;
-  isFeatured: boolean;
-  updated_at: string;
 }
 
 export interface ServiceListResponse {
@@ -76,9 +63,11 @@ export const getServices = async (filters: ServiceFilters = {}) => {
     params.append("page", page.toString());
 
     const queryString = params.toString();
-    const url = `/service${queryString ? `?${queryString}` : ""}`;
+    const url = `${API_BASE_URL}/service${
+      queryString ? `?${queryString}` : ""
+    }`;
 
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -117,7 +106,7 @@ export const getServiceById = async (
   serviceId: string
 ): Promise<Service | null> => {
   try {
-    const response = await fetchWithAuth(`/service/${serviceId}`, {
+    const response = await fetch(`${API_BASE_URL}/service/${serviceId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

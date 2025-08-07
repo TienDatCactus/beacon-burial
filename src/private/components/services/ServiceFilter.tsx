@@ -1,8 +1,9 @@
 import { Input } from "@/components/ui/input";
+import { Service } from "@/lib/api/service";
 import { Search } from "lucide-react";
 import React from "react";
 interface ServiceFilterProps {
-  filteredServices: any[];
+  filteredServices: Service[];
   serviceCategories: string[];
   searchQuery: string;
   setSearchQuery: (query: string) => void;

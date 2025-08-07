@@ -70,7 +70,9 @@ const CartPage: React.FC = () => {
                       <div className="flex items-center">
                         <div className="w-20 h-20 flex-shrink-0 relative mr-4">
                           <Image
-                            src={item.product.image}
+                            src={
+                              item.product.image[0] || "/icons/image-off.svg"
+                            }
                             alt={item.product.name}
                             fill
                             className="object-cover"

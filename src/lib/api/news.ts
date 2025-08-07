@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../constants";
 import { fetchWithAuth } from "../hooks/useFetch";
 
 export interface NewsCategory {
@@ -92,9 +93,9 @@ export const getAllNews = async (
     }
 
     const queryString = params.toString();
-    const url = `/news${queryString ? `?${queryString}` : ""}`;
+    const url = `${API_BASE_URL}/news${queryString ? `?${queryString}` : ""}`;
 
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
       method: "GET",
     });
 
@@ -117,7 +118,7 @@ export const getAllNews = async (
  */
 export const getNewsById = async (newsId: string): Promise<News> => {
   try {
-    const response = await fetchWithAuth(`/news/${newsId}`, {
+    const response = await fetch(`${API_BASE_URL}/news/${newsId}`, {
       method: "GET",
     });
 

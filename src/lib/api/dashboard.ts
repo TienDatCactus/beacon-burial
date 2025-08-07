@@ -1,8 +1,5 @@
-import { DashboardStatistics } from "@/lib/interfaces";
+import { DashboardStatistics } from "../hooks/useDashboard";
 import { fetchWithAuth } from "../hooks/useFetch";
-
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:9999/api";
 
 /**
  * Get dashboard sales statistics

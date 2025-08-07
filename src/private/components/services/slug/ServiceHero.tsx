@@ -1,18 +1,18 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Service } from "@/lib/api/service";
 import { getCategoryStyle } from "@/lib/utils";
 import { ChevronLeft } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import { ServiceCardProps } from "../ServiceCard";
-const ServiceHero: React.FC<{ service: ServiceCardProps; router: any }> = ({
+const ServiceHero: React.FC<{ service: Service; router: any }> = ({
   service,
   router,
 }) => {
   return (
     <div className="relative w-full h-[40vh] lg:h-[50vh]">
       <Image
-        src={service.imageUrl}
+        src={service.imageUrl[0] || "/icons/image-off.svg"}
         alt={service.title}
         fill
         className="object-cover"

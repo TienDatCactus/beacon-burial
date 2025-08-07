@@ -1,24 +1,25 @@
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Service } from "@/lib/api/service";
 import { formatCurrency } from "@/lib/utils";
-import { Avatar, AvatarImage, AvatarFallback } from "@radix-ui/react-avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import {
-  Phone,
-  ShoppingCart,
-  Heart,
-  Share2,
-  Clock,
   Calendar,
   ChevronRight,
+  Clock,
+  Heart,
+  Phone,
+  Share2,
+  ShoppingCart,
 } from "lucide-react";
-import React from "react";
-import { ServiceCardProps } from "../ServiceCard";
-import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
+import React from "react";
+import { ServiceCardProps } from "../ServiceCard";
 const ServiceSidebar: React.FC<{
-  service: ServiceCardProps;
+  service: Service;
   setIsOrderDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;
-  relatedServices: ServiceCardProps[];
+  relatedServices: Service[];
 }> = ({ service, setIsOrderDialogOpen, relatedServices }) => {
   return (
     <div className="lg:col-span-1 space-y-6">
@@ -112,7 +113,7 @@ const ServiceSidebar: React.FC<{
                 <div className="flex items-start hover:bg-gray-50 p-2 -mx-2 rounded-md transition-colors">
                   <div className="relative h-16 w-16 rounded overflow-hidden flex-shrink-0">
                     <Image
-                      src={relService.imageUrl}
+                      src={relService.imageUrl[0] || "/icons/image-off.svg"}
                       alt={relService.title}
                       fill
                       className="object-cover"

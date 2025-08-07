@@ -8,11 +8,7 @@ import Filters from "@/private/components/manager/products/Filters";
 import GridView from "@/private/components/manager/products/GridView";
 import ListView from "@/private/components/manager/products/ListView";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
-import {
-  useProducts,
-  useProductManagement,
-  useProductCategories,
-} from "@/lib/hooks/useProducts";
+import { useProducts, useProductManagement } from "@/lib/hooks/useProducts";
 import { Product } from "@/lib/api/product";
 import { Plus } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -149,7 +145,13 @@ const ProductManagementPage: React.FC = () => {
     toggleProductStatus,
   } = useProductManagement();
 
-  const { categories } = useProductCategories();
+  const categories = [
+    "Quan tài an táng",
+    "Quan tài hỏa táng",
+    "Tiểu quách",
+    "Hũ tro cốt",
+    "Áo quan",
+  ];
 
   // Local state for UI management
   const [searchTerm, setSearchTerm] = useState("");

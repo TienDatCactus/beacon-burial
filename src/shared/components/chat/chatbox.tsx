@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { MessagesSquare, X, MinusSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { randomUUID } from "crypto";
+import { API_BASE_URL } from "@/lib/constants";
 
 interface Message {
   id: string;
@@ -18,6 +18,7 @@ const Chatbox = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [inputValue, setInputValue] = useState("");
+  const [showSuggestions, setShowSuggestions] = useState(true);
   // We'll show the welcome message in the UI but not include it in the API history
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -29,6 +30,16 @@ const Chatbox = () => {
     },
   ]);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Suggestion bubbles for common questions
+  const suggestions = [
+    "Chi phí dịch vụ tang lễ trọn gói",
+    "Quy trình tổ chức tang lễ",
+    "Dịch vụ hỏa táng và thủ tục",
+    "Nghi thức tang lễ truyền thống",
+    "Dịch vụ trang trí hoa tang lễ",
+    "Thuê xe tang và các dịch vụ khác",
+  ];
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -50,6 +61,10 @@ const Chatbox = () => {
   const toggleChat = () => {
     setIsOpen(!isOpen);
     if (isMinimized) setIsMinimized(false);
+    // Show suggestions when opening chat if only welcome message exists
+    if (!isOpen && messages.length === 1) {
+      setShowSuggestions(true);
+    }
   };
 
   const minimizeChat = (e: React.MouseEvent) => {
@@ -68,12 +83,26 @@ const Chatbox = () => {
     }
   };
 
+  const handleSuggestionClick = (suggestion: string) => {
+    setInputValue(suggestion);
+    setShowSuggestions(false);
+    // Focus the input after clicking suggestion
+    setTimeout(() => {
+      if (inputRef.current) {
+        inputRef.current.focus();
+      }
+    }, 100);
+  };
+
   const handleSendMessage = async () => {
     if (!inputValue.trim()) return;
 
+    // Hide suggestions after first message
+    setShowSuggestions(false);
+
     // Add user message
     const userMessage: Message = {
-      id: `user-${randomUUID()}`,
+      id: `user-${Date.now()}`,
       content: inputValue.trim(),
       role: "user",
       timestamp: new Date(),
@@ -84,28 +113,14 @@ const Chatbox = () => {
     setIsLoading(true);
 
     try {
-      // Prepare chat history for the API
-      // Filter out the welcome message (id: "welcome") to comply with Gemini API requirements
-      const historyForApi = messages
-        .filter((msg) => msg.id !== "welcome")
-        .map((msg) => {
-          // In the UI we use 'assistant', but for Gemini API we need to use 'model'
-          const apiRole = msg.role === "assistant" ? "model" : msg.role;
-          return {
-            content: msg.content,
-            role: apiRole,
-          };
-        });
-
       // Call our chat API endpoint
-      const response = await fetch("/api/chat", {
+      const response = await fetch(`${API_BASE_URL}/chat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          message: userMessage.content,
-          history: historyForApi,
+          input: userMessage.content,
         }),
       });
 
@@ -118,8 +133,8 @@ const Chatbox = () => {
       // Add bot response to messages
       // For UI purposes, we continue to use 'assistant' role
       const botResponse: Message = {
-        id: `assistant-${randomUUID()}`,
-        content: data.response || "Không nhận được phản hồi hợp lệ từ máy chủ.",
+        id: `assistant-${Date.now()}`,
+        content: data.data || "Không nhận được phản hồi hợp lệ từ máy chủ.",
         role: "assistant",
         timestamp: new Date(),
       };
@@ -130,7 +145,7 @@ const Chatbox = () => {
       setMessages((prev) => [
         ...prev,
         {
-          id: `error-${randomUUID()}`,
+          id: `error-${Date.now()}`,
           content: "Xin lỗi, đã xảy ra lỗi khi xử lý tin nhắn của bạn.",
           role: "assistant",
           timestamp: new Date(),
@@ -159,7 +174,11 @@ const Chatbox = () => {
         <div
           className={cn(
             "bg-white rounded-lg shadow-xl flex flex-col mb-2 border border-gray-200 w-80 transition-all duration-300 ease-in-out mt-4",
-            isMinimized ? "h-14" : "h-96"
+            isMinimized
+              ? "h-14"
+              : showSuggestions && messages.length === 1
+              ? "h-[28rem]"
+              : "h-96"
           )}
         >
           {/* Chat header */}
@@ -230,6 +249,26 @@ const Chatbox = () => {
                 )}
                 <div ref={messagesEndRef} />
               </div>
+
+              {/* Suggestion bubbles */}
+              {showSuggestions && messages.length === 1 && (
+                <div className="px-3 pb-2">
+                  <div className="text-xs text-gray-500 mb-2 font-medium">
+                    Gợi ý câu hỏi:
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleSuggestionClick(suggestion)}
+                        className="px-3 py-2 text-xs bg-primary/5 hover:bg-primary/10 text-primary border border-primary/20 rounded-full transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                      >
+                        {suggestion}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
 
               {/* Input area */}
               <div className="p-3 border-t flex gap-2">

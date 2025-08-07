@@ -8,6 +8,7 @@ import useAuth from "@/lib/stores/useAuthStores";
 import {
   Bell,
   HandPlatter,
+  Home,
   LayoutDashboard,
   LogOut,
   Menu,
@@ -111,6 +112,15 @@ export default function RootLayout({
               </ul>
 
               <div className="mt-10 pt-6 border-t">
+                <Link href={"/"}>
+                  <Button
+                    variant="link"
+                    className="flex w-full justify-start items-center px-4 py-3 text-gray-700 rounded-lg hover:bg-gray-100 mb-4"
+                  >
+                    <Home className="mr-3 h-5 w-5" />
+                    <span>Về trang chủ</span>
+                  </Button>
+                </Link>
                 <Button
                   variant="link"
                   onClick={logout}

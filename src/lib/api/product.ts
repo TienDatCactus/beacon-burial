@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../constants";
 import { fetchWithAuth } from "../hooks/useFetch";
 
 // Types for product based on sample data
@@ -221,9 +222,9 @@ export async function getProductList(
       searchParams.append("limit", query.limit.toString());
     }
 
-    const url = `/product?${searchParams.toString()}`;
+    const url = `${API_BASE_URL}/product?${searchParams.toString()}`;
 
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -268,7 +269,7 @@ export async function getProductById(
   productId: string
 ): Promise<ApiResponse<Product>> {
   try {
-    const response = await fetchWithAuth(`/product/${productId}`, {
+    const response = await fetch(`${API_BASE_URL}/product/${productId}`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
@@ -286,7 +287,7 @@ export async function getProductById(
 
     return {
       success: true,
-      data: data.product || data,
+      data: data.data,
       message: "Lấy thông tin sản phẩm thành công",
     };
   } catch (error) {

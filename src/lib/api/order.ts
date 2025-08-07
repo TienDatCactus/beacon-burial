@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "../constants";
 import { fetchWithAuth } from "../hooks/useFetch";
 
 // Order interfaces
@@ -59,6 +60,33 @@ export interface UpdateOrderStatusData {
   note?: string;
 }
 
+// Service checkout interface
+export interface ServiceCheckoutData {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  province: string;
+  phone: string;
+  email: string;
+  note?: string;
+  serviceId: string;
+  date: string; // Format: "DD/MM/YYYY"
+}
+
+// Product checkout interface (for cart checkout)
+export interface ProductCheckoutData {
+  firstName: string;
+  lastName: string;
+  address: string;
+  city: string;
+  province: string;
+  phone: string;
+  email: string;
+  note?: string;
+  productId: string[]; // Array of product IDs
+}
+
 /**
  * Get all orders with pagination and filtering
  * @param filters - Order filters including pagination
@@ -87,9 +115,9 @@ export const getOrders = async (
     }
 
     const queryString = params.toString();
-    const url = `/order${queryString ? `?${queryString}` : ""}`;
+    const url = `${API_BASE_URL}/order${queryString ? `?${queryString}` : ""}`;
 
-    const response = await fetchWithAuth(url, {
+    const response = await fetch(url, {
       method: "GET",
     });
 
@@ -113,7 +141,7 @@ export const getOrders = async (
  */
 export const getOrderById = async (orderId: string): Promise<Order> => {
   try {
-    const response = await fetchWithAuth(`/order/${orderId}`, {
+    const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
       method: "GET",
     });
 
@@ -156,6 +184,71 @@ export const updateOrderStatus = async (
     return data;
   } catch (error) {
     console.error("Error updating order status:", error);
+    throw error;
+  }
+};
+
+/**
+ * Service checkout - Place an order for a service
+ * @param checkoutData - Service checkout data
+ * @returns Promise with order confirmation
+ */
+export const serviceCheckout = async (
+  checkoutData: ServiceCheckoutData
+): Promise<any> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(checkoutData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        errorData.message || `Failed to place order: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error placing service order:", error);
+    throw error;
+  }
+};
+
+/**
+ * Product checkout - Place an order for products (cart checkout)
+ * @param checkoutData - Product checkout data
+ * @returns Promise with order confirmation
+ */
+export const productCheckout = async (
+  checkoutData: ProductCheckoutData
+): Promise<any> => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/order/checkout`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(checkoutData),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      console.error("API: Error response:", errorData);
+      throw new Error(
+        errorData.message || `Failed to place order: ${response.status}`
+      );
+    }
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error placing product order:", error);
     throw error;
   }
 };

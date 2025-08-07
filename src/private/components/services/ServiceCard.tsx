@@ -1,10 +1,12 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
+import { Service } from "@/lib/api/service";
 import { Users, ChevronRight, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";
+
 interface ServiceInclusion {
   name: string;
   description: string;
@@ -15,26 +17,25 @@ export interface ServiceCardProps {
   category: string;
   description: string;
   imageUrl: string;
-  price?: number;
+  price: number;
   slug: string;
-  inclusions?: ServiceInclusion[];
+  inclusions: ServiceInclusion[];
   popularityScore?: number;
   isFeatured?: boolean;
 }
 
-const ServiceCard: React.FC<ServiceCardProps> = ({
-  title,
-  category,
-  description,
-  imageUrl,
-  price,
-  slug,
-  inclusions = [],
-  popularityScore,
-  isFeatured = false,
-}) => {
+const ServiceCard: React.FC<Service> = (service) => {
   const [isHovered, setIsHovered] = useState(false);
-
+  const {
+    title,
+    category,
+    description,
+    imageUrl,
+    price,
+    slug,
+    inclusions,
+    isFeatured,
+  } = service;
   // Format price function
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat("en-US", {
@@ -62,7 +63,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
 
   return (
     <div
-      className={`group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 ${
+      className={`group bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col ${
         isFeatured ? "ring-2 ring-primary/40 ring-offset-2" : ""
       }`}
       onMouseEnter={() => setIsHovered(true)}
@@ -70,7 +71,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
     >
       <div className="relative h-64 overflow-hidden">
         <Image
-          src={imageUrl}
+          src={imageUrl[0] || "/icons/image-off.svg"}
           alt={title}
           fill
           className={`object-cover transition-transform duration-700 ${
@@ -108,7 +109,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
         <div className="absolute inset-0 bg-gradient-to-t from-gray-900/60 via-transparent to-transparent"></div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 flex flex-col justify-between flex-1">
         <h3 className="text-xl font-semibold mb-2 text-gray-900">{title}</h3>
 
         <p className="text-gray-600 text-sm mb-4 line-clamp-2">{description}</p>
@@ -120,7 +121,7 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
               Gói bao gồm:
             </h4>
             <ul className="space-y-1">
-              {inclusions.slice(0, 3).map((inclusion, idx) => (
+              {inclusions.slice(0, 3).map((inclusion: any, idx: number) => (
                 <li
                   key={idx}
                   className="text-xs text-gray-600 flex items-start"
@@ -135,22 +136,6 @@ const ServiceCard: React.FC<ServiceCardProps> = ({
                 </li>
               )}
             </ul>
-          </div>
-        )}
-
-        {/* Popularity indicator */}
-        {popularityScore && (
-          <div className="mb-4">
-            <div className="flex justify-between text-xs text-gray-500 mb-1">
-              <span className="flex items-center">
-                <Users className="h-3.5 w-3.5 mr-1" />
-                <span>Độ phổ biến</span>
-              </span>
-              <span>{popularityScore}%</span>
-            </div>
-            <div className="w-full bg-gray-100 rounded-full h-1.5">
-              <Progress value={popularityScore + 10} />
-            </div>
           </div>
         )}
 
