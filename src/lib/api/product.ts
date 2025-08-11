@@ -39,8 +39,6 @@ export interface ProductListResponse {
   totalPages: number;
   currentPage: number;
   totalProducts: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
 }
 
 export interface ApiResponse<T = any> {
@@ -51,26 +49,28 @@ export interface ApiResponse<T = any> {
 }
 
 // Helper function to create FormData for file uploads
-function createProductFormData(productData: ProductFormData): FormData {
+function createProductFormData(productData: any): FormData {
   const formData = new FormData();
 
-  formData.append("name", productData.name);
-  formData.append("description", productData.description);
-  formData.append("price", productData.price.toString());
-  formData.append("category", productData.category);
-  formData.append("quantity", productData.quantity.toString());
-  formData.append("status", productData.status.toString());
-
-  if (productData.isFeatured !== undefined) {
+  // Add text fields
+  if (productData.name) formData.append("name", productData.name);
+  if (productData.slug) formData.append("slug", productData.slug);
+  if (productData.price !== undefined)
+    formData.append("price", productData.price.toString());
+  if (productData.description)
+    formData.append("description", productData.description || "");
+  if (productData.category) formData.append("category", productData.category);
+  if (productData.quantity !== undefined)
+    formData.append("quantity", productData.quantity.toString());
+  if (productData.status) formData.append("status", productData.status);
+  if (productData.isFeatured !== undefined)
     formData.append("isFeatured", productData.isFeatured.toString());
-  }
 
-  // Handle images (max 5 images)
-  if (productData.images && productData.images.length > 0) {
-    const imagesToUpload = productData.images.slice(0, 5); // Limit to 5 images
-    imagesToUpload.forEach((image) => {
-      formData.append("images", image);
-    });
+  // Add image files if they exist
+  if (productData.files && productData.files.length > 0) {
+    for (const file of productData.files) {
+      formData.append("images", file);
+    }
   }
 
   return formData;
@@ -95,7 +95,6 @@ export async function addProduct(
     });
 
     const data = await response.json();
-
     if (!response.ok) {
       return {
         success: false,
@@ -135,7 +134,7 @@ export async function editProduct(
     });
 
     const data = await response.json();
-
+    console.log(data);
     if (!response.ok) {
       return {
         success: false,
@@ -247,8 +246,6 @@ export async function getProductList(
         totalPages: data.totalPages || 1,
         currentPage: data.currentPage || query.page || 1,
         totalProducts: data.totalProducts || data.total || 0,
-        hasNextPage: data.hasNextPage || false,
-        hasPrevPage: data.hasPrevPage || false,
       },
       message: "Lấy danh sách sản phẩm thành công",
     };

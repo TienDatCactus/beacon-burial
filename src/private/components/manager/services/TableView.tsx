@@ -15,19 +15,27 @@ import React from "react";
 
 import Image from "next/image";
 import { Service } from "@/lib/api/service";
+import ServicePagination from "./ServicePagination";
+
 interface TableViewProps {
   filteredServices: Service[];
   toggleStatus: (id: string, status: "active" | "inactive") => void;
   viewServiceDetails: (service: Service) => void;
   editService: (service: Service) => void;
   confirmDeleteService: (service: Service) => void;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+  };
+  goToPage: (page: number) => void;
 }
 const TableView: React.FC<TableViewProps> = ({
   filteredServices,
   toggleStatus,
   viewServiceDetails,
   editService,
-  confirmDeleteService,
+  pagination,
+  goToPage,
 }) => {
   return (
     <div className="border rounded-md overflow-hidden bg-white">
@@ -194,20 +202,23 @@ const TableView: React.FC<TableViewProps> = ({
                   >
                     <Edit className="h-4 w-4" />
                   </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => confirmDeleteService(service)}
-                    className="hover:bg-gray-100 hover:text-destructive"
-                  >
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
                 </div>
               </TableCell>
             </TableRow>
           ))}
         </TableBody>
       </Table>
+      {/* Pagination */}
+      <div className="p-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="text-sm text-gray-500">
+          Trang {pagination.currentPage} / {pagination.totalPages}
+        </div>
+        <ServicePagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={goToPage}
+        />
+      </div>
     </div>
   );
 };

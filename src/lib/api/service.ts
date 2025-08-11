@@ -35,15 +35,53 @@ export interface CreateServiceData {
   title: string;
   category: string;
   description: string;
-  imageUrl: string[];
+  imageUrl?: string[];
   price: number;
   slug: string;
   inclusions: string[]; // Product IDs
   isFeatured: boolean;
+  status?: "active" | "inactive";
+  files?: File[]; // For file uploads
 }
 
-export interface UpdateServiceData extends Partial<CreateServiceData> {
-  // All fields are optional for updates
+export interface UpdateServiceData extends Partial<CreateServiceData> {}
+
+export interface ApiResponse<T = any> {
+  success: boolean;
+  data?: T;
+  message?: string;
+  error?: string;
+}
+
+// Helper function to create FormData for file uploads - similar to product approach
+function createServiceFormData(serviceData: any): FormData {
+  const formData = new FormData();
+
+  // Add text fields
+  if (serviceData.title) formData.append("title", serviceData.title);
+  if (serviceData.slug) formData.append("slug", serviceData.slug);
+  if (serviceData.price !== undefined)
+    formData.append("price", serviceData.price.toString());
+  if (serviceData.description)
+    formData.append("description", serviceData.description || "");
+  if (serviceData.category) formData.append("category", serviceData.category);
+  if (serviceData.status) formData.append("status", serviceData.status);
+  if (serviceData.isFeatured !== undefined)
+    formData.append("isFeatured", serviceData.isFeatured.toString());
+
+  // Handle inclusions array - convert to JSON string for backend
+  if (serviceData.inclusions) {
+    formData.append("inclusions", JSON.stringify(serviceData.inclusions));
+  }
+
+  // Add image files if they exist - use "image" field name to match backend
+  if (serviceData.files && serviceData.files.length > 0) {
+    for (const file of serviceData.files) {
+      formData.append("images", file);
+    }
+  }
+
+  return formData;
 }
 
 /**
@@ -51,7 +89,9 @@ export interface UpdateServiceData extends Partial<CreateServiceData> {
  * Supports keyword search, category filter, price range filter, and pagination
  * Default: 9 services per page
  */
-export const getServices = async (filters: ServiceFilters = {}) => {
+export const getServices = async (
+  filters: ServiceFilters = {}
+): Promise<ApiResponse<ServiceListResponse>> => {
   try {
     const { keyword, category, priceRange, page = 1, limit = 9 } = filters;
 
@@ -61,6 +101,7 @@ export const getServices = async (filters: ServiceFilters = {}) => {
     if (category) params.append("category", category);
     if (priceRange) params.append("priceRange", priceRange);
     params.append("page", page.toString());
+    params.append("limit", limit.toString());
 
     const queryString = params.toString();
     const url = `${API_BASE_URL}/service${
@@ -73,29 +114,32 @@ export const getServices = async (filters: ServiceFilters = {}) => {
         "Content-Type": "application/json",
       },
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return {
+        success: false,
+        error: errorData.message || `HTTP error! status: ${response.status}`,
+      };
     }
 
     const data = await response.json();
-
-    // Format the response to match our interface
     return {
-      message: data.message || "Services fetched successfully",
-      currentPage: data.currentPage || page,
-      totalPages:
-        data.totalPages ||
-        Math.ceil((data.totalResults || data.length || 0) / limit),
-      totalResults: data.totalResults || data.length || 0,
-      data: data.services || data, // Ensure we return the services array
+      success: true,
+      data: {
+        message: data.message || "Services fetched successfully",
+        currentPage: data.currentPage,
+        totalPages: data.totalPages,
+        totalResults: data.totalResults,
+        data: data.data, // Ensure we return the services array
+      },
+      message: "Lấy danh sách dịch vụ thành công",
     };
   } catch (error) {
     console.error("Error fetching services:", error);
-    return null;
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi lấy danh sách dịch vụ",
+    };
   }
 };
 
@@ -104,7 +148,7 @@ export const getServices = async (filters: ServiceFilters = {}) => {
  */
 export const getServiceById = async (
   serviceId: string
-): Promise<Service | null> => {
+): Promise<ApiResponse<Service>> => {
   try {
     const response = await fetch(`${API_BASE_URL}/service/${serviceId}`, {
       method: "GET",
@@ -115,16 +159,24 @@ export const getServiceById = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return {
+        success: false,
+        error: errorData.message || `HTTP error! status: ${response.status}`,
+      };
     }
 
     const data = await response.json();
-    return data as Service;
+    return {
+      success: true,
+      data: data as Service,
+      message: "Lấy thông tin dịch vụ thành công",
+    };
   } catch (error) {
     console.error("Error fetching service:", error);
-    return null;
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi lấy thông tin dịch vụ",
+    };
   }
 };
 
@@ -134,33 +186,37 @@ export const getServiceById = async (
  */
 export const addService = async (
   serviceData: CreateServiceData
-): Promise<boolean> => {
+): Promise<ApiResponse<Service>> => {
   try {
-    // Convert inclusions array to JSON string for backend
-    const backendData = {
-      ...serviceData,
-      inclusions: JSON.stringify(serviceData.inclusions),
-    };
+    // Use FormData for file uploads, similar to product implementation
+    const formData = createServiceFormData(serviceData);
 
     const response = await fetchWithAuth(`/service/add`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(backendData),
+      // Don't set Content-Type header - browser will set it with boundary
+      body: formData,
     });
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return {
+        success: false,
+        error: errorData.message || `HTTP error! status: ${response.status}`,
+      };
     }
 
-    return true;
+    const data = await response.json();
+    return {
+      success: true,
+      data: data.service || data,
+      message: "Thêm dịch vụ thành công",
+    };
   } catch (error) {
     console.error("Error adding service:", error);
-    throw error;
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi thêm dịch vụ",
+    };
   }
 };
 
@@ -171,35 +227,35 @@ export const addService = async (
 export const editService = async (
   serviceId: string,
   serviceData: UpdateServiceData
-): Promise<boolean> => {
+): Promise<ApiResponse<Service>> => {
   try {
-    // Convert inclusions array to JSON string for backend if it exists
-    const backendData = {
-      ...serviceData,
-      ...(serviceData.inclusions && {
-        inclusions: JSON.stringify(serviceData.inclusions),
-      }),
-    };
+    const formData = createServiceFormData(serviceData);
 
     const response = await fetchWithAuth(`/service/edit/${serviceId}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(backendData),
+      body: formData,
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      const errorData = await response.json().catch(() => ({}));
+      return {
+        success: false,
+        error: errorData.message || `HTTP error! status: ${response.status}`,
+      };
     }
 
-    return true;
+    const data = await response.json();
+    return {
+      success: true,
+      data: data.service || data,
+      message: "Cập nhật dịch vụ thành công",
+    };
   } catch (error) {
     console.error("Error editing service:", error);
-    throw error;
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi cập nhật dịch vụ",
+    };
   }
 };
 
@@ -209,7 +265,7 @@ export const editService = async (
  */
 export const changeServiceStatus = async (
   serviceId: string
-): Promise<boolean> => {
+): Promise<ApiResponse<Service>> => {
   try {
     const response = await fetchWithAuth(`/service/changeStatus/${serviceId}`, {
       method: "PATCH",
@@ -220,15 +276,27 @@ export const changeServiceStatus = async (
 
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.message || `HTTP error! status: ${response.status}`
-      );
+      return {
+        success: false,
+        error: errorData.message || `HTTP error! status: ${response.status}`,
+      };
     }
 
-    return true;
+    const data = await response.json();
+    const newStatus = data.service?.status || data.status;
+    const statusMessage = newStatus === "active" ? "kích hoạt" : "vô hiệu hóa";
+
+    return {
+      success: true,
+      data: data.service || data,
+      message: `Dịch vụ đã được ${statusMessage}`,
+    };
   } catch (error) {
     console.error("Error changing service status:", error);
-    throw error;
+    return {
+      success: false,
+      error: "Có lỗi xảy ra khi thay đổi trạng thái dịch vụ",
+    };
   }
 };
 

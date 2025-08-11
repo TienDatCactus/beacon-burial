@@ -32,10 +32,9 @@ export default function ForgotPasswordPage() {
     return () => clearInterval(interval);
   }, [otpTimer]);
 
-  // Start OTP timer when moving to OTP step
   useEffect(() => {
     if (step === "otp") {
-      setOtpTimer(120); // 2 minutes
+      setOtpTimer(300); // 5 minutes
     }
   }, [step]);
 
@@ -105,8 +104,8 @@ export default function ForgotPasswordPage() {
       const result = await forgetPassword({ email });
       if (result.success) {
         toast.success("OTP mới đã được gửi");
-        setOtpTimer(120);
-        setOtp(""); // Clear current OTP
+        setOtpTimer(300);
+        setOtp("");
       } else {
         toast.error(result.error || "Gửi lại OTP thất bại");
       }

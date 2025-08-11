@@ -15,153 +15,145 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Product } from "@/lib/api/product";
 import { formatCurrency } from "@/lib/utils";
-import {
-  ChevronDown,
-  ChevronUp,
-  Edit,
-  Info,
-  MoreHorizontal,
-  Trash2,
-} from "lucide-react";
+import { Edit, Info, MoreHorizontal, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import ProductPagination from "./ProductPagination";
 
 interface ListViewProps {
-  filteredProducts: any[];
-  sortField: string;
-  sortDirection: "asc" | "desc";
-  handleSort: (field: string) => void;
-  toggleStatus: (id: string, status: "active" | "inactive") => void;
-  viewProductDetails: (product: any) => void;
-  editProduct: (product: any) => void;
-  confirmDeleteProduct: (product: any) => void;
+  filteredProducts: Product[];
+  toggleStatus: (id: string, status: string) => void;
+  viewProductDetails: (product: Product) => void;
+  editProduct: (product: Product) => void;
+  confirmDeleteProduct: (product: Product) => void;
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+  };
+  goToPage: (page: number) => void;
 }
+
 const ListView: React.FC<ListViewProps> = ({
   filteredProducts,
-  sortField,
-  sortDirection,
-  handleSort,
   toggleStatus,
   viewProductDetails,
   editProduct,
   confirmDeleteProduct,
+  pagination,
+  goToPage,
 }) => {
   return (
-    <div className="border rounded-md overflow-hidden bg-white">
-      <Table>
-        <TableHeader>
-          <TableRow>
-            <TableHead className="w-[100px]">Hình ảnh</TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("name")}
-            >
-              <div className="flex items-center">
-                Tên sản phẩm
-                {sortField === "name" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp className="ml-2 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  ))}
-              </div>
-            </TableHead>
-            <TableHead>Mã sản phẩm</TableHead>
-            <TableHead
-              className="cursor-pointer"
-              onClick={() => handleSort("price")}
-            >
-              <div className="flex items-center">
-                Giá
-                {sortField === "price" &&
-                  (sortDirection === "asc" ? (
-                    <ChevronUp className="ml-2 h-4 w-4" />
-                  ) : (
-                    <ChevronDown className="ml-2 h-4 w-4" />
-                  ))}
-              </div>
-            </TableHead>
-            <TableHead>Trạng thái</TableHead>
-            <TableHead className="text-right">Hành động</TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {filteredProducts.map((product, index) => (
-            <TableRow key={index}>
-              <TableCell>
-                <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative">
-                  <Image
-                    width={48}
-                    height={48}
-                    src={product.image[0] || "https://placehold.co/600x400"}
-                    alt={product.name}
-                    className="h-full w-full object-cover"
-                  />
-                </div>
-              </TableCell>
-              <TableCell className="font-medium">{product.name}</TableCell>
-              <TableCell>{product.sku}</TableCell>
-              <TableCell>{formatCurrency(product.price)}</TableCell>
-              <TableCell>
-                <div className="flex items-center gap-2">
-                  <Switch
-                    id={`status-${product.id}`}
-                    checked={product.status === "active"}
-                    onCheckedChange={(checked) =>
-                      toggleStatus(product._id, checked ? "active" : "inactive")
-                    }
-                    aria-label={`Toggle ${product.name} status`}
-                  />
-                  <Badge
-                    variant={
-                      product.status === "active" ? "default" : "secondary"
-                    }
-                    className={
-                      product.status === "active"
-                        ? "bg-green-100 text-green-800 hover:bg-green-200"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-200"
-                    }
-                  >
-                    {product.status === "active"
-                      ? "Đang hoạt động"
-                      : "Ngừng hoạt động"}
-                  </Badge>
-                </div>
-              </TableCell>
-              <TableCell className="text-right">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" aria-label="Open menu">
-                      <MoreHorizontal className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem
-                      onClick={() => viewProductDetails(product)}
-                      className="cursor-pointer"
-                    >
-                      <Info className="mr-2 h-4 w-4" /> Xem chi tiết
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => editProduct(product)}
-                      className="cursor-pointer"
-                    >
-                      <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onClick={() => confirmDeleteProduct(product)}
-                      className="text-destructive focus:text-destructive cursor-pointer"
-                    >
-                      <Trash2 className="mr-2 h-4 w-4" /> Xóa
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </TableCell>
+    <div className="space-y-4">
+      <div className="border rounded-md overflow-hidden bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead className="w-[100px]">Hình ảnh</TableHead>
+              <TableHead>Tên sản phẩm</TableHead>
+              <TableHead>Mã sản phẩm</TableHead>
+              <TableHead>Giá</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHeader>
+          <TableBody>
+            {filteredProducts.map((product) => (
+              <TableRow key={product._id}>
+                <TableCell>
+                  <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative">
+                    {product.image && product.image[0] ? (
+                      <Image
+                        src={product.image[0]}
+                        alt={product.name}
+                        width={48}
+                        height={48}
+                        className="h-full w-full object-cover"
+                      />
+                    ) : (
+                      <div className="h-full w-full bg-gray-200 flex items-center justify-center text-gray-500 text-xs">
+                        No image
+                      </div>
+                    )}
+                  </div>
+                </TableCell>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>{product._id || "-"}</TableCell>
+                <TableCell>{formatCurrency(product.price)}</TableCell>
+                <TableCell>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      id={`status-${product._id}`}
+                      checked={product.status === "active"}
+                      onCheckedChange={() =>
+                        toggleStatus(
+                          product._id,
+                          product.status === "active" ? "inactive" : "active"
+                        )
+                      }
+                      aria-label={`Toggle ${product.name} status`}
+                    />
+                    <Badge
+                      variant={
+                        product.status === "active" ? "default" : "secondary"
+                      }
+                      className={
+                        product.status === "active"
+                          ? "bg-green-100 text-green-800 hover:bg-green-200"
+                          : "bg-gray-100 text-gray-800 hover:bg-gray-200"
+                      }
+                    >
+                      {product.status === "active"
+                        ? "Đang hoạt động"
+                        : "Ngừng hoạt động"}
+                    </Badge>
+                  </div>
+                </TableCell>
+                <TableCell className="text-right">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Open menu"
+                      >
+                        <MoreHorizontal className="h-4 w-4" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <DropdownMenuItem
+                        onClick={() => viewProductDetails(product)}
+                        className="cursor-pointer"
+                      >
+                        <Info className="mr-2 h-4 w-4" /> Xem chi tiết
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => editProduct(product)}
+                        className="cursor-pointer"
+                      >
+                        <Edit className="mr-2 h-4 w-4" /> Chỉnh sửa
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Pagination */}
+      <div className="py-4 flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="text-sm text-gray-500">
+          Trang {pagination.currentPage} trên {pagination.totalPages}
+        </div>
+        <ProductPagination
+          currentPage={pagination.currentPage}
+          totalPages={pagination.totalPages}
+          onPageChange={goToPage}
+        />
+      </div>
     </div>
   );
 };

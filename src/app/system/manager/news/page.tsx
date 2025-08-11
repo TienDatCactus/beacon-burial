@@ -8,7 +8,6 @@ import ListView from "@/private/components/manager/news/ListView";
 import GridView from "@/private/components/manager/news/GridView";
 import EditDialog from "@/private/components/manager/news/EditDialog";
 import DetailsDialog from "@/private/components/manager/news/DetailsDialog";
-import DeleteDialog from "@/private/components/manager/news/DeleteDialog";
 import { useNews, useNewsManagement } from "@/lib/hooks/useNews";
 import { News, NewsFilters } from "@/lib/api/news";
 import withAuth from "@/lib/hooks/useWithAuth";
@@ -146,59 +145,6 @@ const NewsPage: React.FC = () => {
   const confirmDeleteNews = (newsItem: News) => {
     setSelectedNews(newsItem);
     setIsDeleteOpen(true);
-  };
-
-  const handleCreateNews = async (newsData: Partial<News>) => {
-    try {
-      if (!newsData.title || !newsData.category || !newsData.content) {
-        toast.error("Vui lòng điền đầy đủ thông tin tin tức");
-        return;
-      }
-      await createNews({
-        title: newsData.title,
-        category: newsData.category,
-        summary: newsData.summary || "",
-        content: newsData.content,
-        image: newsData.image || "",
-      });
-      toast.success("Tạo tin tức thành công!");
-      setIsCreateOpen(false);
-      fetchNews({ page: 1, limit: 10 });
-    } catch (error) {
-      toast.error("Không thể tạo tin tức");
-    }
-  };
-
-  const handleEditNews = async (newsData: Partial<News>) => {
-    if (!selectedNews) return;
-
-    try {
-      const originalNews = news.find((n) => n._id === selectedNews._id);
-      if (originalNews) {
-        await updateNews(originalNews._id, {
-          category: newsData.category || originalNews.category,
-          title: newsData.title || originalNews.title,
-          summary: newsData.summary || originalNews.summary,
-          content: newsData.content || originalNews.content,
-          image: newsData.image || originalNews.image,
-        });
-        toast.success("Cập nhật tin tức thành công!");
-        setIsEditOpen(false);
-        setSelectedNews(null);
-        fetchNews({ page: pagination.currentPage, limit: 10 });
-      }
-    } catch (error) {
-      toast.error("Không thể cập nhật tin tức");
-    }
-  };
-
-  const handleDeleteNews = async () => {
-    if (!selectedNews) return;
-
-    // Since delete API is not implemented, just show a message
-    toast.info("Chức năng xóa tin tức chưa được triển khai");
-    setIsDeleteOpen(false);
-    setSelectedNews(null);
   };
 
   const handlePageChange = (page: number) => {
@@ -339,17 +285,6 @@ const NewsPage: React.FC = () => {
         selectedNews={selectedNews}
         togglePublishStatus={togglePublishStatus}
         editNews={editNewsHandler}
-      />
-
-      {/* Delete Dialog */}
-      <DeleteDialog
-        isDeleteDialogOpen={isDeleteOpen}
-        setIsDeleteDialogOpen={(open) => {
-          setIsDeleteOpen(open);
-          if (!open) setSelectedNews(null);
-        }}
-        selectedNews={selectedNews}
-        deleteNews={handleDeleteNews}
       />
     </div>
   );

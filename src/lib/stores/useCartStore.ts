@@ -60,9 +60,7 @@ export const useCartStore = create<CartStore>()(
             (sum, item) => sum + item.product.price * item.quantity,
             0
           );
-          toast.success("Sản phẩm đã được thêm vào giỏ hàng", {
-            duration: 2000,
-          });
+
           return {
             ...state,
             items: updatedItems,

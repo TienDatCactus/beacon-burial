@@ -5,7 +5,7 @@ import {
   CardFooter,
   CardHeader,
 } from "@/components/ui/card";
-import { News } from "@/lib/interfaces";
+import { News } from "@/lib/api/news";
 import { CalendarIcon, User2Icon } from "lucide-react";
 import Image from "next/image";
 import { FC } from "react";

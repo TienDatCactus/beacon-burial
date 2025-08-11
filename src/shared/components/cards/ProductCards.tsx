@@ -44,7 +44,7 @@ const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
           height={1000}
           src={product.image?.[0] || "/icons/image-off.svg"}
           alt={product.name}
-          className="w-full duration-200 object-cover lg:h-100 mx-auto mb-2"
+          className="w-full group-hover:scale-[1.02] group-hover:shadow-lg duration-200 object-cover lg:h-100 mx-auto mb-2"
           onError={(e) => {
             (e.target as HTMLImageElement).src = "/icons/image-off.svg";
           }}
@@ -57,6 +57,7 @@ const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
         >
           <Button
             onClick={handleAddToCart}
+            size="icon"
             className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white"
             title="Thêm vào giỏ hàng"
           >
@@ -64,6 +65,7 @@ const ProductCards: React.FC<{ product: Product }> = ({ product }) => {
           </Button>
 
           <Button
+            size="icon"
             onClick={handleWishlist}
             className="bg-white hover:-translate-y-2 hover:bg-primary text-black hover:*:text-white"
             title="Thêm vào danh sách yêu thích"

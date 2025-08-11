@@ -4,26 +4,28 @@ import { Button } from "@/components/ui/button";
 import { formatDate } from "@/lib/utils/formatting";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
+import { useOrderDetails } from "@/lib/hooks/useOrders";
+import { useParams, useRouter } from "next/navigation";
 
 const CheckoutSuccessPage: React.FC = () => {
-  // const router = useRouter();
+  const router = useRouter();
+  const param = useParams();
+  const id = param.id as string;
+  const { fetchOrderDetails, order } = useOrderDetails();
 
+  // useEffect(() => {
+  //   const fromCheckout = window.history.state?.from?.startsWith("/checkout");
+  //   if (!fromCheckout) {
+  //     router.replace("/"); // Chuyển về trang chủ
+  //   }
+  // }, [router]);
   // Trong ứng dụng thực tế, bạn có thể xác minh trạng thái đơn hàng từ API
   useEffect(() => {
-    // Kiểm tra xem người dùng có đến từ trang thanh toán không
-    // Nếu không, chuyển hướng về trang chủ
-    // Đây là cách đơn giản để ngăn truy cập trực tiếp vào trang này
-    const handleBeforeUnload = () => {
-      // Dọn dẹp bất kỳ lưu trữ phiên hoặc trạng thái liên quan đến thanh toán
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-
-    return () => {
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
+    (async () => {
+      await fetchOrderDetails(id);
+    })();
   }, []);
-
+  console.log(order);
   return (
     <div className="container mx-auto px-4 py-20 max-w-lg text-center">
       <div className="bg-white p-8 rounded-lg shadow-sm border">
@@ -41,22 +43,17 @@ const CheckoutSuccessPage: React.FC = () => {
         <div className="border-t border-gray-200 pt-6 mt-6">
           <div className="flex justify-between mb-2">
             <span className="font-medium">Mã Đơn Hàng:</span>
-            <span>#BB-{Math.floor(100000 + Math.random() * 900000)}</span>
+            <span>{order?._id}</span>
           </div>
 
           <div className="flex justify-between mb-2">
             <span className="font-medium">Ngày:</span>
-            <span>{formatDate(new Date())}</span>
+            <span>{formatDate(order?.created_at ?? "")}</span>
           </div>
 
           <div className="flex justify-between mb-2">
             <span className="font-medium">Email:</span>
-            <span>customer@example.com</span>
-          </div>
-
-          <div className="flex justify-between mb-2">
-            <span className="font-medium">Tổng:</span>
-            <span>$300.00</span>
+            <span>{order?.email ?? "customer@example.com"}</span>
           </div>
 
           <div className="flex justify-between  mb-2">
@@ -69,11 +66,11 @@ const CheckoutSuccessPage: React.FC = () => {
 
         <div className="flex flex-col gap-4 mt-8">
           <Button asChild>
-            <Link href="/services">Tiếp Tục Mua Sắm</Link>
+            <Link href="/shop">Tiếp Tục Mua Sắm</Link>
           </Button>
 
           <Button variant="outline" asChild>
-            <Link href="/account/orders">Xem Lịch Sử Đơn Hàng</Link>
+            <Link href="/cart">Giỏ hàng</Link>
           </Button>
         </div>
       </div>

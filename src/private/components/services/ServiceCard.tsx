@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Service } from "@/lib/api/service";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { Users, ChevronRight, Check } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -37,13 +38,6 @@ const ServiceCard: React.FC<Service> = (service) => {
     isFeatured,
   } = service;
   // Format price function
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency: "USD",
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
 
   // Helper to get category style
   const getCategoryStyle = (category: string) => {

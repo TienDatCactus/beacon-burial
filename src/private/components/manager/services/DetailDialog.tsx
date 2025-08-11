@@ -1,3 +1,4 @@
+import { ServiceInclusionItem } from "@/app/system/manager/services/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,14 +21,12 @@ interface DetailDialogProps {
   setIsViewDialogOpen: (open: boolean) => void;
   selectedService: Service;
   editService: (service: Service) => void;
-  ServiceInclusionItem: React.FC<{ item: any }>;
 }
 const DetailDialog: React.FC<DetailDialogProps> = ({
   isViewDialogOpen,
   setIsViewDialogOpen,
   selectedService,
   editService,
-  ServiceInclusionItem,
 }) => {
   return (
     <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
@@ -83,20 +82,23 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Package image */}
               <div className="space-y-4">
-                <div className="aspect-video relative rounded-md overflow-hidden border">
+                <div className="flex flex-wrap gap-2">
                   {selectedService.imageUrl ? (
-                    <Image
-                      width={800}
-                      height={450}
-                      src={selectedService.imageUrl[0]}
-                      alt={selectedService.title}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).onerror = null;
-                        (e.target as HTMLImageElement).src =
-                          "/icons/image-off.svg";
-                      }}
-                    />
+                    selectedService.imageUrl.map((url) => (
+                      <Image
+                        key={url}
+                        width={800}
+                        height={450}
+                        src={url}
+                        alt={selectedService.title}
+                        className="h-40 w-40 object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).onerror = null;
+                          (e.target as HTMLImageElement).src =
+                            "/icons/image-off.svg";
+                        }}
+                      />
+                    ))
                   ) : (
                     <div className="h-full w-full flex items-center justify-center bg-gray-100">
                       <PackageCheck className="h-16 w-16 text-gray-300" />

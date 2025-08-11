@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Service } from "@/lib/api/service";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";

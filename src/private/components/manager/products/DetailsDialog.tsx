@@ -17,7 +17,7 @@ const DetailsDialog: React.FC<{
   isViewDialogOpen: boolean;
   setIsViewDialogOpen: (open: boolean) => void;
   selectedProduct: Product;
-  editProduct: (product: any) => void;
+  editProduct: (product: Product) => void;
   toggleStatus: (id: string, status: "active" | "inactive") => void;
 }> = ({
   isViewDialogOpen,

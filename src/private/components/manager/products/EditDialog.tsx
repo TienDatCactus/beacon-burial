@@ -1,12 +1,12 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import {
-  DialogHeader,
-  DialogFooter,
   Dialog,
   DialogContent,
-  DialogTitle,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -20,29 +20,132 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Product } from "@/lib/api/product";
-
-import { X, Plus } from "lucide-react";
+import { useProductManagement, useProducts } from "@/lib/hooks/useProducts";
+import { toast } from "sonner";
+import { X } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useEffect, useState } from "react";
+
 const EditDialog: React.FC<{
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
   selectedProduct: Product;
   setSelectedProduct: (product: Product) => void;
-  handleSaveProduct: (productData: Product, isEdit: boolean) => void;
 }> = ({
   isEditDialogOpen,
   setIsEditDialogOpen,
   selectedProduct,
   setSelectedProduct,
-  handleSaveProduct,
 }) => {
+  const { updateProduct, createProduct } = useProductManagement();
+  const { refreshProducts } = useProducts({ limit: 9 });
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+  useEffect(() => {
+    if (selectedProduct._id) {
+      setImageFiles([]);
+    }
+  }, []);
+  // Validate the form before submission
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!selectedProduct.name.trim()) {
+      errors.name = "Tên sản phẩm không được để trống";
+    }
+
+    if (!selectedProduct.slug.trim()) {
+      errors.slug = "Slug không được để trống";
+    }
+
+    // Price can be 0, but must be a number and not negative
+    if (selectedProduct.price === undefined || isNaN(selectedProduct.price)) {
+      errors.price = "Giá phải là một số";
+    } else if (selectedProduct.price <= 0) {
+      errors.price = "Giá phải là số dương";
+    }
+
+    if (
+      selectedProduct.quantity === undefined ||
+      isNaN(selectedProduct.quantity)
+    ) {
+      errors.quantity = "Số lượng phải là một số";
+    } else if (selectedProduct.quantity <= 0) {
+      errors.quantity = "Số lượng phải là số dương";
+    }
+
+    if (!selectedProduct.category) {
+      errors.category = "Vui lòng chọn danh mục";
+    }
+
+    // Require at least one image for new products
+    if (!selectedProduct._id && imageFiles.length === 0) {
+      errors.image = "Vui lòng thêm ít nhất một hình ảnh sản phẩm";
+    }
+
+    if (!selectedProduct.description.trim()) {
+      errors.description = "Mô tả sản phẩm không được để trống";
+    }
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle save product (create or update)
+  const handleSaveProduct = async (productData: any, isEdit: boolean) => {
+    if (!validateForm()) {
+      toast.error("Vui lòng điền đầy đủ thông tin sản phẩm");
+      return false;
+    }
+
+    setIsUploading(true);
+    try {
+      const formData = { ...productData, files: imageFiles };
+
+      let success = false;
+      if (isEdit && selectedProduct?._id) {
+        success = await updateProduct(selectedProduct._id, formData);
+      } else {
+        success = await createProduct(formData);
+      }
+
+      if (success) {
+        setIsEditDialogOpen(false);
+        setImageFiles([]);
+        refreshProducts();
+        window.location.reload();
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.error("Error saving product:", error);
+      toast.error("Đã xảy ra lỗi khi lưu sản phẩm");
+      return false;
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  // Remove an image from the preview
+  const removeImage = (index: number) => {
+    setSelectedProduct({
+      ...selectedProduct,
+      image: selectedProduct.image?.filter((_, i) => i !== index),
+    });
+  };
+
+  // Remove a file from the file list
+  const removeFile = (index: number) => {
+    setImageFiles(imageFiles.filter((_, i) => i !== index));
+  };
+
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>
-            {selectedProduct._id ? "Chinh sửa sản phẩm" : "Thêm sản phẩm mới"}
+            {selectedProduct._id ? "Chỉnh sửa sản phẩm" : "Thêm sản phẩm mới"}
           </DialogTitle>
           <DialogDescription>
             {selectedProduct._id
@@ -55,7 +158,7 @@ const EditDialog: React.FC<{
           <div className="space-y-4">
             <div>
               <Label htmlFor="name" className="mb-1">
-                Tên sản phẩm
+                Tên sản phẩm <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="name"
@@ -70,12 +173,16 @@ const EditDialog: React.FC<{
                       .replace(/[^\w\-]+/g, ""),
                   })
                 }
+                className={formErrors.name ? "border-red-500" : ""}
               />
+              {formErrors.name && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.name}</p>
+              )}
             </div>
 
             <div>
-              <Label className="mb-1" htmlFor="sku">
-                Slug
+              <Label className="mb-1" htmlFor="slug">
+                Slug <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="slug"
@@ -86,46 +193,70 @@ const EditDialog: React.FC<{
                     slug: e.target.value,
                   })
                 }
+                className={formErrors.slug ? "border-red-500" : ""}
               />
+              {formErrors.slug && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.slug}</p>
+              )}
             </div>
 
             <div>
               <Label className="mb-1" htmlFor="price">
-                Giá (VNĐ)
+                Giá (VNĐ) <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="price"
                 type="number"
-                value={selectedProduct.price}
+                value={
+                  selectedProduct.price === 0
+                    ? "0"
+                    : selectedProduct.price || ""
+                }
+                placeholder="Nhập giá sản phẩm"
                 onChange={(e) =>
                   setSelectedProduct({
                     ...selectedProduct,
-                    price: parseFloat(e.target.value) || 0,
+                    price: parseFloat(e.target.value),
                   })
                 }
+                className={formErrors.price ? "border-red-500" : ""}
               />
+              {formErrors.price && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
+              )}
             </div>
 
             <div>
               <Label className="mb-1" htmlFor="stock">
-                Số lượng
+                Số lượng <span className="text-red-500">*</span>
               </Label>
               <Input
                 id="stock"
                 type="number"
-                value={selectedProduct.quantity}
+                value={
+                  selectedProduct.quantity === 0
+                    ? "0"
+                    : selectedProduct.quantity || ""
+                }
+                placeholder="Nhập số lượng"
                 onChange={(e) =>
                   setSelectedProduct({
                     ...selectedProduct,
-                    quantity: parseInt(e.target.value) || 0,
+                    quantity: parseInt(e.target.value),
                   })
                 }
+                className={formErrors.quantity ? "border-red-500" : ""}
               />
+              {formErrors.quantity && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.quantity}
+                </p>
+              )}
             </div>
 
             <div>
               <Label className="mb-1" htmlFor="category">
-                Danh mục
+                Danh mục <span className="text-red-500">*</span>
               </Label>
               <Select
                 value={selectedProduct.category}
@@ -136,7 +267,9 @@ const EditDialog: React.FC<{
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className={formErrors.category ? "border-red-500" : ""}
+                >
                   <SelectValue placeholder="Chọn danh mục" />
                 </SelectTrigger>
                 <SelectContent>
@@ -151,6 +284,11 @@ const EditDialog: React.FC<{
                   <SelectItem value="Áo quan">Áo quan</SelectItem>
                 </SelectContent>
               </Select>
+              {formErrors.category && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.category}
+                </p>
+              )}
             </div>
 
             <div>
@@ -189,85 +327,96 @@ const EditDialog: React.FC<{
               />
               <Label htmlFor="featured">Sản phẩm nổi bật</Label>
             </div>
-
-            {/* <div>
-              <Label className="mb-1" htmlFor="popularity">
-                Điểm phổ biến (0-100)
-              </Label>
-              <Input
-                id="popularity"
-                type="number"
-                min="0"
-                max="100"
-                value={selectedProduct.popularityScore}
-                onChange={(e) =>
-                  setSelectedProduct({
-                    ...selectedProduct,
-                    popularityScore: parseInt(e.target.value) || 0,
-                  })
-                }
-              />
-            </div> */}
           </div>
 
           <div className="space-y-4">
             <div>
               <Label className="mb-1" htmlFor="image">
-                Hình ảnh sản phẩm
+                Hình ảnh sản phẩm{" "}
+                {!selectedProduct._id && (
+                  <span className="text-red-500">*</span>
+                )}
               </Label>
               <Input
                 id="images"
                 type="file"
-                multiple // ✅ Cho phép chọn nhiều ảnh
+                multiple
                 accept="image/*"
                 onChange={(e) => {
                   const files = e.target.files;
-                  if (!files) return;
-
-                  const imageArray: string[] = [];
-
-                  Array.from(files).forEach((file) => {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      if (event.target?.result) {
-                        imageArray.push(event.target.result as string);
-                        // Khi đọc hết tất cả ảnh thì cập nhật state
-                        if (imageArray.length === files.length) {
-                          setSelectedProduct({
-                            ...selectedProduct,
-                            image: [
-                              ...(selectedProduct.image || []),
-                              ...imageArray,
-                            ],
-                          });
-                        }
-                      }
-                    };
-                    reader.readAsDataURL(file);
-                  });
+                  if (!files || files.length === 0) return;
+                  setImageFiles(Array.from(files));
+                  if (formErrors.image) {
+                    setFormErrors({
+                      ...formErrors,
+                      image: "",
+                    });
+                  }
                 }}
-                placeholder="Chọn nhiều ảnh"
+                className={formErrors.image ? "border-red-500" : ""}
               />
+              {formErrors.image && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.image}</p>
+              )}
 
-              {selectedProduct.image && (
-                <div className="mt-2 relative  rounded-md overflow-y-scroll h-80">
-                  {!!selectedProduct.image &&
-                  selectedProduct.image.length > 0 ? (
-                    <div className="grid grid-cols-2 gap-2 flex-wrap ">
+              {/* File upload preview */}
+              {imageFiles.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="text-sm font-medium mb-1">Ảnh mới đã chọn:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {imageFiles.map((file, index) => (
+                      <div key={`file-${index}`} className="relative group">
+                        <div className="h-40 border rounded-md bg-gray-50 flex items-center justify-center p-1">
+                          <Image
+                            height={100}
+                            width={100}
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="object-cover w-full h-full rounded-md"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Existing images */}
+              {selectedProduct.image && selectedProduct.image.length > 0 && (
+                <div className="mt-3">
+                  <h4 className="text-sm font-medium mb-1">Ảnh hiện tại:</h4>
+                  <div className="mt-2 max-h-48">
+                    <div className="grid grid-cols-2 gap-2">
                       {selectedProduct.image.map((img, index) => (
-                        <Image
-                          key={index}
-                          src={img}
-                          alt="Product preview"
-                          height={100}
-                          width={100}
-                          className="object-contain w-full h-full rounded-md"
-                        />
+                        <div
+                          key={`img-${index}`}
+                          className="relative group z-20"
+                        >
+                          <Image
+                            src={img}
+                            alt={`Product image ${index + 1}`}
+                            width={100}
+                            height={100}
+                            className="object-cover w-full h-24 rounded-md border"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute z-10 -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </div>
                       ))}
                     </div>
-                  ) : (
-                    <p className="text-sm text-gray-500">No image uploaded</p>
-                  )}
+                  </div>
                 </div>
               )}
             </div>
@@ -279,7 +428,8 @@ const EditDialog: React.FC<{
               <Textarea
                 id="description"
                 rows={4}
-                value={selectedProduct.description}
+                className={formErrors.description ? "border-red-500" : ""}
+                value={selectedProduct.description || ""}
                 onChange={(e) =>
                   setSelectedProduct({
                     ...selectedProduct,
@@ -287,75 +437,39 @@ const EditDialog: React.FC<{
                   })
                 }
               />
+              {formErrors.description && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.description}
+                </p>
+              )}
             </div>
-
-            {/* <div>
-              <Label className="mb-1">Các đặc điểm nổi bật</Label>
-              <div className="space-y-2 mt-2">
-                {selectedProduct.features.map(
-                  (feature: string, index: number) => (
-                    <div key={index} className="flex items-center gap-2">
-                      <Input
-                        value={feature}
-                        onChange={(e) => {
-                          const updatedFeatures = [...selectedProduct.features];
-                          updatedFeatures[index] = e.target.value;
-                          setSelectedProduct({
-                            ...selectedProduct,
-                            features: updatedFeatures,
-                          });
-                        }}
-                      />
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => {
-                          const updatedFeatures =
-                            selectedProduct.features.filter(
-                              (_: string, i: number) => i !== index
-                            );
-                          setSelectedProduct({
-                            ...selectedProduct,
-                            features: updatedFeatures,
-                          });
-                        }}
-                        disabled={selectedProduct.features.length <= 1}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )
-                )}
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  className="mt-2"
-                  onClick={() => {
-                    setSelectedProduct({
-                      ...selectedProduct,
-                      features: [...selectedProduct.features, ""],
-                    });
-                  }}
-                >
-                  <Plus className="h-4 w-4 mr-2" /> Thêm đặc điểm
-                </Button>
-              </div>
-            </div> */}
           </div>
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsEditDialogOpen(false)}
+            disabled={isUploading}
+          >
             Hủy
           </Button>
           <Button
             onClick={() =>
               handleSaveProduct(selectedProduct, !!selectedProduct._id)
             }
+            disabled={isUploading}
           >
-            {selectedProduct._id ? "Lưu thay đổi" : "Thêm sản phẩm"}
+            {isUploading ? (
+              <>
+                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+                Đang xử lý...
+              </>
+            ) : selectedProduct._id ? (
+              "Lưu thay đổi"
+            ) : (
+              "Thêm sản phẩm"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

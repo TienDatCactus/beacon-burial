@@ -15,7 +15,6 @@ import {
   useServices,
 } from "@/lib/hooks/useServices";
 import withAuth from "@/lib/hooks/useWithAuth";
-import DeleteService from "@/private/components/manager/services/DeleteService";
 import DetailDialog from "@/private/components/manager/services/DetailDialog";
 import EditService from "@/private/components/manager/services/EditService";
 import GridView from "@/private/components/manager/services/GridView";
@@ -33,7 +32,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
-const ServiceInclusionItem: React.FC<{ item: any }> = ({ item }) => {
+export const ServiceInclusionItem: React.FC<{ item: any }> = ({ item }) => {
   return (
     <div className="flex items-start gap-2 py-1">
       <div className="mt-1 bg-primary/10 rounded-full p-1 shrink-0">
@@ -74,53 +73,44 @@ const ServicesManagementPage = () => {
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [priceRangeFilter, setPriceRangeFilter] = useState<string | null>(null);
 
-  // Handle search input changes with debounce
   useEffect(() => {
     const timeoutId = setTimeout(() => {
       if (searchTerm.trim()) {
         searchByKeyword(searchTerm.trim());
       } else if (searchTerm === "") {
-        refreshServices();
+        searchByKeyword("");
       }
     }, 500);
 
     return () => clearTimeout(timeoutId);
-  }, [searchTerm, searchByKeyword, refreshServices]);
+  }, [searchTerm]);
 
-  // Handle search input changes
   const handleSearch = (term: string) => {
     setSearchTerm(term);
   };
 
-  // Handle category filter changes
   const handleCategoryFilter = (category: string | null) => {
     setCategoryFilter(category);
     filterByCategory(category);
   };
 
-  // Handle price range filter changes
   const handlePriceRangeFilter = (priceRange: string | null) => {
     setPriceRangeFilter(priceRange);
     filterByPriceRange(priceRange);
   };
 
-  // Toggle service status using API
-  const handleToggleStatus = async (
-    serviceId: string,
-    currentStatus: string
-  ) => {
+  const handleToggleStatus = async (serviceId: string) => {
     const success = await toggleServiceStatus(serviceId);
     if (success) {
-      refreshServices(); // Refresh the services list
+      refreshServices();
     }
   };
 
-  // Toggle status wrapper for components that expect (id, newStatus) format
   const handleToggleStatusWrapper = (
     id: string,
     newStatus: "active" | "inactive"
   ) => {
-    handleToggleStatus(id, newStatus);
+    handleToggleStatus(id);
   };
 
   // Create wrapper functions to match component interfaces
@@ -157,48 +147,6 @@ const ServicesManagementPage = () => {
     setIsEditDialogOpen(true);
   };
 
-  // Handle save service (create or update)
-  const handleSaveService = async (serviceData: Service, isEdit: boolean) => {
-    let success = false;
-
-    // Ensure inclusions are always product IDs (strings), not objects
-    const normalizedServiceData = {
-      ...serviceData,
-      inclusions: serviceData.inclusions.map((inclusion) => {
-        // If inclusion is an object with _id, extract the _id
-        if (
-          typeof inclusion === "object" &&
-          inclusion !== null &&
-          "_id" in inclusion
-        ) {
-          return (inclusion as any)._id;
-        }
-        // If it's already a string, keep it as is
-        return inclusion as string;
-      }),
-    };
-
-    console.log("Original service data:", serviceData);
-    console.log(
-      "Normalized service data (inclusions as string array):",
-      normalizedServiceData
-    );
-
-    if (isEdit && selectedService?._id) {
-      success = await updateService(selectedService._id, normalizedServiceData);
-    } else {
-      success = await createService(normalizedServiceData);
-    }
-
-    if (success) {
-      setIsEditDialogOpen(false);
-      refreshServices(); // Refresh the services list
-    }
-
-    return success;
-  };
-
-  // Delete service (Note: No delete API endpoint provided, so this is a placeholder)
   const deleteService = async () => {
     toast.error("Tính năng xóa dịch vụ chưa được hỗ trợ bởi API");
     setIsDeleteDialogOpen(false);
@@ -346,22 +294,26 @@ const ServicesManagementPage = () => {
       {/* Services table (list view) */}
       {services.length > 0 && currentView === "list" && (
         <TableView
+          pagination={pagination}
           filteredServices={services}
           toggleStatus={handleToggleStatusWrapper}
           viewServiceDetails={handleViewServiceDetails as any}
           editService={handleEditService as any}
           confirmDeleteService={handleConfirmDeleteService as any}
+          goToPage={goToPage}
         />
       )}
 
       {/* Services grid view */}
       {services.length > 0 && currentView === "grid" && (
         <GridView
+          goToPage={goToPage}
           filteredServices={services}
           toggleStatus={handleToggleStatusWrapper}
           viewServiceDetails={handleViewServiceDetails as any}
           editService={handleEditService as any}
           confirmDeleteService={handleConfirmDeleteService as any}
+          pagination={pagination}
         />
       )}
 
@@ -391,11 +343,10 @@ const ServicesManagementPage = () => {
       {/* View service details dialog */}
       {selectedService && (
         <DetailDialog
+          editService={handleEditService}
           isViewDialogOpen={isViewDialogOpen}
           setIsViewDialogOpen={setIsViewDialogOpen}
           selectedService={selectedService}
-          editService={handleEditService}
-          ServiceInclusionItem={ServiceInclusionItem}
         />
       )}
 
@@ -406,19 +357,6 @@ const ServicesManagementPage = () => {
           setIsEditDialogOpen={setIsEditDialogOpen}
           selectedService={selectedService}
           setSelectedService={setSelectedService}
-          onSave={async (serviceData: Service, isEdit: boolean) => {
-            await handleSaveService(serviceData, isEdit);
-          }}
-        />
-      )}
-
-      {/* Delete service dialog */}
-      {selectedService && (
-        <DeleteService
-          isDeleteDialogOpen={isDeleteDialogOpen}
-          setIsDeleteDialogOpen={setIsDeleteDialogOpen}
-          selectedService={selectedService}
-          deleteService={deleteService}
         />
       )}
     </div>

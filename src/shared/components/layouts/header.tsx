@@ -1,7 +1,6 @@
 "use client";
-import { Button } from "@/components/ui/button";
-import { TooltipProvider } from "@/components/ui/tooltip";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,17 +9,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import useAuth from "@/lib/stores/useAuthStores";
-import { AuthState } from "@/lib/interfaces/auth";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
-} from "@radix-ui/react-tooltip";
+} from "@/components/ui/tooltip";
+import { AuthState } from "@/lib/interfaces/auth";
+import useAuth from "@/lib/stores/useAuthStores";
 import {
   Facebook,
   Instagram,
-  User,
   LogOut,
   Settings,
   ShoppingCart,
@@ -28,7 +27,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 
 interface MenuItem {

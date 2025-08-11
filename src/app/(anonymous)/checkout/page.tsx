@@ -6,121 +6,22 @@ import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { productCheckout, ProductCheckoutData } from "@/lib/api/order";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { cn, formatCurrency } from "@/lib/utils";
+import { majorCities, vietnameseProvinces } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
-import {
-  CreditCard,
-  Loader2,
-  Mail,
-  MapPin,
-  Phone,
-  User,
-  Home,
-} from "lucide-react";
+import { CreditCard, Home, Mail, MapPin, Phone, User } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "sonner";
-
-// Vietnamese provinces/cities data
-const vietnameseProvinces = [
-  "An Giang",
-  "Bà Rịa - Vũng Tàu",
-  "Bắc Giang",
-  "Bắc Kạn",
-  "Bạc Liêu",
-  "Bắc Ninh",
-  "Bến Tre",
-  "Bình Định",
-  "Bình Dương",
-  "Bình Phước",
-  "Bình Thuận",
-  "Cà Mau",
-  "Cao Bằng",
-  "Đắk Lắk",
-  "Đắk Nông",
-  "Điện Biên",
-  "Đồng Nai",
-  "Đồng Tháp",
-  "Gia Lai",
-  "Hà Giang",
-  "Hà Nam",
-  "Hà Tĩnh",
-  "Hải Dương",
-  "Hậu Giang",
-  "Hòa Bình",
-  "Hưng Yên",
-  "Khánh Hòa",
-  "Kiên Giang",
-  "Kon Tum",
-  "Lai Châu",
-  "Lâm Đồng",
-  "Lạng Sơn",
-  "Lào Cai",
-  "Long An",
-  "Nam Định",
-  "Nghệ An",
-  "Ninh Bình",
-  "Ninh Thuận",
-  "Phú Thọ",
-  "Quảng Bình",
-  "Quảng Nam",
-  "Quảng Ngãi",
-  "Quảng Ninh",
-  "Quảng Trị",
-  "Sóc Trăng",
-  "Sơn La",
-  "Tây Ninh",
-  "Thái Bình",
-  "Thái Nguyên",
-  "Thanh Hóa",
-  "Thừa Thiên Huế",
-  "Tiền Giang",
-  "Trà Vinh",
-  "Tuyên Quang",
-  "Vĩnh Long",
-  "Vĩnh Phúc",
-  "Yên Bái",
-  // Major cities
-  "TP. Hồ Chí Minh",
-  "Hà Nội",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-];
-
-const majorCities = [
-  "TP. Hồ Chí Minh",
-  "Hà Nội",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-  "Biên Hòa",
-  "Nha Trang",
-  "Huế",
-  "Rạch Giá",
-  "Cà Mau",
-  "Long Xuyên",
-  "Thái Nguyên",
-  "Thanh Hóa",
-  "Vinh",
-  "Buôn Ma Thuột",
-  "Pleiku",
-  "Mỹ Tho",
-  "Vũng Tàu",
-  "Đà Lạt",
-  "Phan Thiết",
-];
 
 // Define checkout form types - matching API requirements
 type CheckoutFormValues = {
@@ -141,7 +42,6 @@ const CheckoutPage: React.FC = () => {
   const { items: cartItems, clearCart, totalPrice } = useCartStore();
   const [total, setTotal] = useState(0);
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const shipping = "$0.00";
   const shippingCost = 0;
 
   const {
@@ -149,7 +49,6 @@ const CheckoutPage: React.FC = () => {
     handleSubmit,
     control,
     watch,
-    setValue,
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     defaultValues: {
@@ -233,42 +132,6 @@ const CheckoutPage: React.FC = () => {
     register("phone").onChange(event);
   };
 
-  // Auto-suggest province based on city selection
-  const handleCityChange = (city: string) => {
-    // Auto-suggest province based on major cities
-    const cityProvinceMap: { [key: string]: string } = {
-      "TP. Hồ Chí Minh": "TP. Hồ Chí Minh",
-      "Hà Nội": "Hà Nội",
-      "Đà Nẵng": "Đà Nẵng",
-      "Hải Phòng": "Hải Phòng",
-      "Cần Thơ": "Cần Thơ",
-      "Biên Hòa": "Đồng Nai",
-      "Nha Trang": "Khánh Hòa",
-      Huế: "Thừa Thiên Huế",
-      "Rạch Giá": "Kiên Giang",
-      "Long Xuyên": "An Giang",
-      "Thái Nguyên": "Thái Nguyên",
-      "Thanh Hóa": "Thanh Hóa",
-      Vinh: "Nghệ An",
-      "Buôn Ma Thuột": "Đắk Lắk",
-      Pleiku: "Gia Lai",
-      "Mỹ Tho": "Tiền Giang",
-      "Vũng Tàu": "Bà Rịa - Vũng Tàu",
-      "Đà Lạt": "Lâm Đồng",
-      "Phan Thiết": "Bình Thuận",
-      "Cà Mau": "Cà Mau",
-    };
-
-    // If there's a corresponding province for the selected city, auto-suggest it
-    const suggestedProvince = cityProvinceMap[city];
-    if (suggestedProvince) {
-      // Auto-fill the province field
-      setValue("province", suggestedProvince);
-    }
-
-    return city;
-  };
-
   const onSubmit = async (data: CheckoutFormValues) => {
     setIsSubmitting(true);
     console.log("Checkout form data:", data);
@@ -285,15 +148,11 @@ const CheckoutPage: React.FC = () => {
         .map((item) => item.product._id)
         .filter((id) => id && typeof id === "string"); // Filter out any invalid IDs
 
-      console.log("Product IDs extracted from cart:", productIds);
-
-      // Validate that we have valid product IDs
       if (productIds.length === 0) {
         toast.error("Không tìm thấy sản phẩm hợp lệ trong giỏ hàng!");
         return;
       }
 
-      // Prepare checkout data for API
       const checkoutData: ProductCheckoutData = {
         firstName: data.firstName.trim(),
         lastName: data.lastName.trim(),
@@ -306,14 +165,15 @@ const CheckoutPage: React.FC = () => {
         productId: productIds, // Array of product IDs from cart
       };
 
-      await productCheckout(checkoutData);
+      const res = await productCheckout(checkoutData);
+      console.log(res);
       clearCart();
       toast.success("Đặt hàng thành công!", {
         description:
           "Cảm ơn bạn đã đặt hàng tại cửa hàng của chúng tôi! Chúng tôi đã gửi email xác nhận đến địa chỉ email của bạn.",
       });
 
-      router.push("/checkout/success");
+      router.push("/checkout/success/" + res.newO._id);
     } catch (error: any) {
       console.error("Checkout error:", error);
       const errorMessage =
@@ -520,7 +380,6 @@ const CheckoutPage: React.FC = () => {
                         <Select
                           onValueChange={(value) => {
                             field.onChange(value);
-                            handleCityChange(value);
                           }}
                           value={field.value}
                         >
@@ -546,7 +405,7 @@ const CheckoutPage: React.FC = () => {
 
                   <div className="space-y-2">
                     <Label className="text-sm font-medium">
-                      Tỉnh/Thành phố <span className="text-red-500">*</span>
+                      Tỉnh<span className="text-red-500">*</span>
                     </Label>
                     <Controller
                       name="province"
@@ -634,14 +493,6 @@ const CheckoutPage: React.FC = () => {
                 ))}
               </div>
               <div className="border-t border-gray-200 pt-4 mb-4">
-                <div className="flex justify-between mb-2">
-                  <span>Subtotal</span>
-                  <span>{formatCurrency(totalPrice)}</span>
-                </div>
-                <div className="flex justify-between mb-2">
-                  <span>Phí vận chuyển</span>
-                  <span>{shipping}</span>
-                </div>
                 <div className="flex justify-between font-semibold text-lg">
                   <span>Tổng cộng</span>
                   <span>{formatCurrency(total)}</span>

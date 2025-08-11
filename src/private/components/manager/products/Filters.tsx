@@ -6,7 +6,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Input } from "@/components/ui/input";
-
+import { Product } from "@/lib/api/product";
 import {
   Search,
   ListFilterPlus,
@@ -15,23 +15,44 @@ import {
   List,
 } from "lucide-react";
 import React from "react";
+
 const Filters: React.FC<{
   searchTerm: string;
-  handleSearch: (term: string) => void;
   categoryFilter: string | null;
-  handleCategoryFilter: (category: string | null) => void;
   currentView: "list" | "grid";
+  loading: boolean;
   setCurrentView: (view: "list" | "grid") => void;
-  setStatusFilter: (status: string | null) => void;
+  setSearchTerm: (term: string) => void;
+  setFilteredProducts: (products: Product[]) => void;
+  setCategoryFilter: (category: string | null) => void;
+  filterByCategory: (category: string) => void;
+  handleStatusFilter: (status: string | null) => void;
 }> = ({
   searchTerm,
-  handleSearch,
   categoryFilter,
-  handleCategoryFilter,
   currentView,
+  loading,
   setCurrentView,
-  setStatusFilter,
+  setSearchTerm,
+  setCategoryFilter,
+  filterByCategory,
+  handleStatusFilter,
 }) => {
+  // Handle search input changes
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+
+  // Handle category filter changes
+  const handleCategoryFilter = (category: string | null) => {
+    setCategoryFilter(category);
+    if (category) {
+      filterByCategory(category);
+    } else {
+      filterByCategory("");
+    }
+  };
+
   return (
     <div className="flex flex-col md:flex-row gap-4">
       <div className="relative flex-1">
@@ -50,35 +71,35 @@ const Filters: React.FC<{
             <Button variant="outline" className="gap-2">
               <ListFilterPlus />
               {categoryFilter ? categoryFilter : "Tất cả danh mục"}
+              {loading && <span className="ml-2 animate-spin">↻</span>}
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={() => handleCategoryFilter(null)}>
               Tất cả danh mục
             </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => handleCategoryFilter("Caskets")}>
-              Quan tài
-            </DropdownMenuItem>
-
             <DropdownMenuItem
-              onClick={() => handleCategoryFilter("FuneralClothing")}
+              onClick={() => handleCategoryFilter("Quan tài an táng")}
             >
-              Trang phục tang lễ
+              Quan tài an táng
             </DropdownMenuItem>
-
             <DropdownMenuItem
-              onClick={() => handleCategoryFilter("FuneralAccessories")}
+              onClick={() => handleCategoryFilter("Quan tài hỏa táng")}
             >
-              Phụ kiện lễ tang
+              Quan tài hỏa táng
             </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => handleCategoryFilter("Flowers")}>
-              Vòng hoa – Hoa tươi
+            <DropdownMenuItem
+              onClick={() => handleCategoryFilter("Tiểu quách")}
+            >
+              Tiểu quách
             </DropdownMenuItem>
-
-            <DropdownMenuItem onClick={() => handleCategoryFilter("Altars")}>
-              Đồ thờ cúng to
+            <DropdownMenuItem
+              onClick={() => handleCategoryFilter("Hũ tro cốt")}
+            >
+              Hũ tro cốt
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleCategoryFilter("Áo quan")}>
+              Áo quan
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -91,13 +112,13 @@ const Filters: React.FC<{
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end" className="w-48">
-            <DropdownMenuItem onClick={() => setStatusFilter(null)}>
+            <DropdownMenuItem onClick={() => handleStatusFilter(null)}>
               Tất cả trạng thái
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("active")}>
+            <DropdownMenuItem onClick={() => handleStatusFilter("active")}>
               Chỉ hoạt động
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => setStatusFilter("inactive")}>
+            <DropdownMenuItem onClick={() => handleStatusFilter("inactive")}>
               Chỉ không hoạt động
             </DropdownMenuItem>
           </DropdownMenuContent>

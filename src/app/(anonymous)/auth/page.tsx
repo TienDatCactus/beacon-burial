@@ -21,14 +21,9 @@ export default function AuthPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const { login, isAuthenticated } = useAuth((state: AuthState) => state);
+  const { login, user } = useAuth((state: AuthState) => state);
 
   // Check if user is already authenticated
-  useEffect(() => {
-    if (isAuthenticated) {
-      router.push("/");
-    }
-  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -50,7 +45,11 @@ export default function AuthPage() {
       toast.success("Đăng nhập thành công", {
         description: "Chào mừng bạn trở lại!",
       });
-      router.push("/");
+      if (result.data?.user?.role == "admin") {
+        router.push("/system/manager");
+      } else {
+        router.push("/");
+      }
     } catch (error: any) {
       const errorMessage = error.message || "Có lỗi xảy ra khi đăng nhập";
       setError(errorMessage);

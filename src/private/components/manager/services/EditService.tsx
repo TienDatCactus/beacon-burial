@@ -24,16 +24,20 @@ import { Switch } from "@/components/ui/switch";
 import { Service } from "@/lib/api/service";
 import { Product } from "@/lib/api/product";
 import { useProducts } from "@/lib/hooks/useProducts";
+import { useServiceManagement, useServices } from "@/lib/hooks/useServices";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useEffect } from "react";
+import { toast } from "sonner";
+
 interface EditServiceProps {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
   selectedService: Service;
   setSelectedService: (service: Service) => void;
-  onSave: (serviceData: Service, isEdit: boolean) => Promise<void>;
+  onSave?: (serviceData: Service, isEdit: boolean) => Promise<void>;
 }
+
 const EditService: React.FC<EditServiceProps> = ({
   isEditDialogOpen,
   setIsEditDialogOpen,
@@ -41,31 +45,32 @@ const EditService: React.FC<EditServiceProps> = ({
   setSelectedService,
   onSave,
 }) => {
-  // Get active products for inclusions
+  const { createService, updateService } = useServiceManagement();
+  const { refreshServices } = useServices();
   const { products, loading: productsLoading } = useProducts({
-    limit: 100, // Get more products for selection
+    limit: 100,
   });
 
-  // Filter only active products for new selections
+  const [imageFiles, setImageFiles] = useState<File[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    if (selectedService._id) {
+      setImageFiles([]);
+    }
+  }, [selectedService._id]);
+
   const activeProducts = products.filter(
     (product) => product.status === "active"
   );
 
-  // All products (including inactive) for displaying existing inclusions
   const allProducts = products;
 
-  // Local state for product selection
   const [selectedProductId, setSelectedProductId] = useState<string>("");
 
-  // Normalize inclusions when component opens to ensure consistency
   useEffect(() => {
     if (isEditDialogOpen && selectedService && selectedService.inclusions) {
-      console.log(
-        "EditService - Original inclusions:",
-        selectedService.inclusions
-      );
-
-      // Convert mixed inclusions (objects/strings) to just product ID strings
       const normalizedInclusions = selectedService.inclusions.map(
         (inclusion) => {
           if (
@@ -79,13 +84,6 @@ const EditService: React.FC<EditServiceProps> = ({
         }
       );
 
-      console.log("EditService - Normalized inclusions:", normalizedInclusions);
-      console.log(
-        "EditService - Active products available:",
-        activeProducts.length
-      );
-
-      // Only update if the inclusions are different (to avoid infinite loop)
       const currentInclusionIds =
         selectedService.inclusions.map(getInclusionId);
       const needsNormalization = normalizedInclusions.some(
@@ -93,16 +91,109 @@ const EditService: React.FC<EditServiceProps> = ({
       );
 
       if (needsNormalization) {
-        console.log(
-          "EditService - Updating service with normalized inclusions"
-        );
         setSelectedService({
           ...selectedService,
           inclusions: normalizedInclusions,
         });
       }
     }
-  }, [isEditDialogOpen, selectedService?._id]); // Only run when dialog opens or service changes
+  }, [isEditDialogOpen, selectedService?._id]);
+
+  // Validate the form before submission
+  const validateForm = (): boolean => {
+    const errors: Record<string, string> = {};
+
+    if (!selectedService.title.trim()) {
+      errors.title = "Tên dịch vụ không được để trống";
+    }
+
+    if (selectedService.price <= 0) {
+      errors.price = "Giá phải là số dương";
+    }
+
+    if (!selectedService.category) {
+      errors.category = "Vui lòng chọn danh mục";
+    }
+
+    if (!selectedService.description.trim()) {
+      errors.description = "Mô tả không được để trống";
+    }
+
+    // Require at least one image for new services
+    if (!selectedService._id && imageFiles.length === 0) {
+      errors.image = "Vui lòng thêm ít nhất một hình ảnh";
+    }
+
+    if (selectedService.inclusions.length === 0) {
+      errors.inclusions = "Vui lòng thêm ít nhất một sản phẩm vào gói dịch vụ";
+    }
+
+    setFormErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
+  // Handle save service (create or update) - matches product pattern
+  const handleSaveService = async (serviceData: any, isEdit: boolean) => {
+    if (!validateForm()) {
+      toast.error("Vui lòng điền đầy đủ thông tin dịch vụ");
+      return false;
+    }
+
+    setIsUploading(true);
+
+    try {
+      // Ensure inclusions are normalized to string IDs
+      const normalizedInclusions = serviceData.inclusions.map(
+        (inclusion: any) => {
+          if (
+            typeof inclusion === "object" &&
+            inclusion !== null &&
+            "_id" in inclusion
+          ) {
+            return inclusion._id;
+          }
+          return inclusion;
+        }
+      );
+
+      // Prepare the service data
+      const formData = {
+        ...serviceData,
+        inclusions: normalizedInclusions,
+        files: imageFiles,
+      };
+
+      let success = false;
+
+      if (isEdit && selectedService?._id) {
+        success = await updateService(selectedService._id, formData);
+      } else {
+        success = await createService(formData);
+      }
+
+      if (success) {
+        setIsEditDialogOpen(false);
+        setImageFiles([]);
+        if (onSave) {
+          await onSave(formData, isEdit);
+        }
+        refreshServices();
+        window.location.reload(); // Reload to reflect changes
+        return true;
+      } else {
+        toast.error(
+          isEdit ? "Lỗi khi cập nhật dịch vụ" : "Lỗi khi thêm dịch vụ mới"
+        );
+        return false;
+      }
+    } catch (error) {
+      console.error("Error saving service:", error);
+      toast.error("Đã xảy ra lỗi khi lưu dịch vụ");
+      return false;
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   // Add product to inclusions
   const addProductInclusion = () => {
@@ -110,7 +201,6 @@ const EditService: React.FC<EditServiceProps> = ({
       (p) => p._id === selectedProductId
     );
     if (selectedProduct) {
-      // Get current inclusion IDs (handle both string IDs and objects)
       const currentInclusionIds = selectedService.inclusions.map(
         (inclusion) => {
           if (
@@ -134,12 +224,10 @@ const EditService: React.FC<EditServiceProps> = ({
     }
   };
 
-  // Remove product from inclusions
   const removeProductInclusion = (productId: string) => {
     setSelectedService({
       ...selectedService,
       inclusions: selectedService.inclusions.filter((inclusion) => {
-        // Handle both string IDs and objects
         if (
           typeof inclusion === "object" &&
           inclusion !== null &&
@@ -152,13 +240,10 @@ const EditService: React.FC<EditServiceProps> = ({
     });
   };
 
-  // Get product details by ID - handle both string IDs and objects in inclusions
-  // Search in all products (including inactive) to show existing inclusions
   const getProductById = (productId: string): Product | undefined => {
     return allProducts.find((p) => p._id === productId);
   };
 
-  // Helper function to get product ID from inclusion (string or object)
   const getInclusionId = (inclusion: any): string => {
     if (
       typeof inclusion === "object" &&
@@ -177,20 +262,35 @@ const EditService: React.FC<EditServiceProps> = ({
       return inclusionId === productId;
     });
   };
+
+  // Remove a file from the file list
+  const removeFile = (index: number) => {
+    setImageFiles(imageFiles.filter((_, i) => i !== index));
+  };
+
+  // Create title based on whether editing or creating
+  const dialogTitle = selectedService._id
+    ? "Chỉnh sửa gói dịch vụ"
+    : "Thêm gói dịch vụ mới";
+
+  const dialogDescription = selectedService._id
+    ? "Cập nhật thông tin cho gói dịch vụ này"
+    : "Điền thông tin để tạo gói dịch vụ mới";
+
   return (
     <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
       <DialogContent className="max-w-5xl max-h-170 overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Cập nhật gói dịch vụ</DialogTitle>
-          <DialogDescription>
-            Cập nhật thông tin cho gói dịch vụ này
-          </DialogDescription>
+          <DialogTitle>{dialogTitle}</DialogTitle>
+          <DialogDescription>{dialogDescription}</DialogDescription>
         </DialogHeader>
 
         <div className="grid gap-6 py-4 overflow-y-auto">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="name">Tên gói dịch vụ</Label>
+              <Label htmlFor="name">
+                Tên gói dịch vụ <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="name"
                 value={selectedService.title}
@@ -201,15 +301,25 @@ const EditService: React.FC<EditServiceProps> = ({
                   })
                 }
                 placeholder="Nhập tên gói dịch vụ"
+                className={formErrors.title ? "border-red-500" : ""}
               />
+              {formErrors.title && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.title}</p>
+              )}
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="price">Giá (VND)</Label>
+              <Label htmlFor="price">
+                Giá (VND) <span className="text-red-500">*</span>
+              </Label>
               <Input
                 id="price"
                 type="number"
-                value={selectedService.price}
+                value={
+                  selectedService.price === 0
+                    ? "0"
+                    : selectedService.price || ""
+                }
                 onChange={(e) =>
                   setSelectedService({
                     ...selectedService,
@@ -217,83 +327,140 @@ const EditService: React.FC<EditServiceProps> = ({
                   })
                 }
                 placeholder="Nhập giá"
+                className={formErrors.price ? "border-red-500" : ""}
               />
+              {formErrors.price && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.price}</p>
+              )}
             </div>
           </div>
 
           <div className="grid grid-cols-1 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="image">Hình ảnh</Label>
+              <Label htmlFor="image">
+                Hình ảnh
+                {!selectedService._id && (
+                  <span className="text-red-500">*</span>
+                )}
+              </Label>
               <Input
-                id="image"
+                id="images"
                 type="file"
+                multiple
+                accept="image/*"
                 onChange={(e) => {
-                  if (e.target.files && e.target.files[0]) {
-                    const reader = new FileReader();
-                    reader.onload = (event) => {
-                      setSelectedService({
-                        ...selectedService,
-                        imageUrl: [event.target?.result as string],
-                      });
-                    };
-                    reader.readAsDataURL(e.target.files[0]);
+                  const files = e.target.files;
+                  if (!files || files.length === 0) return;
+
+                  // Store file objects for upload
+                  setImageFiles(Array.from(files));
+
+                  // Create preview for the first image
+                  const reader = new FileReader();
+                  reader.onload = (event) => {
+                    setSelectedService({
+                      ...selectedService,
+                      imageUrl: [event.target?.result as string], // Only for preview
+                    });
+                  };
+                  reader.readAsDataURL(files[0]);
+
+                  // Clear any image errors
+                  if (formErrors.image) {
+                    setFormErrors({
+                      ...formErrors,
+                      image: "",
+                    });
                   }
                 }}
-                placeholder="Nhập đường dẫn hình ảnh"
+                className={formErrors.image ? "border-red-500" : ""}
               />
-              {selectedService.imageUrl && (
-                <div className="mt-2 border rounded-md p-2 bg-gray-50 ">
-                  <p className="text-xs text-gray-500 mb-1">
-                    Hình ảnh xem trước:
-                  </p>
-                  <div className="aspect-video w-full max-h-60  bg-gray-100 rounded overflow-hidden">
-                    <Image
-                      width={800}
-                      height={450}
-                      src={selectedService.imageUrl[0] || ""}
-                      alt="Preview"
-                      className="w-full h-full object-contain max-h-60"
-                      onError={(e) =>
-                        ((e.target as HTMLImageElement).src =
-                          "/icons/image-off.svg")
-                      }
-                    />
+              {formErrors.image && (
+                <p className="text-red-500 text-sm mt-1">{formErrors.image}</p>
+              )}
+
+              {/* File upload preview */}
+              {imageFiles.length > 0 && (
+                <div className="mt-2">
+                  <h4 className="text-sm font-medium mb-1">Ảnh mới đã chọn:</h4>
+                  <div className="grid grid-cols-2 gap-2">
+                    {imageFiles.map((file, index) => (
+                      <div key={`file-${index}`} className="relative group">
+                        <div className="h-40 border rounded-md bg-gray-50 flex items-center justify-center p-1">
+                          <Image
+                            height={100}
+                            width={100}
+                            src={URL.createObjectURL(file)}
+                            alt={file.name}
+                            className="object-cover w-full h-full rounded-md"
+                          />
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeFile(index)}
+                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X className="h-3 w-3" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}
-            </div>
 
-            {/* <div className="space-y-2">
-              <Label htmlFor="popularity">Điểm phổ biến (0-100)</Label>
-              <Input
-                id="popularity"
-                type="number"
-                min="0"
-                max="100"
-                value={selectedService.popularityScore || 0}
-                onChange={(e) =>
-                  setSelectedService({
-                    ...selectedService,
-                    popularityScore: Math.min(
-                      100,
-                      Math.max(0, parseInt(e.target.value) || 0)
-                    ),
-                  })
-                }
-                placeholder="Nhập điểm phổ biến (0-100)"
-              />
-              <div className="mt-1 flex items-center">
-                <Progress value={selectedService.popularityScore || 0} />
-                <span className="ml-2 text-sm">
-                  {selectedService.popularityScore || 0}%
-                </span>
-              </div>
-            </div> */}
+              {/* Existing images */}
+              {!imageFiles.length &&
+                selectedService.imageUrl &&
+                selectedService.imageUrl.length > 0 && (
+                  <div className="mt-3">
+                    <h4 className="text-sm font-medium mb-1">Ảnh hiện tại:</h4>
+                    <div className="mt-2 max-h-48">
+                      <div className="flex flex-wrap gap-2">
+                        {selectedService.imageUrl.map((img, index) => (
+                          <div
+                            key={`img-${index}`}
+                            className="relative group z-20"
+                          >
+                            <Image
+                              src={img}
+                              alt={`Service image ${index + 1}`}
+                              width={100}
+                              height={100}
+                              className="object-cover w-40 h-full max-h-60 rounded-md border"
+                              onError={(e) =>
+                                ((e.target as HTMLImageElement).src =
+                                  "/icons/image-off.svg")
+                              }
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                // Remove image from the service
+                                setSelectedService({
+                                  ...selectedService,
+                                  imageUrl: selectedService.imageUrl.filter(
+                                    (_, i) => i !== index
+                                  ),
+                                });
+                              }}
+                              className="absolute z-10 -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="category">Danh mục</Label>
+              <Label htmlFor="category">
+                Danh mục <span className="text-red-500">*</span>
+              </Label>
               <Select
                 value={selectedService.category}
                 onValueChange={(value) =>
@@ -303,7 +470,9 @@ const EditService: React.FC<EditServiceProps> = ({
                   })
                 }
               >
-                <SelectTrigger>
+                <SelectTrigger
+                  className={formErrors.category ? "border-red-500" : ""}
+                >
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -318,6 +487,11 @@ const EditService: React.FC<EditServiceProps> = ({
                   </SelectItem>
                 </SelectContent>
               </Select>
+              {formErrors.category && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.category}
+                </p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -350,7 +524,9 @@ const EditService: React.FC<EditServiceProps> = ({
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="description">Mô tả</Label>
+            <Label htmlFor="description">
+              Mô tả <span className="text-red-500">*</span>
+            </Label>
             <Textarea
               id="description"
               value={selectedService.description}
@@ -362,12 +538,25 @@ const EditService: React.FC<EditServiceProps> = ({
               }
               placeholder="Nhập mô tả gói dịch vụ"
               rows={4}
+              className={formErrors.description ? "border-red-500" : ""}
             />
+            {formErrors.description && (
+              <p className="text-red-500 text-sm mt-1">
+                {formErrors.description}
+              </p>
+            )}
           </div>
 
           <div className="space-y-2">
-            <Label>Sản phẩm bao gồm trong gói dịch vụ</Label>
-            <div className="border rounded-lg p-4 space-y-4">
+            <Label>
+              Sản phẩm bao gồm trong gói dịch vụ{" "}
+              <span className="text-red-500">*</span>
+            </Label>
+            <div
+              className={`border rounded-lg p-4 space-y-4 ${
+                formErrors.inclusions ? "border-red-500" : ""
+              }`}
+            >
               {/* Display selected products */}
               {selectedService.inclusions.length > 0 ? (
                 selectedService.inclusions.map(
@@ -429,6 +618,11 @@ const EditService: React.FC<EditServiceProps> = ({
                   Chưa có sản phẩm nào được chọn
                 </p>
               )}
+              {formErrors.inclusions && (
+                <p className="text-red-500 text-sm mt-1">
+                  {formErrors.inclusions}
+                </p>
+              )}
 
               {/* Add new product form */}
               <div className="border-t pt-4">
@@ -485,18 +679,29 @@ const EditService: React.FC<EditServiceProps> = ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+          <Button
+            variant="outline"
+            onClick={() => setIsEditDialogOpen(false)}
+            disabled={isUploading}
+          >
             Hủy
           </Button>
           <Button
-            onClick={() => onSave(selectedService, !!selectedService._id)}
-            disabled={
-              !selectedService.title ||
-              selectedService.price <= 0 ||
-              selectedService.inclusions.length === 0
+            onClick={() =>
+              handleSaveService(selectedService, !!selectedService._id)
             }
+            disabled={isUploading}
           >
-            {selectedService._id ? "Lưu" : "Tạo gói"}
+            {isUploading ? (
+              <>
+                <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-solid border-current border-r-transparent"></span>
+                Đang xử lý...
+              </>
+            ) : selectedService._id ? (
+              "Lưu thay đổi"
+            ) : (
+              "Tạo gói dịch vụ"
+            )}
           </Button>
         </DialogFooter>
       </DialogContent>

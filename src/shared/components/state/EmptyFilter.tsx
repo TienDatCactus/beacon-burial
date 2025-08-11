@@ -2,9 +2,10 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import React from "react";
 const EmptyFilter: React.FC<{
+  error?: string;
   setSearchTerm: (term: string) => void;
   setStatusFilter?: (status: string | null) => void;
-}> = ({ setSearchTerm, setStatusFilter }) => {
+}> = ({ error, setSearchTerm, setStatusFilter }) => {
   return (
     <div className="text-center py-12 border rounded-md bg-white">
       <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
@@ -17,6 +18,11 @@ const EmptyFilter: React.FC<{
         Chúng tôi không tìm thấy bất kỳ đơn hàng nào phù hợp với tiêu chí của
         bạn. Hãy thử điều chỉnh bộ lọc của bạn.
       </p>
+      {error && (
+        <p className="mt-2 text-sm text-red-500">
+          Lỗi: {error}. Vui lòng thử lại sau.
+        </p>
+      )}
       <div className="mt-6">
         <Button
           onClick={() => {

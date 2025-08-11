@@ -23,46 +23,38 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalProducts: 0,
-    hasNextPage: false,
-    hasPrevPage: false,
+    totalResults: 1,
   });
   const [query, setQuery] = useState<ProductListQuery>(initialQuery);
 
-  const fetchProducts = useCallback(
-    async (searchQuery: ProductListQuery = {}) => {
-      setLoading(true);
-      setError(null);
+  const fetchProducts = async (searchQuery: ProductListQuery = {}) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const finalQuery = { ...query, ...searchQuery };
+      const result = await getProductList(finalQuery);
 
-      try {
-        const finalQuery = { ...query, ...searchQuery };
-        const result = await getProductList(finalQuery);
-
-        if (result.success && result.data) {
-          setProducts(result.data.products);
-          setPagination({
-            currentPage: result.data.currentPage,
-            totalPages: result.data.totalPages,
-            totalProducts: result.data.totalProducts,
-            hasNextPage: result.data.hasNextPage,
-            hasPrevPage: result.data.hasPrevPage,
-          });
-          // Update query state only if search was successful
-          setQuery(finalQuery);
-        } else {
-          setError(result.error || "Không thể tải danh sách sản phẩm");
-          toast.error(result.error || "Không thể tải danh sách sản phẩm");
-        }
-      } catch (err) {
-        const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
-        setError(errorMessage);
-        toast.error(errorMessage);
-      } finally {
-        setLoading(false);
+      if (result.success && result.data) {
+        setProducts(result.data.products);
+        setPagination({
+          currentPage: result.data.currentPage,
+          totalPages: result.data.totalPages,
+          totalResults: result.data.totalProducts,
+        });
+        // Update query state only if search was successful
+        setQuery(finalQuery);
+      } else {
+        setError(result.error || "Không thể tải danh sách sản phẩm");
+        toast.error(result.error || "Không thể tải danh sách sản phẩm");
       }
-    },
-    [query]
-  );
+    } catch (err) {
+      const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
+  };
   // Stable search function that doesn't change on every render
   const searchProducts = useCallback(
     async (searchQuery: ProductListQuery) => {
@@ -77,9 +69,7 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
           setPagination({
             currentPage: result.data.currentPage,
             totalPages: result.data.totalPages,
-            totalProducts: result.data.totalProducts,
-            hasNextPage: result.data.hasNextPage,
-            hasPrevPage: result.data.hasPrevPage,
+            totalResults: result.data.totalProducts,
           });
           setQuery(searchQuery);
         } else {
@@ -140,8 +130,10 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
   }, [fetchProducts]);
 
   const refreshProducts = useCallback(() => {
-    fetchProducts(query);
-  }, [fetchProducts, query]);
+    const resetQuery = { ...initialQuery, page: 1 };
+    setQuery(resetQuery);
+    fetchProducts(resetQuery);
+  }, [fetchProducts, initialQuery]);
 
   useEffect(() => {
     fetchProducts();
@@ -215,19 +207,17 @@ export function useProductManagement() {
   const createProduct = useCallback(
     async (productData: ProductFormData): Promise<boolean> => {
       setLoading(true);
-      console.log(productData);
       try {
         const result = await adminAddProduct(productData);
 
         if (result.success) {
-          toast.success(result.message || "Thêm sản phẩm thành công");
+          toast.success(result.message);
           return true;
         } else {
-          toast.error(result.error || "Thêm sản phẩm thất bại");
+          toast.error(result.error);
           return false;
         }
       } catch (err) {
-        toast.error("Có lỗi xảy ra khi thêm sản phẩm");
         return false;
       } finally {
         setLoading(false);

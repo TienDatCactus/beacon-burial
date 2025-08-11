@@ -7,7 +7,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { NewsCategory } from "@/lib/interfaces";
+import { NewsCategory } from "@/lib/api/news";
 import { GridIcon, ListIcon, SearchIcon } from "lucide-react";
 import { Dispatch, FC, SetStateAction } from "react";
 

@@ -1,20 +1,13 @@
 import { Button } from "@/components/ui/button";
 import {
-  DialogHeader,
-  DialogFooter,
   Dialog,
   DialogContent,
+  DialogFooter,
+  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Select } from "@/components/ui/select";
 import { Order } from "@/lib/api/order";
 import { formatCurrency } from "@/lib/utils";
-import {
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@radix-ui/react-select";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Image from "next/image";

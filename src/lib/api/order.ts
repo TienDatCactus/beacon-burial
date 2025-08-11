@@ -115,9 +115,9 @@ export const getOrders = async (
     }
 
     const queryString = params.toString();
-    const url = `${API_BASE_URL}/order${queryString ? `?${queryString}` : ""}`;
+    const url = `/order${queryString ? `?${queryString}` : ""}`;
 
-    const response = await fetch(url, {
+    const response = await fetchWithAuth(url, {
       method: "GET",
     });
 
@@ -141,7 +141,7 @@ export const getOrders = async (
  */
 export const getOrderById = async (orderId: string): Promise<Order> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/order/${orderId}`, {
+    const response = await fetchWithAuth(`/order/${orderId}`, {
       method: "GET",
     });
 
@@ -238,8 +238,7 @@ export const productCheckout = async (
     });
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      console.error("API: Error response:", errorData);
+      const errorData = await response.json();
       throw new Error(
         errorData.message || `Failed to place order: ${response.status}`
       );

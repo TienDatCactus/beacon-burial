@@ -183,7 +183,7 @@ const CartPage: React.FC = () => {
                       <span>{formatCurrency(subtotal || 0)}</span>
                     </div>
 
-                    <div className="pb-4 border-b border-gray-200">
+                    {/* <div className="pb-4 border-b border-gray-200">
                       <div className="flex justify-between mb-2">
                         <span>Mã giảm giá</span>
                         <span>
@@ -228,7 +228,7 @@ const CartPage: React.FC = () => {
                     <div className="flex justify-between pb-4 border-b border-gray-200">
                       <span>Thuế</span>
                       <span>{formatCurrency(tax)}</span>
-                    </div>
+                    </div> */}
 
                     <div className="flex justify-between font-bold text-lg">
                       <span>Tổng cộng</span>

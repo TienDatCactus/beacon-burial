@@ -100,7 +100,7 @@ export const useNewsDetails = () => {
 
     try {
       const newsData = await getNewsById(newsId);
-      setNewsItem(newsData);
+      setNewsItem(newsData.data);
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : "Failed to fetch news details";

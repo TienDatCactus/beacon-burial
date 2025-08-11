@@ -27,7 +27,7 @@ export interface CreateNewsData {
   category: "Hướng dẫn" | "Kiến thức" | "Chính sách";
   summary: string;
   content: string;
-  image: string; // Single image URL
+  files?: File; // For file uploads
 }
 
 // Edit news data (without tags)
@@ -36,7 +36,7 @@ export interface EditNewsData {
   category: "Hướng dẫn" | "Kiến thức" | "Chính sách";
   summary: string;
   content: string;
-  image: string; // Single image URL
+  files?: File; // For file uploads
 }
 
 // News filters interface
@@ -141,12 +141,11 @@ export const getNewsById = async (newsId: string): Promise<News> => {
  */
 export const addNews = async (newsData: CreateNewsData): Promise<News> => {
   try {
+    const formData = createNewsFormData(newsData);
+
     const response = await fetchWithAuth("/news/add", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newsData),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -172,12 +171,11 @@ export const editNews = async (
   newsData: EditNewsData
 ): Promise<News> => {
   try {
+    const formData = createNewsFormData(newsData);
+
     const response = await fetchWithAuth(`/news/edit/${newsId}`, {
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newsData),
+      body: formData,
     });
 
     if (!response.ok) {
@@ -229,3 +227,24 @@ export const NEWS_CATEGORIES = [
   { value: "Kiến thức", label: "Kiến thức" },
   { value: "Chính sách", label: "Chính sách" },
 ] as const;
+
+// Add this FormData helper function
+function createNewsFormData(newsData: any): FormData {
+  const formData = new FormData();
+
+  // Add text fields
+  if (newsData.title) formData.append("title", newsData.title);
+  if (newsData.slug) formData.append("slug", newsData.slug);
+  if (newsData.category) formData.append("category", newsData.category);
+  if (newsData.summary) formData.append("summary", newsData.summary);
+  if (newsData.content) formData.append("content", newsData.content);
+
+  // Add image files if they exist
+  if (newsData.files && newsData.files.length > 0) {
+    for (const file of newsData.files) {
+      formData.append("image", file);
+    }
+  }
+
+  return formData;
+}

@@ -19,13 +19,6 @@ export const renderStars = (rating: number) => {
   ));
 };
 
-export const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(amount);
-};
-
 export const getCategoryStyle = (category: string) => {
   switch (category) {
     case "Premium":
@@ -67,3 +60,69 @@ export const getStatusBadge = (status: string) => {
       return <Badge variant="outline">{status}</Badge>;
   }
 };
+
+// Vietnamese provinces/cities data
+export const vietnameseProvinces = [
+  "Cao Bằng",
+  "Điện Biên",
+  "Hà Giang",
+  "Lai Châu",
+  "Sơn La",
+  "Lạng Sơn",
+  "Quảng Ninh",
+  "Thanh Hóa",
+  "Nghệ An",
+  "Hà Tĩnh",
+  "Quảng Bình",
+  "Quảng Trị",
+  "Thừa Thiên–Huế", // nhưng Huế là municipality, để ý tách rõ
+  "Bình Định",
+  "Phú Yên",
+  "Khánh Hòa",
+  "Ninh Thuận",
+  "Bình Thuận",
+  "Quảng Nam",
+  "Quảng Ngãi",
+  "Kon Tum",
+  "Gia Lai",
+  "Đắk Lắk",
+  "Đắk Nông",
+  "Lâm Đồng",
+  "An Giang",
+  "Vĩnh Long",
+  "Đồng Tháp",
+  "Cà Mau",
+  "Bến Tre",
+  "Kiên Giang",
+  "Sóc Trăng",
+  "Hậu Giang",
+  "Trà Vinh",
+  "Long An",
+  "Tiền Giang",
+  "Bình Dương",
+  "Đồng Nai",
+  "Bà Rịa–Vũng Tàu",
+  "Bình Phước",
+  "Tây Ninh",
+  "Bạc Liêu",
+  "Cao Bằng", // trùng nếu có
+  "Tuyên Quang",
+  "Yên Bái",
+  "Thái Nguyên",
+  "Phú Thọ",
+  "Hòa Bình",
+  "Hưng Yên",
+  "Bắc Ninh",
+  "Ninh Bình",
+  "Nam Định",
+  "Thái Bình",
+];
+
+export const majorCities = [
+  "Hà Nội",
+  "Hồ Chí Minh",
+  "Đà Nẵng",
+  "Hải Phòng",
+  "Cần Thơ",
+  "Huế",
+];

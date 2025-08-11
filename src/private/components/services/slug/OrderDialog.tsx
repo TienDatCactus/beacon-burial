@@ -25,101 +25,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ServiceCheckoutData } from "@/lib/api/order";
 import { Service } from "@/lib/api/service";
-import { cn } from "@/lib/utils";
+import { cn, majorCities, vietnameseProvinces } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { vi } from "date-fns/locale";
-import { CalendarIcon, MapPin, Phone, Mail, User, Home } from "lucide-react";
-import React, { useState, useEffect } from "react";
+import { CalendarIcon, Home, Mail, MapPin, Phone, User } from "lucide-react";
+import React, { useEffect, useState } from "react";
 
 // Vietnamese provinces/cities data
-const vietnameseProvinces = [
-  "An Giang",
-  "Bà Rịa - Vũng Tàu",
-  "Bắc Giang",
-  "Bắc Kạn",
-  "Bạc Liêu",
-  "Bắc Ninh",
-  "Bến Tre",
-  "Bình Định",
-  "Bình Dương",
-  "Bình Phước",
-  "Bình Thuận",
-  "Cà Mau",
-  "Cao Bằng",
-  "Đắk Lắk",
-  "Đắk Nông",
-  "Điện Biên",
-  "Đồng Nai",
-  "Đồng Tháp",
-  "Gia Lai",
-  "Hà Giang",
-  "Hà Nam",
-  "Hà Tĩnh",
-  "Hải Dương",
-  "Hậu Giang",
-  "Hòa Bình",
-  "Hưng Yên",
-  "Khánh Hòa",
-  "Kiên Giang",
-  "Kon Tum",
-  "Lai Châu",
-  "Lâm Đồng",
-  "Lạng Sơn",
-  "Lào Cai",
-  "Long An",
-  "Nam Định",
-  "Nghệ An",
-  "Ninh Bình",
-  "Ninh Thuận",
-  "Phú Thọ",
-  "Quảng Bình",
-  "Quảng Nam",
-  "Quảng Ngãi",
-  "Quảng Ninh",
-  "Quảng Trị",
-  "Sóc Trăng",
-  "Sơn La",
-  "Tây Ninh",
-  "Thái Bình",
-  "Thái Nguyên",
-  "Thanh Hóa",
-  "Thừa Thiên Huế",
-  "Tiền Giang",
-  "Trà Vinh",
-  "Tuyên Quang",
-  "Vĩnh Long",
-  "Vĩnh Phúc",
-  "Yên Bái",
-  // Major cities
-  "TP. Hồ Chí Minh",
-  "Hà Nội",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-];
-
-const majorCities = [
-  "TP. Hồ Chí Minh",
-  "Hà Nội",
-  "Đà Nẵng",
-  "Hải Phòng",
-  "Cần Thơ",
-  "Biên Hòa",
-  "Nha Trang",
-  "Huế",
-  "Rạch Giá",
-  "Cà Mau",
-  "Long Xuyên",
-  "Thái Nguyên",
-  "Thanh Hóa",
-  "Vinh",
-  "Buôn Ma Thuột",
-  "Pleiku",
-  "Mỹ Tho",
-  "Vũng Tàu",
-  "Đà Lạt",
-  "Phan Thiết",
-];
 
 const OrderDialog: React.FC<{
   service: Service;
@@ -195,7 +107,6 @@ const OrderDialog: React.FC<{
   // Format phone number while typing
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     let value = e.target.value.replace(/\D/g, ""); // Remove non-digits
-
     // Format as: 0123 456 789
     if (value.length > 0) {
       if (value.length <= 4) {
@@ -209,40 +120,12 @@ const OrderDialog: React.FC<{
         )}`;
       }
     }
-
     setOrderForm({ ...orderForm, phone: value });
   };
 
   // Auto-suggest province based on city selection
   const handleCityChange = (city: string) => {
     setOrderForm({ ...orderForm, city });
-
-    // Auto-suggest province based on major cities
-    const cityProvinceMap: { [key: string]: string } = {
-      "TP. Hồ Chí Minh": "TP. Hồ Chí Minh",
-      "Hà Nội": "Hà Nội",
-      "Đà Nẵng": "Đà Nẵng",
-      "Hải Phòng": "Hải Phòng",
-      "Cần Thơ": "Cần Thơ",
-      "Biên Hòa": "Đồng Nai",
-      "Nha Trang": "Khánh Hòa",
-      Huế: "Thừa Thiên Huế",
-      "Rạch Giá": "Kiên Giang",
-      "Long Xuyên": "An Giang",
-      "Thái Nguyên": "Thái Nguyên",
-      "Thanh Hóa": "Thanh Hóa",
-      Vinh: "Nghệ An",
-      "Buôn Ma Thuột": "Đắk Lắk",
-      Pleiku: "Gia Lai",
-      "Mỹ Tho": "Tiền Giang",
-      "Vũng Tàu": "Bà Rịa - Vũng Tàu",
-      "Đà Lạt": "Lâm Đồng",
-      "Phan Thiết": "Bình Thuận",
-    };
-
-    if (cityProvinceMap[city] && !orderForm.province) {
-      setOrderForm({ ...orderForm, city, province: cityProvinceMap[city] });
-    }
   };
   return (
     <Dialog open={isOrderDialogOpen} onOpenChange={setIsOrderDialogOpen}>
@@ -412,7 +295,7 @@ const OrderDialog: React.FC<{
 
               <div className="space-y-2">
                 <Label className="text-sm font-medium">
-                  Tỉnh/Thành phố <span className="text-red-500">*</span>
+                  Tỉnh <span className="text-red-500">*</span>
                 </Label>
                 <Select
                   value={orderForm.province}

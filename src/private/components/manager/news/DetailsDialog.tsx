@@ -6,10 +6,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { News } from "@/lib/interfaces";
-import { CalendarIcon, TagIcon, User2Icon } from "lucide-react";
+import { News } from "@/lib/api/news";
+import { CalendarIcon, User2Icon } from "lucide-react";
 import Image from "next/image";
-import React, { FC } from "react";
+import { FC } from "react";
 
 interface DetailsDialogProps {
   isViewDialogOpen: boolean;

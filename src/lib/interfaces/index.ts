@@ -12,3 +12,11 @@ export interface CartItem {
   product: Product;
   quantity: number;
 }
+
+export const categories = [
+  "Quan tài an táng",
+  "Quan tài hỏa táng",
+  "Tiểu quách",
+  "Hũ tro cốt",
+  "Áo quan",
+];

@@ -1,5 +1,7 @@
 "use client";
 
+import { useServices } from "@/lib/hooks/useServices";
+import ServiceCard from "@/private/components/services/ServiceCard";
 import ServiceContactBanner from "@/private/components/services/ServiceContactBanner";
 import ServiceEmpty from "@/private/components/services/ServiceEmpty";
 import ServiceFeatured from "@/private/components/services/ServiceFeature";
@@ -9,16 +11,10 @@ import ServiceIntro from "@/private/components/services/ServiceIntro";
 import ServiceSideGuide from "@/private/components/services/ServiceSideGuide";
 import ServiceTestimonial from "@/private/components/services/ServiceTestimonial";
 import PathCrumbs from "@/shared/components/layouts/path-crumbs";
-import { useServices, useServiceCategories } from "@/lib/hooks/useServices";
-import { useProducts } from "@/lib/hooks/useProducts";
-import { Service } from "@/lib/api/service";
-import { Product } from "@/lib/api/product";
-import React, { useState, useEffect, useCallback, useMemo } from "react";
-import { toast } from "sonner";
-import ServiceCard from "@/private/components/services/ServiceCard";
+import React, { useCallback, useEffect, useState } from "react";
 
 const ServicesPage: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   // API hooks
@@ -32,34 +28,28 @@ const ServicesPage: React.FC = () => {
     goToPage,
   } = useServices({ page: 1, limit: 9 });
 
-  const handleSearch = useCallback(
-    (query: string) => {
-      setSearchQuery(query);
-      if (apiServices && apiServices.length > 0) {
-        searchByKeyword(query);
-      }
-    },
-    [apiServices, searchByKeyword]
-  );
-
-  const handleCategoryFilter = useCallback(
-    (category: string | null) => {
-      setSelectedCategory(category);
-      if (apiServices && apiServices.length > 0) {
-        filterByCategory(category);
-      }
-    },
-    [apiServices, filterByCategory]
-  );
-
-  // Get service categories
-
-  // Show error toast if API fails
+  // Implement debounced search like in the manager component
   useEffect(() => {
-    if (error) {
-      toast.error("Không thể tải danh sách dịch vụ. Hiển thị dữ liệu mẫu.");
-    }
-  }, [error]);
+    const timeoutId = setTimeout(() => {
+      if (searchTerm.trim()) {
+        searchByKeyword(searchTerm.trim());
+      } else if (searchTerm === "") {
+        searchByKeyword(""); // Reset search when term is empty
+      }
+    }, 1000); // 500ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [searchTerm]);
+
+  // Handle search input changes
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+  };
+  // Handle category filter
+  const handleCategoryFilter = (category: string | null) => {
+    setSelectedCategory(category);
+    filterByCategory(category);
+  };
 
   return (
     <div className="bg-gray-50 min-h-screen">
@@ -95,7 +85,7 @@ const ServicesPage: React.FC = () => {
             <ServiceFilter
               filteredServices={apiServices}
               serviceCategories={["Phật giáo", "Công giáo", "Hồi giáo"]}
-              searchQuery={searchQuery}
+              searchQuery={searchTerm}
               setSearchQuery={handleSearch}
               selectedCategory={selectedCategory}
               setSelectedCategory={handleCategoryFilter}
@@ -104,7 +94,7 @@ const ServicesPage: React.FC = () => {
             {/* Empty State */}
             {apiServices.length === 0 && !loading && (
               <ServiceEmpty
-                setSearchQuery={setSearchQuery}
+                setSearchQuery={setSearchTerm}
                 setSelectedCategory={setSelectedCategory}
               />
             )}

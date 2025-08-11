@@ -9,11 +9,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useCartStore } from "@/lib/stores/useCartStore";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { ShoppingCart } from "lucide-react";
 import Image from "next/image";
-import React from "react";
-import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
+import React from "react";
 const CartPreview: React.FC = () => {
   const { items, totalItems, subtotal } = useCartStore();
   return (

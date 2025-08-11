@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { News } from "@/lib/interfaces";
+import { News } from "@/lib/api/news";
 import Image from "next/image";
 import React, { FC } from "react";
 

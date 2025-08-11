@@ -10,6 +10,7 @@ import {
   ServiceFilters,
   UpdateServiceData,
 } from "@/lib/api/service";
+import { is } from "date-fns/locale";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 
@@ -22,8 +23,7 @@ export const useServices = (initialFilters: ServiceFilters = {}) => {
   const [pagination, setPagination] = useState({
     currentPage: 1,
     totalPages: 1,
-    totalItems: 0,
-    itemsPerPage: 9,
+    totalResults: 1,
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,18 +44,16 @@ export const useServices = (initialFilters: ServiceFilters = {}) => {
       try {
         const appliedFilters = newFilters || filters;
         const response = await getServices(appliedFilters);
-        if (response) {
+        if (response && response.data != undefined) {
           setServices(response.data.data);
           setPagination({
             currentPage: response.data.currentPage,
             totalPages: response.data.totalPages,
-            totalItems: response.data.totalResults,
-            itemsPerPage: appliedFilters.limit || 9,
+            totalResults: response.data.totalResults,
           });
-          toast.success("Danh sách dịch vụ đã được tải thành công!");
         } else {
           setError("Failed to fetch services");
-          toast.error("Không thể tải danh sách dịch vụ");
+          toast.error(response.error || "Không thể tải danh sách dịch vụ");
         }
       } catch (err) {
         const errorMessage =
@@ -258,7 +256,7 @@ export const useService = (serviceId: string | null) => {
     try {
       const serviceData = await getServiceById(id);
       if (serviceData) {
-        setService(serviceData);
+        setService(serviceData.data ?? null);
       } else {
         setError("Service not found");
         toast.error("Không tìm thấy dịch vụ");
@@ -313,7 +311,7 @@ export const useFeaturedServices = () => {
     try {
       const response = await getServices({ limit: 6 }); // Get first 6 services
 
-      if (response) {
+      if (response && response.data && Array.isArray(response.data)) {
         const featured = response.data.filter(
           (service: Service) => service.isFeatured
         );

@@ -299,12 +299,7 @@ export default function ProductPage() {
             >
               Mô tả
             </TabsTrigger>
-            <TabsTrigger
-              value="reviews"
-              className="data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none"
-            >
-              Đánh giá (1)
-            </TabsTrigger>
+
             <TabsTrigger
               value="additional"
               className="data-[state=active]:border-b-2 data-[state=active]:border-primary  rounded-none"
@@ -331,30 +326,6 @@ export default function ProductPage() {
                 khi giao đến tay khách hàng.
               </p>
             </div>
-          </TabsContent>
-
-          <TabsContent value="reviews" className="pt-6">
-            <div className="flex items-center mb-4">
-              <div className="flex mr-2">{renderStars(5)}</div>
-              <span className="text-sm text-gray-600">Based on 1 review</span>
-            </div>
-
-            <div className="border-t border-b border-gray-200 py-6 my-6">
-              <div className="flex items-center mb-2">
-                <span className="font-medium mr-2">Jane Doe</span>
-                <span className="text-sm text-gray-500">– March 15, 2025</span>
-              </div>
-              <div className="flex mb-3">{renderStars(5)}</div>
-              <p className="text-gray-700">
-                Beautiful arrangement that arrived on time and lasted for weeks.
-                The flowers were fresh and exactly as pictured. Would definitely
-                order again.
-              </p>
-            </div>
-
-            <Button className="bg-primary hover:bg-amber-600 text-white">
-              Write a review
-            </Button>
           </TabsContent>
 
           <TabsContent value="additional" className="pt-6">
