@@ -3,20 +3,20 @@ import { persist } from "zustand/middleware";
 
 import {
   AuthState,
-  LoginCredentials,
   ForgetPasswordRequest,
-  VerifyOtpRequest,
+  LoginCredentials,
   ResetPasswordRequest,
+  VerifyOtpRequest,
 } from "@/lib/interfaces/auth";
 
 import {
+  forgetPassword as apiForgetPassword,
   login as apiLogin,
   logout as apiLogout,
-  forgetPassword as apiForgetPassword,
-  verifyOtp as apiVerifyOtp,
   resetPassword as apiResetPassword,
-  getAuthToken,
+  verifyOtp as apiVerifyOtp,
   isAuthenticated as checkIsAuthenticated,
+  getAuthToken,
 } from "@/lib/api/authen";
 
 const useAuth = create<AuthState>()(

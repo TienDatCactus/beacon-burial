@@ -5,7 +5,6 @@ import {
   CardDescription,
   CardContent,
 } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
 import React from "react";
 import {
   ResponsiveContainer,
@@ -23,6 +22,7 @@ import {
 import ProgressBar from "./ProgressBar";
 import { TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
+import { formatCurrency } from "@/lib/utils/formatting";
 const OverviewTab: React.FC<{
   mockSummaryData: {
     monthlySales: { month: string; revenue: number }[];

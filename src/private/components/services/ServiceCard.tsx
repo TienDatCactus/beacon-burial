@@ -1,9 +1,8 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
 import { Service } from "@/lib/api/service";
 import { formatCurrency } from "@/lib/utils/formatting";
-import { Users, ChevronRight, Check } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState } from "react";

@@ -10,22 +10,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import useAuth from "@/lib/stores/useAuthStores";
-import { AuthState } from "@/lib/interfaces/auth";
 import {
   Facebook,
   Instagram,
+  LogOut,
   MapPin,
   Phone,
-  Twitter,
-  User,
-  LogOut,
   Settings,
   ShoppingCart,
+  Twitter,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { toast } from "sonner";
 import CartPreview from "../cart";
 
@@ -48,7 +46,7 @@ const NoneHomeHeader: React.FC = () => {
       await logout();
       toast.success("Đăng xuất thành công");
       router.push("/");
-    } catch (error) {
+    } catch {
       toast.error("Có lỗi xảy ra khi đăng xuất");
     }
   };

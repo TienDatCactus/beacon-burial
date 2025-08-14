@@ -16,14 +16,7 @@ import { Plus } from "lucide-react";
 const NewsPage: React.FC = () => {
   // Real API hooks
   const { news, pagination, loading, error, fetchNews } = useNews();
-  const {
-    creating,
-    updating,
-    changingStatus,
-    createNews,
-    updateNews,
-    updateNewsStatus,
-  } = useNewsManagement();
+  const { creating, updateNewsStatus } = useNewsManagement();
 
   // Local state for UI
   const [currentView, setCurrentView] = useState<"list" | "grid">("list");
@@ -270,7 +263,6 @@ const NewsPage: React.FC = () => {
         setFilteredNews={() => {
           fetchNews({ page: pagination.currentPage, limit: 10 });
         }}
-        filteredNews={filteredNews}
         setSelectedNews={setSelectedNews}
         categories={categories}
       />

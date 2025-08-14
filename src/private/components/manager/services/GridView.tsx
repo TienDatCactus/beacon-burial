@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -7,7 +8,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -15,17 +15,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Switch } from "@/components/ui/switch";
-import {
-  Check,
-  Edit,
-  MoreHorizontal,
-  PackageCheck,
-  Trash2,
-} from "lucide-react";
-import React from "react";
-import { Badge } from "@/components/ui/badge";
-import Image from "next/image";
 import { Service } from "@/lib/api/service";
+import { formatCurrency } from "@/lib/utils/formatting";
+import { Check, Edit, MoreHorizontal, PackageCheck } from "lucide-react";
+import Image from "next/image";
+import React from "react";
 import ServicePagination from "./ServicePagination";
 
 const GridView: React.FC<{
@@ -164,7 +158,7 @@ const GridView: React.FC<{
               <Switch
                 id={`grid-status-${service._id}`}
                 checked={service.status === "active"}
-                onCheckedChange={(checked) =>
+                onCheckedChange={(checked: any) =>
                   toggleStatus(service._id, checked ? "active" : "inactive")
                 }
                 aria-label={`Toggle ${service.title} status`}

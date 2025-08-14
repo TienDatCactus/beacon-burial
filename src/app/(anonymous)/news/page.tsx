@@ -1,14 +1,8 @@
 "use client";
 
-import React, { useState, useEffect, useMemo } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CalendarIcon, SearchIcon } from "lucide-react";
-import Link from "next/link";
-import Image from "next/image";
-import { useNews } from "@/lib/hooks/useNews";
-import { NewsFilters } from "@/lib/api/news";
+import { Input } from "@/components/ui/input";
 import {
   Pagination,
   PaginationContent,
@@ -18,6 +12,11 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { useNews } from "@/lib/hooks/useNews";
+import { CalendarIcon, SearchIcon } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import React, { useEffect, useMemo, useState } from "react";
 
 const NewsPage = () => {
   // Get all news at once for client-side filtering

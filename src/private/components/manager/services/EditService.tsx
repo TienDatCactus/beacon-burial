@@ -9,7 +9,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
 
 import { Label } from "@/components/ui/label";
@@ -21,13 +20,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
-import { Service } from "@/lib/api/service";
 import { Product } from "@/lib/api/product";
+import { Service } from "@/lib/api/service";
 import { useProducts } from "@/lib/hooks/useProducts";
 import { useServiceManagement, useServices } from "@/lib/hooks/useServices";
 import { Plus, X } from "lucide-react";
 import Image from "next/image";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 interface EditServiceProps {
@@ -463,7 +462,7 @@ const EditService: React.FC<EditServiceProps> = ({
               </Label>
               <Select
                 value={selectedService.category}
-                onValueChange={(value) =>
+                onValueChange={(value: any) =>
                   setSelectedService({
                     ...selectedService,
                     category: value,
@@ -500,7 +499,7 @@ const EditService: React.FC<EditServiceProps> = ({
                 <Switch
                   id="status"
                   checked={selectedService.status === "active"}
-                  onCheckedChange={(checked) =>
+                  onCheckedChange={(checked: any) =>
                     setSelectedService({
                       ...selectedService,
                       status: checked ? "active" : "inactive",

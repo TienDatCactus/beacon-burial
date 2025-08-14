@@ -35,7 +35,7 @@ const NewsPagination: React.FC<NewsPaginationProps> = ({
     } else {
       // Complex logic for when we have many pages
       let startPage = Math.max(1, currentPage - 2);
-      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
       // Adjust if we're near the end
       if (endPage - startPage < maxVisiblePages - 1) {

@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Pagination,
   PaginationContent,
@@ -8,6 +7,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import React from "react";
 
 interface ProductPaginationProps {
   currentPage: number;
@@ -35,7 +35,7 @@ const ProductPagination: React.FC<ProductPaginationProps> = ({
     } else {
       // Complex logic for when we have many pages
       let startPage = Math.max(1, currentPage - 2);
-      let endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
+      const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1);
 
       // Adjust if we're near the end
       if (endPage - startPage < maxVisiblePages - 1) {

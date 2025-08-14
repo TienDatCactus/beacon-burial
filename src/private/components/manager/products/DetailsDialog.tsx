@@ -1,18 +1,17 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  DialogHeader,
-  DialogFooter,
   Dialog,
   DialogContent,
-  DialogTitle,
   DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
 } from "@/components/ui/dialog";
-import { Edit, PackageX, PackageCheck } from "lucide-react";
+import { Product } from "@/lib/api/product";
+import { Edit, PackageCheck, PackageX } from "lucide-react";
 import Image from "next/image";
 import React from "react";
-import ProductFeatureItem from "./ProductFeatureItem";
-import { Product } from "@/lib/api/product";
 const DetailsDialog: React.FC<{
   isViewDialogOpen: boolean;
   setIsViewDialogOpen: (open: boolean) => void;

@@ -187,7 +187,9 @@ export default function AuthPage() {
                 <Checkbox
                   id="remember-me"
                   checked={remember}
-                  onCheckedChange={(checked) => setRemember(checked === true)}
+                  onCheckedChange={(checked: any) =>
+                    setRemember(checked === true)
+                  }
                   className="text-primary"
                 />
                 <label

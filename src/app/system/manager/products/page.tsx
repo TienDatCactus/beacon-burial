@@ -98,11 +98,6 @@ const ProductManagementPage: React.FC = () => {
     setIsDeleteDialogOpen(true);
   };
 
-  const deleteProduct = async () => {
-    toast.error("Tính năng xóa sản phẩm chưa được hỗ trợ bởi API");
-    setIsDeleteDialogOpen(false);
-  };
-
   // Create new product
   const handleCreateProduct = () => {
     const newProduct: Partial<Product> = {

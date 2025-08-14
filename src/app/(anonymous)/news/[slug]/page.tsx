@@ -1,22 +1,20 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import { News } from "@/lib/api/news";
-import { useNewsDetails } from "@/lib/hooks/useNews";
-import { ArrowLeftIcon, CalendarIcon, TagIcon, User2Icon } from "lucide-react";
+import { useNews, useNewsDetails } from "@/lib/hooks/useNews";
+import { ArrowLeftIcon, CalendarIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useParams, useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
+import { useEffect } from "react";
 
 export default function NewsDetail() {
   const slug = useParams().slug as string;
-  const router = useRouter();
 
   const { newsItem, loading, error, fetchNewsDetails, clearNewsDetails } =
     useNewsDetails();
-  const [relatedNews, setRelatedNews] = useState<News[]>([]);
 
+  const { news } = useNews();
   // Fetch news by slug
   useEffect(() => {
     const fetchNews = async () => {
@@ -100,16 +98,14 @@ export default function NewsDetail() {
         </h1>
 
         <div className="flex flex-wrap gap-4 text-sm text-muted-foreground mb-6">
-          <div className="flex items-center gap-1">
+          {/* <div className="flex items-center gap-1">
             <User2Icon className="h-4 w-4" />
-            <span>{newsItem.author}</span>
-          </div>
+            <span>{newsItem.}</span>
+          </div> */}
           <div className="flex items-center gap-1">
             <CalendarIcon className="h-4 w-4" />
             <span>
-              {new Date(
-                newsItem.created_at || newsItem.publishedAt
-              ).toLocaleDateString("vi-VN")}
+              {new Date(newsItem.created_at).toLocaleDateString("vi-VN")}
             </span>
           </div>
           <div className="flex items-center gap-1">
@@ -145,7 +141,7 @@ export default function NewsDetail() {
         />
 
         {/* Tags */}
-        {newsItem.tags && newsItem.tags.length > 0 && (
+        {/* {newsItem.tags && newsItem.tags.length > 0 && (
           <div className="flex items-start gap-2 mt-8 border-t pt-6">
             <TagIcon className="h-5 w-5 mt-1 text-muted-foreground" />
             <div className="flex flex-wrap gap-2">
@@ -160,15 +156,15 @@ export default function NewsDetail() {
               ))}
             </div>
           </div>
-        )}
+        )} */}
       </div>
 
       {/* Related articles */}
-      {relatedNews.length > 0 && (
+      {news.length > 0 && (
         <div className="max-w-5xl mx-auto mt-16">
           <h2 className="text-2xl font-bold mb-6">Bài viết liên quan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {relatedNews.map((news) => (
+            {news.map((news) => (
               <Link
                 key={news._id}
                 href={`/news/${news.slug}`}

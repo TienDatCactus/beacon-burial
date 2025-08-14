@@ -11,7 +11,7 @@ import ServiceIntro from "@/private/components/services/ServiceIntro";
 import ServiceSideGuide from "@/private/components/services/ServiceSideGuide";
 import ServiceTestimonial from "@/private/components/services/ServiceTestimonial";
 import PathCrumbs from "@/shared/components/layouts/path-crumbs";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const ServicesPage: React.FC = () => {
   const [searchTerm, setSearchTerm] = useState("");

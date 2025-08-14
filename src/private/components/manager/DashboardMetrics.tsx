@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { formatCurrency } from "@/lib/utils";
 import { useDashboardStatistics } from "@/lib/hooks/useDashboard";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { DollarSign, ShoppingCart, TrendingUp, Users } from "lucide-react";
 import React from "react";
 

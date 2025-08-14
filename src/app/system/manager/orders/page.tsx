@@ -212,9 +212,6 @@ const OrdersPage: React.FC = () => {
           isDialogOpen={isDialogOpen}
           setIsDialogOpen={setIsDialogOpen}
           selectedOrder={selectedOrder}
-          updateOrderStatus={(orderId, newStatus) =>
-            updateOrderStatus(orderId, newStatus as "Accept" | "Deny")
-          }
           closeDialog={closeDialog}
         />
       )}

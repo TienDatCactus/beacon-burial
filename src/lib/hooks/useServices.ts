@@ -10,7 +10,6 @@ import {
   ServiceFilters,
   UpdateServiceData,
 } from "@/lib/api/service";
-import { is } from "date-fns/locale";
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 

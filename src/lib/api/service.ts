@@ -44,7 +44,9 @@ export interface CreateServiceData {
   files?: File[]; // For file uploads
 }
 
-export interface UpdateServiceData extends Partial<CreateServiceData> {}
+export interface UpdateServiceData extends Partial<CreateServiceData> {
+  inclusions?: string[]; // Optional for updates
+}
 
 export interface ApiResponse<T = any> {
   success: boolean;

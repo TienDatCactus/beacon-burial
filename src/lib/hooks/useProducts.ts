@@ -47,7 +47,7 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
         setError(result.error || "Không thể tải danh sách sản phẩm");
         toast.error(result.error || "Không thể tải danh sách sản phẩm");
       }
-    } catch (err) {
+    } catch {
       const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -76,7 +76,7 @@ export function useProducts(initialQuery: ProductListQuery = {}) {
           setError(result.error || "Không thể tải danh sách sản phẩm");
           toast.error(result.error || "Không thể tải danh sách sản phẩm");
         }
-      } catch (err) {
+      } catch {
         const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
         setError(errorMessage);
         toast.error(errorMessage);
@@ -176,7 +176,7 @@ export function useProduct(productId?: string) {
         setError(result.error || "Không thể tải thông tin sản phẩm");
         toast.error(result.error || "Không thể tải thông tin sản phẩm");
       }
-    } catch (err) {
+    } catch {
       const errorMessage = "Có lỗi xảy ra khi tải sản phẩm";
       setError(errorMessage);
       toast.error(errorMessage);
@@ -217,7 +217,7 @@ export function useProductManagement() {
           toast.error(result.error);
           return false;
         }
-      } catch (err) {
+      } catch {
         return false;
       } finally {
         setLoading(false);
@@ -243,7 +243,7 @@ export function useProductManagement() {
           toast.error(result.error || "Cập nhật sản phẩm thất bại");
           return false;
         }
-      } catch (err) {
+      } catch {
         toast.error("Có lỗi xảy ra khi cập nhật sản phẩm");
         return false;
       } finally {
@@ -267,7 +267,7 @@ export function useProductManagement() {
           toast.error(result.error || "Thay đổi trạng thái thất bại");
           return false;
         }
-      } catch (err) {
+      } catch {
         toast.error("Có lỗi xảy ra khi thay đổi trạng thái");
         return false;
       } finally {
@@ -303,7 +303,7 @@ export function useFeaturedProducts(limit: number = 6) {
       } else {
         setError(result.error || "Không thể tải sản phẩm nổi bật");
       }
-    } catch (err) {
+    } catch {
       setError("Có lỗi xảy ra khi tải sản phẩm nổi bật");
     } finally {
       setLoading(false);
@@ -346,7 +346,7 @@ export function useProductSearch(debounceMs: number = 300) {
       } else {
         setSearchResults([]);
       }
-    } catch (err) {
+    } catch {
       setSearchResults([]);
     } finally {
       setLoading(false);

@@ -16,25 +16,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { cn } from "@/lib/utils";
-import React, { FC, useState, useEffect } from "react";
+import { News, NewsCategory } from "@/lib/api/news";
 import { useNewsManagement } from "@/lib/hooks/useNews";
-import {
-  CreateNewsData,
-  EditNewsData,
-  News,
-  NewsCategory,
-} from "@/lib/api/news";
-import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 import { X } from "lucide-react";
 import Image from "next/image";
+import React, { FC, useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface EditDialogProps {
   isEditDialogOpen: boolean;
   setIsEditDialogOpen: (open: boolean) => void;
   selectedNews: News | null;
-  setFilteredNews: (callback: () => void) => void; // Changed to callback function
-  filteredNews: News[];
+  setFilteredNews: (callback: () => void) => void;
   setSelectedNews: (news: News | null) => void;
   categories: NewsCategory[];
 }
@@ -44,7 +38,6 @@ const EditDialog: FC<EditDialogProps> = ({
   setIsEditDialogOpen,
   selectedNews,
   setFilteredNews,
-  filteredNews,
   setSelectedNews,
   categories,
 }) => {

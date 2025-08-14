@@ -9,12 +9,12 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { formatCurrency } from "@/lib/utils";
-import { Edit, Info, PackageCheck, Trash2 } from "lucide-react";
+import { Edit, Info, PackageCheck } from "lucide-react";
 import React from "react";
 
-import Image from "next/image";
 import { Service } from "@/lib/api/service";
+import { formatCurrency } from "@/lib/utils/formatting";
+import Image from "next/image";
 import ServicePagination from "./ServicePagination";
 
 interface TableViewProps {

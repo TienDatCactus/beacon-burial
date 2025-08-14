@@ -7,7 +7,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Order } from "@/lib/api/order";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import Image from "next/image";
@@ -16,15 +16,8 @@ const OrderDetails: React.FC<{
   isDialogOpen: boolean;
   setIsDialogOpen: (open: boolean) => void;
   selectedOrder: Order;
-  updateOrderStatus: (id: string, status: string) => void;
   closeDialog: () => void;
-}> = ({
-  isDialogOpen,
-  setIsDialogOpen,
-  selectedOrder,
-  updateOrderStatus,
-  closeDialog,
-}) => {
+}> = ({ isDialogOpen, setIsDialogOpen, selectedOrder, closeDialog }) => {
   return (
     <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
       <DialogContent className="max-w-3xl">

@@ -30,7 +30,6 @@ import {
   Search,
 } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
 
 export const ServiceInclusionItem: React.FC<{ item: any }> = ({ item }) => {
   return (
@@ -58,8 +57,7 @@ const ServicesManagementPage = () => {
     goToPage,
     refreshServices,
   } = useServices({ limit: 9 }); // 9 services per page as specified
-  const { createService, updateService, toggleServiceStatus } =
-    useServiceManagement();
+  const { toggleServiceStatus } = useServiceManagement();
 
   const { categories } = useServiceCategories();
 
@@ -68,7 +66,6 @@ const ServicesManagementPage = () => {
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"list" | "grid">("list");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
   const [priceRangeFilter, setPriceRangeFilter] = useState<string | null>(null);
@@ -126,7 +123,6 @@ const ServicesManagementPage = () => {
 
   const handleConfirmDeleteService = (service: Service) => {
     setSelectedService(service);
-    setIsDeleteDialogOpen(true);
   };
 
   // Create new service
@@ -145,11 +141,6 @@ const ServicesManagementPage = () => {
     };
     setSelectedService(newService as Service);
     setIsEditDialogOpen(true);
-  };
-
-  const deleteService = async () => {
-    toast.error("Tính năng xóa dịch vụ chưa được hỗ trợ bởi API");
-    setIsDeleteDialogOpen(false);
   };
 
   // Show loading state

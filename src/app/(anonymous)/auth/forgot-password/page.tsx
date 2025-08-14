@@ -2,12 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import useAuth from "@/lib/stores/useAuthStores";
 import { AuthState } from "@/lib/interfaces/auth";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import useAuth from "@/lib/stores/useAuthStores";
+import { ArrowLeft, CheckCircle, Mail } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 export default function ForgotPasswordPage() {

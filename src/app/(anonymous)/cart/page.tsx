@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
 import {
   MinusIcon,

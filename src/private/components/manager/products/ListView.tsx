@@ -16,8 +16,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Product } from "@/lib/api/product";
-import { formatCurrency } from "@/lib/utils";
-import { Edit, Info, MoreHorizontal, Trash2 } from "lucide-react";
+import { formatCurrency } from "@/lib/utils/formatting";
+import { Edit, Info, MoreHorizontal } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import ProductPagination from "./ProductPagination";
@@ -40,7 +40,6 @@ const ListView: React.FC<ListViewProps> = ({
   toggleStatus,
   viewProductDetails,
   editProduct,
-  confirmDeleteProduct,
   pagination,
   goToPage,
 }) => {

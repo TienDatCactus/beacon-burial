@@ -3,11 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Product } from "@/lib/api/product";
-import { formatCurrency } from "@/lib/utils";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 import ProductPagination from "./ProductPagination";
+import { formatCurrency } from "@/lib/utils/formatting";
 
 interface GridViewProps {
   filteredProducts: Product[];

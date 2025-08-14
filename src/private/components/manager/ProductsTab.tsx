@@ -6,7 +6,7 @@ import {
   CardContent,
 } from "@/components/ui/card";
 import { TabsContent } from "@/components/ui/tabs";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/formatting";
 import { Package } from "lucide-react";
 import React from "react";
 import {

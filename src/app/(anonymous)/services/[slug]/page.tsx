@@ -1,35 +1,27 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { serviceCheckout, ServiceCheckoutData } from "@/lib/api/order";
-import { Product } from "@/lib/api/product";
 import { Service } from "@/lib/api/service";
-import { useProducts } from "@/lib/hooks/useProducts";
 import { useServices } from "@/lib/hooks/useServices";
-import { useCartStore } from "@/lib/stores/useCartStore";
-import { ServiceCardProps } from "@/private/components/services/ServiceCard";
 import OrderDialog from "@/private/components/services/slug/OrderDialog";
 import ServiceHero from "@/private/components/services/slug/ServiceHero";
 import ServiceSidebar from "@/private/components/services/slug/ServiceSidebar";
 import SuccessDialog from "@/private/components/services/slug/SuccessDialog";
 import PathCrumbs from "@/shared/components/layouts/path-crumbs";
-import { Check, ChevronLeft, Users } from "lucide-react";
+import { Check, ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 const ServiceDetailPage = () => {
   const slug = useParams().slug as string;
   const router = useRouter();
-  const params = useParams();
 
   // API hooks
-  const { services: apiServices, loading: servicesLoading } = useServices({
+  const { services: apiServices } = useServices({
     limit: 50,
   });
-
-  const { products } = useProducts({ limit: 100 });
-  const { addItem } = useCartStore();
 
   // Local state
   const [service, setService] = useState<Service | null>(null);
