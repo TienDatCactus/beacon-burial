@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { Product } from "../api/product";
 import { Cart, CartItem } from "../interfaces";
+import { toast } from "sonner";
 
 // Extended interface for the cart store with actions
 interface CartStore extends Cart {
@@ -24,7 +25,9 @@ export const useCartStore = create<CartStore>()(
       subtotal: 0,
 
       addItem: (product: Product, quantity: number = 1) => {
-        console.log(product, quantity);
+        toast.success(`Đã thêm ${product.name} vào giỏ hàng!`, {
+          duration: 2000,
+        });
         set((state) => {
           const existingItemIndex = state.items.findIndex(
             (item) => item.product._id === product._id

@@ -15,7 +15,6 @@ interface GridViewProps {
   togglePublishStatus: (newsId: string, newStatus: boolean) => void;
   viewNewsDetails: (news: News) => void;
   editNews: (news: News) => void;
-  confirmDeleteNews: (news: News) => void;
 }
 
 const GridView: FC<GridViewProps> = ({
@@ -23,7 +22,6 @@ const GridView: FC<GridViewProps> = ({
   togglePublishStatus,
   viewNewsDetails,
   editNews,
-  confirmDeleteNews,
 }) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -106,14 +104,6 @@ const GridView: FC<GridViewProps> = ({
               }
             >
               {news.status === "active" ? "Hủy đăng" : "Đăng"}
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-red-500 border-red-200 hover:bg-red-50 hover:text-red-600"
-              onClick={() => confirmDeleteNews(news)}
-            >
-              Xóa
             </Button>
           </CardFooter>
         </Card>

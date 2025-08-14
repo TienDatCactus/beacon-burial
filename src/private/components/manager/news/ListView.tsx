@@ -11,7 +11,6 @@ interface ListViewProps {
   togglePublishStatus: (newsId: string, newStatus: boolean) => void;
   viewNewsDetails: (news: News) => void;
   editNews: (news: News) => void;
-  confirmDeleteNews: (news: News) => void;
 }
 
 const ListView: FC<ListViewProps> = ({
@@ -22,7 +21,6 @@ const ListView: FC<ListViewProps> = ({
   togglePublishStatus,
   viewNewsDetails,
   editNews,
-  confirmDeleteNews,
 }) => {
   // Helper function to render sort indicator
   const renderSortIndicator = (field: string) => {
@@ -137,14 +135,6 @@ const ListView: FC<ListViewProps> = ({
                       onClick={() => editNews(news)}
                     >
                       Sửa
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50"
-                      onClick={() => confirmDeleteNews(news)}
-                    >
-                      Xóa
                     </Button>
                   </div>
                 </td>

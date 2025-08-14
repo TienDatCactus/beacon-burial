@@ -29,14 +29,14 @@ const NewsPage = () => {
 
   const categories = ["Hướng dẫn", "Kiến thức", "Chính sách"];
 
-  // Fetch all active news on initial load
   useEffect(() => {
-    fetchNews({ status: "active", limit: 100 }); // Get a large number of news items
+    fetchNews({ status: "active", limit: 100 });
   }, [fetchNews]);
 
   // Client-side filtered news
   const filteredNews = useMemo(() => {
     return allNews.filter((item) => {
+      const isActive = item.status === "active";
       // Filter by search term (title, summary, content)
       const matchesSearch =
         !searchTerm ||
@@ -50,7 +50,7 @@ const NewsPage = () => {
       const matchesCategory =
         !activeCategory || item.category === activeCategory;
 
-      return matchesSearch && matchesCategory;
+      return isActive && matchesSearch && matchesCategory;
     });
   }, [allNews, searchTerm, activeCategory]);
 

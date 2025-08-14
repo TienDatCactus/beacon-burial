@@ -81,33 +81,72 @@ const OrderDetails: React.FC<{
               Sản phẩm và dịch vụ trong đơn hàng
             </h3>
             <div className="border rounded-md">
-              {selectedOrder.productId.map((product: any) => (
-                <div
-                  key={product._id}
-                  className="flex items-center p-3 border-b last:border-b-0"
-                >
-                  <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative mr-3">
-                    <Image
-                      fill
-                      src={product.image[0] || "/placeholder-image.jpg"}
-                      alt={product.name}
-                      className="h-full w-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <p className="font-medium">{product.name}</p>
-                      <span className="px-2 py-1 text-xs rounded-full w-24 text-center bg-green-100 text-green-800">
-                        Sản phẩm
-                      </span>
+              {selectedOrder.productId.length > 0
+                ? selectedOrder.productId.map((product: any) => (
+                    <div
+                      key={product._id}
+                      className="flex items-center p-3 border-b last:border-b-0"
+                    >
+                      <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative mr-3">
+                        <Image
+                          fill
+                          src={product.image[0] || "/placeholder-image.jpg"}
+                          alt={product.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2">
+                          <p className="font-medium">{product.name}</p>
+                          <span className="px-2 py-1 text-xs rounded-full w-24 text-center bg-green-100 text-green-800">
+                            Sản phẩm
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <p>Số lượng: {product.quantity}</p>
+                          <p>{formatCurrency(product.price)} mỗi cái</p>
+                        </div>
+                      </div>
                     </div>
-                    <div className="flex justify-between text-sm text-gray-600">
-                      <p>Số lượng: {product.quantity}</p>
-                      <p>{formatCurrency(product.price)} mỗi cái</p>
+                  ))
+                : selectedOrder.serviceId != null && (
+                    <div
+                      key={selectedOrder.serviceId._id}
+                      className="flex items-center p-3 border-b last:border-b-0"
+                    >
+                      <div className="h-12 w-12 rounded bg-gray-100 overflow-hidden relative mr-3">
+                        <Image
+                          fill
+                          src={
+                            selectedOrder.serviceId.imageUrl[0] ||
+                            "/placeholder-image.jpg"
+                          }
+                          alt={selectedOrder.serviceId.title}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex justify-between items-center gap-2">
+                          <p className="font-medium">
+                            {selectedOrder.serviceId.category}
+                          </p>
+                          <span className="px-2 py-1 text-xs rounded-full w-24 text-center bg-blue-100 text-blue-800">
+                            Dịch vụ
+                          </span>
+                        </div>
+                        <div className="flex justify-between text-sm text-gray-600">
+                          <p>
+                            Giá: {formatCurrency(selectedOrder.serviceId.price)}
+                          </p>
+                        </div>
+                        {selectedOrder.serviceId.description && (
+                          <p className="mt-1 text-sm text-gray-600">
+                            {selectedOrder.serviceId.description}
+                          </p>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </div>
-              ))}
+                  )}
             </div>
 
             {/* <div className="mt-4 space-y-1 text-right">

@@ -51,6 +51,7 @@ const EditDialog: FC<EditDialogProps> = ({
       slug: "",
       summary: "",
       content: "",
+      status: "active", // Default status
     }
   );
 
@@ -70,6 +71,7 @@ const EditDialog: FC<EditDialogProps> = ({
         slug: "",
         summary: "",
         content: "",
+        status: "active", // Default status
       });
       setImageFile(null);
     }
@@ -227,8 +229,13 @@ const EditDialog: FC<EditDialogProps> = ({
         category: formData.category as "Hướng dẫn" | "Kiến thức" | "Chính sách",
         summary: formData.summary!,
         content: formData.content!,
-        file: imageFile, // Pass single file instead of array
+        status: formData.status || "active",
       };
+
+      // Only include file if a new image was selected
+      if (imageFile) {
+        newsData.file = imageFile; // Single file, not files array
+      }
 
       let result;
 
@@ -256,6 +263,7 @@ const EditDialog: FC<EditDialogProps> = ({
             slug: "",
             summary: "",
             content: "",
+            status: "active",
           });
           setImageFile(null);
         } else {
@@ -265,7 +273,11 @@ const EditDialog: FC<EditDialogProps> = ({
     } catch (error) {
       console.error("Error saving news:", error);
       toast.error(
-        isNewNews ? "Không thể tạo tin tức" : "Không thể cập nhật tin tức"
+        error instanceof Error
+          ? error.message
+          : isNewNews
+          ? "Không thể tạo tin tức"
+          : "Không thể cập nhật tin tức"
       );
     } finally {
       setIsUploading(false);

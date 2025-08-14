@@ -6,6 +6,7 @@ export interface NewsCategory {
   name: string;
   slug: string;
 }
+
 // News interfaces based on your API structure
 export interface News {
   _id: string;
@@ -21,22 +22,26 @@ export interface News {
   __v?: number;
 }
 
-// Create news data (without tags)
+// Create news data
 export interface CreateNewsData {
   title: string;
+  slug: string;
   category: "Hướng dẫn" | "Kiến thức" | "Chính sách";
   summary: string;
   content: string;
-  files?: File; // For file uploads
+  file?: File; // For file upload - singular now
+  status?: "active" | "inactive";
 }
 
-// Edit news data (without tags)
+// Edit news data
 export interface EditNewsData {
-  title: string;
-  category: "Hướng dẫn" | "Kiến thức" | "Chính sách";
-  summary: string;
-  content: string;
-  files?: File; // For file uploads
+  title?: string;
+  slug?: string;
+  category?: "Hướng dẫn" | "Kiến thức" | "Chính sách";
+  summary?: string;
+  content?: string;
+  file?: File; // For file upload - singular now
+  status?: "active" | "inactive";
 }
 
 // News filters interface
@@ -112,13 +117,13 @@ export const getAllNews = async (
 };
 
 /**
- * Get single news by ID
- * @param newsId - The news ID
+ * Get single news by ID or slug
+ * @param newsIdOrSlug - The news ID or slug
  * @returns Promise with news details
  */
-export const getNewsById = async (newsId: string): Promise<News> => {
+export const getNewsById = async (newsIdOrSlug: string): Promise<any> => {
   try {
-    const response = await fetch(`${API_BASE_URL}/news/${newsId}`, {
+    const response = await fetch(`${API_BASE_URL}/news/${newsIdOrSlug}`, {
       method: "GET",
     });
 
@@ -139,7 +144,7 @@ export const getNewsById = async (newsId: string): Promise<News> => {
  * @param newsData - The news data to create
  * @returns Promise with created news data
  */
-export const addNews = async (newsData: CreateNewsData): Promise<News> => {
+export const addNews = async (newsData: CreateNewsData): Promise<any> => {
   try {
     const formData = createNewsFormData(newsData);
 
@@ -149,7 +154,10 @@ export const addNews = async (newsData: CreateNewsData): Promise<News> => {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to create news: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `Failed to create news: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -169,7 +177,7 @@ export const addNews = async (newsData: CreateNewsData): Promise<News> => {
 export const editNews = async (
   newsId: string,
   newsData: EditNewsData
-): Promise<News> => {
+): Promise<any> => {
   try {
     const formData = createNewsFormData(newsData);
 
@@ -179,7 +187,10 @@ export const editNews = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to update news: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `Failed to update news: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -199,7 +210,7 @@ export const editNews = async (
 export const changeNewsStatus = async (
   newsId: string,
   statusData: UpdateNewsStatusData
-): Promise<News> => {
+): Promise<any> => {
   try {
     const response = await fetchWithAuth(`/news/changeStatus/${newsId}`, {
       method: "PATCH",
@@ -210,7 +221,10 @@ export const changeNewsStatus = async (
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to update news status: ${response.status}`);
+      const errorData = await response.json();
+      throw new Error(
+        errorData.message || `Failed to update news status: ${response.status}`
+      );
     }
 
     const data = await response.json();
@@ -228,7 +242,7 @@ export const NEWS_CATEGORIES = [
   { value: "Chính sách", label: "Chính sách" },
 ] as const;
 
-// Add this FormData helper function
+// FormData helper function - updated to match backend expectations
 function createNewsFormData(newsData: any): FormData {
   const formData = new FormData();
 
@@ -238,12 +252,11 @@ function createNewsFormData(newsData: any): FormData {
   if (newsData.category) formData.append("category", newsData.category);
   if (newsData.summary) formData.append("summary", newsData.summary);
   if (newsData.content) formData.append("content", newsData.content);
+  if (newsData.status) formData.append("status", newsData.status);
 
-  // Add image files if they exist
-  if (newsData.files && newsData.files.length > 0) {
-    for (const file of newsData.files) {
-      formData.append("image", file);
-    }
+  // Add single image file if it exists
+  if (newsData.file) {
+    formData.append("image", newsData.file);
   }
 
   return formData;

@@ -12,7 +12,6 @@ import ListView from "@/private/components/manager/products/ListView";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
 import { Plus } from "lucide-react";
 import React, { useEffect, useState } from "react";
-import { toast } from "sonner";
 import withAuth from "./../../../../lib/hooks/useWithAuth";
 
 const ProductManagementPage: React.FC = () => {

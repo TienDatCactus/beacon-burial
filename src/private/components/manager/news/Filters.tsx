@@ -79,8 +79,8 @@ const Filters: FC<FiltersProps> = ({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">Tất cả trạng thái</SelectItem>
-            <SelectItem value="published">Đã đăng</SelectItem>
-            <SelectItem value="draft">Nháp</SelectItem>
+            <SelectItem value="active">Đã đăng</SelectItem>
+            <SelectItem value="inactive">Nháp</SelectItem>
           </SelectContent>
         </Select>
       </div>

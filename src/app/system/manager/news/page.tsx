@@ -32,7 +32,6 @@ const NewsPage: React.FC = () => {
   const [selectedNews, setSelectedNews] = useState<News | null>(null);
   const [isDetailsOpen, setIsDetailsOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
-  const [isDeleteOpen, setIsDeleteOpen] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
 
   // Mock categories based on API enum
@@ -47,43 +46,14 @@ const NewsPage: React.FC = () => {
     fetchNews({ page: 1, limit: 10 });
   }, []);
 
-  // Apply filters and sorting
-  const filteredNews = news.filter((item) => {
-    const matchesSearch =
-      item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.content.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !categoryFilter || item.category === categoryFilter;
-    const matchesStatus =
-      statusFilter === null ||
-      (statusFilter === "active" && item.status === "active") ||
-      (statusFilter === "inactive" && item.status === "inactive");
-
-    return matchesSearch && matchesCategory && matchesStatus;
-  });
-
-  // Event handlers
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    applyFilters(term, categoryFilter, statusFilter);
-  };
-
-  const handleCategoryFilter = (category: string | null) => {
-    const categoryValue = category as
-      | "Hướng dẫn"
-      | "Kiến thức"
-      | "Chính sách"
-      | null;
-    setCategoryFilter(categoryValue);
-    applyFilters(searchTerm, categoryValue, statusFilter);
-  };
-
-  const applyFilters = (
+  // Apply filters to the API call (without status filter)
+  const applyApiFilters = (
     keyword: string,
     category: "Hướng dẫn" | "Kiến thức" | "Chính sách" | null,
-    status: "active" | "inactive" | null
+    page: number = 1
   ) => {
     const filters: NewsFilters = {
-      page: 1,
+      page,
       limit: 10,
     };
 
@@ -91,15 +61,36 @@ const NewsPage: React.FC = () => {
       filters.keyword = keyword.trim();
     }
 
-    if (category) {
+    if (category !== null) {
       filters.category = category;
     }
 
-    if (status) {
-      filters.status = status;
-    }
-
     fetchNews(filters);
+  };
+
+  // Client-side status filtering
+  const filteredNews = news.filter((item) => {
+    return statusFilter == null || item.status == statusFilter;
+  });
+
+  // Event handlers
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
+    applyApiFilters(term, categoryFilter);
+  };
+
+  const handleCategoryFilter = (category: string | null) => {
+    const categoryValue =
+      category === "all"
+        ? null
+        : (category as "Hướng dẫn" | "Kiến thức" | "Chính sách" | null);
+    setCategoryFilter(categoryValue);
+    applyApiFilters(searchTerm, categoryValue);
+  };
+
+  // Handle status filter - only applied client-side
+  const handleStatusFilter = (status: "active" | "inactive" | null) => {
+    setStatusFilter(status);
   };
 
   const handleSort = (field: string) => {
@@ -119,7 +110,8 @@ const NewsPage: React.FC = () => {
       toast.success(
         `Tin tức đã được ${newStatus ? "kích hoạt" : "vô hiệu hóa"}`
       );
-      fetchNews({ page: pagination.currentPage, limit: 10 });
+      // Refetch current page
+      applyApiFilters(searchTerm, categoryFilter, pagination.currentPage);
     } catch (error) {
       toast.error("Không thể cập nhật trạng thái tin tức");
     }
@@ -135,33 +127,11 @@ const NewsPage: React.FC = () => {
     setIsEditOpen(true);
   };
 
-  const confirmDeleteNews = (newsItem: News) => {
-    setSelectedNews(newsItem);
-    setIsDeleteOpen(true);
-  };
-
   const handlePageChange = (page: number) => {
-    const filters: NewsFilters = {
-      page,
-      limit: 10,
-    };
-
-    if (searchTerm.trim()) {
-      filters.keyword = searchTerm.trim();
-    }
-
-    if (categoryFilter) {
-      filters.category = categoryFilter;
-    }
-
-    if (statusFilter) {
-      filters.status = statusFilter;
-    }
-
-    fetchNews(filters);
+    applyApiFilters(searchTerm, categoryFilter, page);
   };
 
-  if (loading) {
+  if (loading && news.length === 0) {
     return <div className="p-6">Đang tải...</div>;
   }
 
@@ -185,9 +155,10 @@ const NewsPage: React.FC = () => {
         currentView={currentView}
         setCurrentView={setCurrentView}
         searchTerm={searchTerm}
+        statusFilter={statusFilter}
         handleSearch={handleSearch}
         handleCategoryFilter={handleCategoryFilter}
-        setStatusFilter={setStatusFilter}
+        setStatusFilter={handleStatusFilter}
       />
 
       {filteredNews.length === 0 && !loading ? (
@@ -211,7 +182,6 @@ const NewsPage: React.FC = () => {
               togglePublishStatus={togglePublishStatus}
               viewNewsDetails={viewNewsDetails}
               editNews={editNewsHandler}
-              confirmDeleteNews={confirmDeleteNews}
             />
           ) : (
             <GridView
@@ -219,7 +189,6 @@ const NewsPage: React.FC = () => {
               togglePublishStatus={togglePublishStatus}
               viewNewsDetails={viewNewsDetails}
               editNews={editNewsHandler}
-              confirmDeleteNews={confirmDeleteNews}
             />
           )}
 
@@ -261,7 +230,7 @@ const NewsPage: React.FC = () => {
         }}
         selectedNews={selectedNews}
         setFilteredNews={() => {
-          fetchNews({ page: pagination.currentPage, limit: 10 });
+          applyApiFilters(searchTerm, categoryFilter, pagination.currentPage);
         }}
         setSelectedNews={setSelectedNews}
         categories={categories}

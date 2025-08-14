@@ -89,7 +89,7 @@ const SalesDashboard = () => {
     useDashboardStatistics();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 flex h-screen flex-col">
       {/* Page header */}
       <DashboardHeader
         dateRange={dateRange}
@@ -99,24 +99,27 @@ const SalesDashboard = () => {
       />
       {/* Key metrics summary */}
       <DashboardMetrics />
+      <div className="flex flex-1/2 flex-col text-center space-y-4 justify-center items-center">
+        <h1 className="text-4xl font-semibold text-primary">
+          Các thông tin khác sẽ được cập nhật sau
+        </h1>
+        <p>Hãy liên hệ với chúng tôi để biết thêm chi tiết</p>
+      </div>
       {/* Sales analysis tabs */}
-      <Tabs defaultValue="overview" className="space-y-4">
+      {/* <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
           <TabsTrigger value="overview">Tổng Quan</TabsTrigger>
           <TabsTrigger value="products">Sản Phẩm</TabsTrigger>
           <TabsTrigger value="customers">Khách Hàng</TabsTrigger>
         </TabsList>
 
-        {/* Overview Tab */}
         <OverviewTab mockSummaryData={mockSummaryData} />
-        {/* Products Tab */}
         <ProductsTab mockSummaryData={mockSummaryData} />
-        {/* Customers Tab */}
         <CustomersTab mockSummaryData={mockSummaryData} />
-      </Tabs>
+      </Tabs> */}
 
       {/* Trend Analysis View */}
-      <TrendAnalysis />
+      {/* <TrendAnalysis /> */}
     </div>
   );
 };

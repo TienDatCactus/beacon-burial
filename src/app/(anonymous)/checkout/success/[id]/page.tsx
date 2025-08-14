@@ -8,24 +8,15 @@ import { useOrderDetails } from "@/lib/hooks/useOrders";
 import { useParams, useRouter } from "next/navigation";
 
 const CheckoutSuccessPage: React.FC = () => {
-  const router = useRouter();
   const param = useParams();
   const id = param.id as string;
   const { fetchOrderDetails, order } = useOrderDetails();
 
-  // useEffect(() => {
-  //   const fromCheckout = window.history.state?.from?.startsWith("/checkout");
-  //   if (!fromCheckout) {
-  //     router.replace("/"); // Chuyển về trang chủ
-  //   }
-  // }, [router]);
-  // Trong ứng dụng thực tế, bạn có thể xác minh trạng thái đơn hàng từ API
   useEffect(() => {
     (async () => {
       await fetchOrderDetails(id);
     })();
   }, []);
-  console.log(order);
   return (
     <div className="container mx-auto px-4 py-20 max-w-lg text-center">
       <div className="bg-white p-8 rounded-lg shadow-sm border">

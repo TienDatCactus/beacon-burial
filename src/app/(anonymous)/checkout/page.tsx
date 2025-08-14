@@ -13,7 +13,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { productCheckout, ProductCheckoutData } from "@/lib/api/order";
 import { useCartStore } from "@/lib/stores/useCartStore";
-import { majorCities, vietnameseProvinces } from "@/lib/utils";
+import { getDistrictsByCity, majorCities } from "@/lib/utils";
 import { formatCurrency } from "@/lib/utils/formatting";
 import CartBreadcrumps from "@/shared/components/breadcrums/CartBreadcrumps";
 import { CreditCard, Home, Mail, MapPin, Phone, User } from "lucide-react";
@@ -49,6 +49,7 @@ const CheckoutPage: React.FC = () => {
     handleSubmit,
     control,
     watch,
+
     formState: { errors },
   } = useForm<CheckoutFormValues>({
     defaultValues: {
@@ -417,14 +418,16 @@ const CheckoutPage: React.FC = () => {
                           value={field.value}
                         >
                           <SelectTrigger className="h-11">
-                            <SelectValue placeholder="Chọn tỉnh/thành phố" />
+                            <SelectValue placeholder="Chọn tỉnh/thành" />
                           </SelectTrigger>
                           <SelectContent>
-                            {vietnameseProvinces.map((province) => (
-                              <SelectItem key={province} value={province}>
-                                {province}
-                              </SelectItem>
-                            ))}
+                            {getDistrictsByCity(watch("city")).map(
+                              (province) => (
+                                <SelectItem key={province} value={province}>
+                                  {province}
+                                </SelectItem>
+                              )
+                            )}
                           </SelectContent>
                         </Select>
                       )}

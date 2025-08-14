@@ -25,7 +25,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { ServiceCheckoutData } from "@/lib/api/order";
 import { Service } from "@/lib/api/service";
-import { cn, majorCities, vietnameseProvinces } from "@/lib/utils";
+import { cn, getDistrictsByCity, majorCities } from "@/lib/utils";
 import { format, parse } from "date-fns";
 import { vi } from "date-fns/locale";
 import { CalendarIcon, Home, Mail, MapPin, Phone, User } from "lucide-react";
@@ -306,7 +306,7 @@ const OrderDialog: React.FC<{
                     <SelectValue placeholder="Chọn tỉnh/thành phố" />
                   </SelectTrigger>
                   <SelectContent>
-                    {vietnameseProvinces.map((province) => (
+                    {getDistrictsByCity(orderForm.city).map((province) => (
                       <SelectItem key={province} value={province}>
                         {province}
                       </SelectItem>

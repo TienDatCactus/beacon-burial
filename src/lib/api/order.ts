@@ -15,7 +15,19 @@ export interface OrderProduct {
   isFeatured: boolean;
   updated_at: string;
 }
-
+export interface OrderService {
+  _id: string;
+  title: string;
+  category: string;
+  description: string;
+  imageUrl: string[];
+  price: number;
+  slug: string;
+  inclusions: string[];
+  isFeatured: boolean;
+  status: string;
+  updated_at: string;
+}
 export interface Order {
   _id: string;
   firstName: string;
@@ -28,6 +40,7 @@ export interface Order {
   note?: string;
   status: "Waiting" | "Accept" | "Deny";
   productId: OrderProduct[];
+  serviceId: OrderService;
   created_at?: string;
   updated_at: string;
 }

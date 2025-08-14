@@ -141,14 +141,19 @@ export const useNewsManagement = () => {
       setLoading(true);
 
       try {
-        const newNews = await addNews(newsData);
-        toast.success("Tin tức đã được tạo thành công");
-        return newNews;
+        const response = await addNews(newsData);
+
+        if (response && response.data) {
+          toast.success(response.message || "Tin tức đã được tạo thành công");
+          return response.data;
+        }
+
+        return null;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to create news";
         toast.error(errorMessage);
-        return null;
+        throw err;
       } finally {
         setCreating(false);
         setLoading(false);
@@ -164,13 +169,21 @@ export const useNewsManagement = () => {
       setLoading(true);
 
       try {
-        const updatedNews = await editNews(newsId, newsData);
-        return updatedNews;
+        const response = await editNews(newsId, newsData);
+
+        if (response && response.data) {
+          toast.success(
+            response.message || "Tin tức đã được cập nhật thành công"
+          );
+          return response.data;
+        }
+
+        return null;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update news";
         toast.error(errorMessage);
-        return null;
+        throw err;
       } finally {
         setUpdating(false);
         setLoading(false);
@@ -189,18 +202,24 @@ export const useNewsManagement = () => {
       setLoading(true);
 
       try {
-        const updatedNews = await changeNewsStatus(newsId, statusData);
-        toast.success(
-          `Trạng thái tin tức đã được cập nhật thành ${
-            statusData.status === "active" ? "Hoạt động" : "Không hoạt động"
-          }`
-        );
-        return updatedNews;
+        const response = await changeNewsStatus(newsId, statusData);
+
+        if (response && response.data) {
+          toast.success(
+            response.message ||
+              `Trạng thái tin tức đã được cập nhật thành ${
+                statusData.status === "active" ? "Hoạt động" : "Không hoạt động"
+              }`
+          );
+          return response.data;
+        }
+
+        return null;
       } catch (err) {
         const errorMessage =
           err instanceof Error ? err.message : "Failed to update news status";
         toast.error(errorMessage);
-        return null;
+        throw err;
       } finally {
         setChangingStatus(false);
         setLoading(false);

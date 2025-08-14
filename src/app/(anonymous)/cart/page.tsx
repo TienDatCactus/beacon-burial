@@ -101,7 +101,7 @@ const CartPage: React.FC = () => {
                           <MinusIcon size={14} />
                         </Button>
                         <Input
-                          type="number"
+                          type="tel"
                           min="1"
                           className="w-12 text-center"
                           value={item.quantity}

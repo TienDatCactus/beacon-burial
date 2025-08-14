@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { MessagesSquare, X, MinusSquare, Send } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { API_BASE_URL } from "@/lib/constants";
-
+import { cn } from "@/lib/utils";
+import { MessagesSquare, MinusSquare, Send, X } from "lucide-react";
+import React, { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 interface Message {
   id: string;
   content: string;
@@ -217,7 +218,9 @@ const Chatbox = () => {
                         : "bg-gray-100 mr-auto rounded-tl-none"
                     )}
                   >
-                    <p className="text-sm">{msg.content}</p>
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      {msg.content}
+                    </ReactMarkdown>
                     <p className="text-xs text-gray-500 mt-1">
                       {`${msg.timestamp
                         .getHours()
