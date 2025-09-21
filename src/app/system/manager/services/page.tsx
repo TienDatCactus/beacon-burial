@@ -22,28 +22,13 @@ import TableView from "@/private/components/manager/services/TableView";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
 import {
   ChartBarBig,
-  Check,
   LayoutGrid,
   List,
   ListFilterPlus,
   Plus,
   Search,
 } from "lucide-react";
-import React, { useEffect, useState } from "react";
-
-export const ServiceInclusionItem: React.FC<{ item: any }> = ({ item }) => {
-  return (
-    <div className="flex items-start gap-2 py-1">
-      <div className="mt-1 bg-primary/10 rounded-full p-1 shrink-0">
-        <Check className="h-3.5 w-3.5 text-primary" />
-      </div>
-      <div>
-        <p className="font-medium text-gray-800">{item.name}</p>
-        <p className="text-sm text-gray-600 mt-0.5">{item.description}</p>
-      </div>
-    </div>
-  );
-};
+import { useEffect, useState } from "react";
 
 const ServicesManagementPage = () => {
   const {
@@ -68,7 +53,6 @@ const ServicesManagementPage = () => {
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [currentView, setCurrentView] = useState<"list" | "grid">("list");
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
-  const [priceRangeFilter, setPriceRangeFilter] = useState<string | null>(null);
 
   useEffect(() => {
     const timeoutId = setTimeout(() => {
@@ -92,7 +76,6 @@ const ServicesManagementPage = () => {
   };
 
   const handlePriceRangeFilter = (priceRange: string | null) => {
-    setPriceRangeFilter(priceRange);
     filterByPriceRange(priceRange);
   };
 
@@ -103,10 +86,7 @@ const ServicesManagementPage = () => {
     }
   };
 
-  const handleToggleStatusWrapper = (
-    id: string,
-    newStatus: "active" | "inactive"
-  ) => {
+  const handleToggleStatusWrapper = (id: string) => {
     handleToggleStatus(id);
   };
 
@@ -303,7 +283,6 @@ const ServicesManagementPage = () => {
           toggleStatus={handleToggleStatusWrapper}
           viewServiceDetails={handleViewServiceDetails as any}
           editService={handleEditService as any}
-          confirmDeleteService={handleConfirmDeleteService as any}
           pagination={pagination}
         />
       )}

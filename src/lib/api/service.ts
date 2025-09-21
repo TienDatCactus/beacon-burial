@@ -10,7 +10,7 @@ export interface Service {
   imageUrl: string[];
   price: number;
   slug: string;
-  inclusions: string[]; // Product IDs
+  inclusions: { [key: string]: any }; // Product IDs
   isFeatured: boolean;
   status: "active" | "inactive";
 }

@@ -144,7 +144,7 @@ const useAuth = create<AuthState>()(
         token: state.token,
         isAuthenticated: state.isAuthenticated,
       }),
-      migrate: async (persistedState, version) => {
+      migrate: async (persistedState) => {
         return persistedState;
       },
     }

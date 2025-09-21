@@ -21,9 +21,7 @@ export default function AuthPage() {
   const [error, setError] = useState("");
 
   const router = useRouter();
-  const { login, user } = useAuth((state: AuthState) => state);
-
-  // Check if user is already authenticated
+  const { login } = useAuth((state: AuthState) => state);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

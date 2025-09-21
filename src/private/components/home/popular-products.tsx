@@ -1,42 +1,9 @@
 import { Button } from "@/components/ui/button";
-import { Product } from "@/lib/interfaces";
+import { useProducts } from "@/lib/hooks/useProducts";
 import ProductCards from "@/shared/components/cards/ProductCards";
 import React from "react";
 const PopularProductSection: React.FC = () => {
-  const products: Product[] = [
-    {
-      _id: "1",
-      image: "/images/image-45-840x840.jpg",
-      name: "Sản phẩm 1",
-      price: 100000,
-      rating: 4.5, // Example rating
-      slug: "product-1",
-    },
-    {
-      _id: "2",
-      image: "/images/image-45-840x840.jpg",
-      name: "Sản phẩm 2",
-      price: 200000,
-      rating: 4.0,
-      slug: "product-2",
-    },
-    {
-      _id: "3",
-      image: "/images/image-45-840x840.jpg",
-      name: "Sản phẩm 3",
-      price: 300000,
-      rating: 4.8,
-      slug: "product-3",
-    },
-    {
-      _id: "4",
-      image: "/images/image-45-840x840.jpg",
-      name: "Sản phẩm 4",
-      price: 300000,
-      rating: 4.7,
-      slug: "product-4",
-    },
-  ];
+  const { products } = useProducts({ limit: 8 });
   return (
     <section className="max-w-[125rem] flex flex-col justify-center items-center mx-auto p-20 space-y-4 bg-white/50 ">
       <div className="space-y-4 text-center">

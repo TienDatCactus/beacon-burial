@@ -52,6 +52,7 @@ const Header: React.FC = () => {
       toast.success("Đăng xuất thành công");
       router.push("/");
     } catch (error) {
+      console.log(error);
       toast.error("Có lỗi xảy ra khi đăng xuất");
     }
   };

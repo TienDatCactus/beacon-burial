@@ -1,11 +1,11 @@
 "use client";
-import React, { useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { useOrderDetails } from "@/lib/hooks/useOrders";
 import { formatDate } from "@/lib/utils/formatting";
 import { CheckCircle } from "lucide-react";
 import Link from "next/link";
-import { useOrderDetails } from "@/lib/hooks/useOrders";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
+import React, { useEffect } from "react";
 
 const CheckoutSuccessPage: React.FC = () => {
   const param = useParams();

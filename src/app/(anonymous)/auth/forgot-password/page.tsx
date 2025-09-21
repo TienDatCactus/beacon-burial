@@ -64,6 +64,7 @@ export default function ForgotPasswordPage() {
         toast.error(result.error || "Gửi OTP thất bại");
       }
     } catch (error: any) {
+      console.log(error);
       toast.error("Có lỗi xảy ra khi gửi OTP");
     } finally {
       setIsLoading(false);
@@ -89,7 +90,8 @@ export default function ForgotPasswordPage() {
       } else {
         toast.error(result.error || "OTP không chính xác");
       }
-    } catch (error: any) {
+    } catch (error) {
+      console.log(error);
       toast.error("Có lỗi xảy ra khi xác thực OTP");
     } finally {
       setIsLoading(false);
@@ -110,6 +112,7 @@ export default function ForgotPasswordPage() {
         toast.error(result.error || "Gửi lại OTP thất bại");
       }
     } catch (error: any) {
+      console.log(error);
       toast.error("Có lỗi xảy ra khi gửi lại OTP");
     } finally {
       setIsLoading(false);
@@ -151,6 +154,7 @@ export default function ForgotPasswordPage() {
         toast.error(result.error || "Đổi mật khẩu thất bại");
       }
     } catch (error: any) {
+      console.log(error);
       toast.error("Có lỗi xảy ra khi đổi mật khẩu");
     } finally {
       setIsLoading(false);

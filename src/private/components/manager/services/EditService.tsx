@@ -71,7 +71,7 @@ const EditService: React.FC<EditServiceProps> = ({
   useEffect(() => {
     if (isEditDialogOpen && selectedService && selectedService.inclusions) {
       const normalizedInclusions = selectedService.inclusions.map(
-        (inclusion) => {
+        (inclusion: any) => {
           if (
             typeof inclusion === "object" &&
             inclusion !== null &&
@@ -86,7 +86,7 @@ const EditService: React.FC<EditServiceProps> = ({
       const currentInclusionIds =
         selectedService.inclusions.map(getInclusionId);
       const needsNormalization = normalizedInclusions.some(
-        (id, index) => id !== currentInclusionIds[index]
+        (id: any, index: number) => id !== currentInclusionIds[index]
       );
 
       if (needsNormalization) {
@@ -201,7 +201,7 @@ const EditService: React.FC<EditServiceProps> = ({
     );
     if (selectedProduct) {
       const currentInclusionIds = selectedService.inclusions.map(
-        (inclusion) => {
+        (inclusion: any) => {
           if (
             typeof inclusion === "object" &&
             inclusion !== null &&
@@ -209,14 +209,16 @@ const EditService: React.FC<EditServiceProps> = ({
           ) {
             return (inclusion as any)._id;
           }
-          return inclusion as string;
+          return inclusion;
         }
       );
 
       if (!currentInclusionIds.includes(selectedProductId)) {
         setSelectedService({
           ...selectedService,
-          inclusions: [...selectedService.inclusions, selectedProductId],
+          inclusions: Array.isArray(selectedService.inclusions)
+            ? [...selectedService.inclusions, selectedProductId]
+            : [selectedProductId],
         });
         setSelectedProductId(""); // Reset selection
       }
@@ -226,7 +228,7 @@ const EditService: React.FC<EditServiceProps> = ({
   const removeProductInclusion = (productId: string) => {
     setSelectedService({
       ...selectedService,
-      inclusions: selectedService.inclusions.filter((inclusion) => {
+      inclusions: selectedService.inclusions.filter((inclusion: any) => {
         if (
           typeof inclusion === "object" &&
           inclusion !== null &&
@@ -256,7 +258,7 @@ const EditService: React.FC<EditServiceProps> = ({
 
   // Helper function to check if product is already included
   const isProductIncluded = (productId: string): boolean => {
-    return selectedService.inclusions.some((inclusion) => {
+    return selectedService.inclusions.some((inclusion: any) => {
       const inclusionId = getInclusionId(inclusion);
       return inclusionId === productId;
     });
@@ -558,60 +560,58 @@ const EditService: React.FC<EditServiceProps> = ({
             >
               {/* Display selected products */}
               {selectedService.inclusions.length > 0 ? (
-                selectedService.inclusions.map(
-                  (inclusion: any, index: number) => {
-                    const productId = getInclusionId(inclusion);
-                    const product = getProductById(productId);
-                    if (!product) return null;
+                selectedService.inclusions.map((inclusion: any) => {
+                  const productId = getInclusionId(inclusion);
+                  const product = getProductById(productId);
+                  if (!product) return null;
 
-                    return (
-                      <div
-                        key={productId}
-                        className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 rounded overflow-hidden bg-gray-200">
-                            <Image
-                              src={product.image?.[0] || "/icons/image-off.svg"}
-                              alt={product.name}
-                              width={48}
-                              height={48}
-                              className="w-full h-full object-cover"
-                              onError={(e) =>
-                                ((e.target as HTMLImageElement).src =
-                                  "/icons/image-off.svg")
-                              }
-                            />
-                          </div>
-                          <div>
-                            <h4 className="font-medium text-sm">
-                              {product.name}
-                              {product.status === "inactive" && (
-                                <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
-                                  Ngừng hoạt động
-                                </span>
-                              )}
-                            </h4>
-                            <p className="text-xs text-gray-500">
-                              {product.category}
-                            </p>
-                            <p className="text-xs font-semibold text-green-600">
-                              {product.price.toLocaleString("vi-VN")} VND
-                            </p>
-                          </div>
+                  return (
+                    <div
+                      key={productId}
+                      className="flex items-center justify-between p-3 border rounded-lg bg-gray-50"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded overflow-hidden bg-gray-200">
+                          <Image
+                            src={product.image?.[0] || "/icons/image-off.svg"}
+                            alt={product.name}
+                            width={48}
+                            height={48}
+                            className="w-full h-full object-cover"
+                            onError={(e) =>
+                              ((e.target as HTMLImageElement).src =
+                                "/icons/image-off.svg")
+                            }
+                          />
                         </div>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => removeProductInclusion(productId)}
-                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
+                        <div>
+                          <h4 className="font-medium text-sm">
+                            {product.name}
+                            {product.status === "inactive" && (
+                              <span className="ml-2 text-xs bg-red-100 text-red-600 px-2 py-1 rounded">
+                                Ngừng hoạt động
+                              </span>
+                            )}
+                          </h4>
+                          <p className="text-xs text-gray-500">
+                            {product.category}
+                          </p>
+                          <p className="text-xs font-semibold text-green-600">
+                            {product.price.toLocaleString("vi-VN")} VND
+                          </p>
+                        </div>
                       </div>
-                    );
-                  }
-                )
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => removeProductInclusion(productId)}
+                        className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  );
+                })
               ) : (
                 <p className="text-gray-500 text-sm text-center py-4">
                   Chưa có sản phẩm nào được chọn

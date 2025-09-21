@@ -1,5 +1,6 @@
 // Authentication API functions
-const API_BASE_URL = "http://localhost:9999/api/auth";
+
+import { API_BASE_URL } from "../constants";
 
 // Types for authentication
 export interface LoginCredentials {
@@ -44,7 +45,7 @@ export async function login(
   credentials: LoginCredentials
 ): Promise<ApiResponse<LoginResponse>> {
   try {
-    const response = await fetch(`${API_BASE_URL}/login`, {
+    const response = await fetch(`${API_BASE_URL}/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -83,7 +84,7 @@ export async function forgetPassword(
   request: ForgetPasswordRequest
 ): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/forgetPassword`, {
+    const response = await fetch(`${API_BASE_URL}/auth/forgetPassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -119,7 +120,7 @@ export async function verifyOtp(
   request: VerifyOtpRequest
 ): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/verify`, {
+    const response = await fetch(`${API_BASE_URL}/auth/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -155,7 +156,7 @@ export async function resetPassword(
   request: ResetPasswordRequest
 ): Promise<ApiResponse> {
   try {
-    const response = await fetch(`${API_BASE_URL}/resetPassword`, {
+    const response = await fetch(`${API_BASE_URL}/auth/resetPassword`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

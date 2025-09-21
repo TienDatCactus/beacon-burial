@@ -34,7 +34,6 @@ const ProductManagementPage: React.FC = () => {
   const [selectedProduct, setSelectedProduct] = useState<Product>();
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [categoryFilter, setCategoryFilter] = useState<string | null>(null);
 
   useEffect(() => {
@@ -94,7 +93,6 @@ const ProductManagementPage: React.FC = () => {
   // Delete product confirmation
   const confirmDeleteProduct = (product: Product) => {
     setSelectedProduct(product);
-    setIsDeleteDialogOpen(true);
   };
 
   // Create new product

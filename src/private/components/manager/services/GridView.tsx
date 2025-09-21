@@ -27,7 +27,6 @@ const GridView: React.FC<{
   toggleStatus: (id: string, status: "active" | "inactive") => void;
   viewServiceDetails: (service: Service) => void;
   editService: (service: Service) => void;
-  confirmDeleteService: (service: Service) => void;
   pagination: {
     currentPage: number;
     totalPages: number;
@@ -38,7 +37,6 @@ const GridView: React.FC<{
   toggleStatus,
   viewServiceDetails,
   editService,
-  confirmDeleteService,
   pagination,
   goToPage,
 }) => {

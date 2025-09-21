@@ -1,25 +1,25 @@
 "use client";
 
 import { Button } from "@/components/ui/button";
-import withAuth from "@/lib/hooks/useWithAuth";
+import { Order, OrderFilters } from "@/lib/api/order";
 import {
-  useOrders,
   useOrderDetails,
   useOrderManagement,
+  useOrders,
 } from "@/lib/hooks/useOrders";
+import withAuth from "@/lib/hooks/useWithAuth";
 import Filters from "@/private/components/manager/orders/Filters";
 import OrderDetails from "@/private/components/manager/orders/OrderDetails";
 import OrdersTable from "@/private/components/manager/orders/OrdersTable";
 import EmptyFilter from "@/shared/components/state/EmptyFilter";
 import { CalendarIcon } from "lucide-react";
 import React, { useState } from "react";
-import { Order, OrderFilters } from "@/lib/api/order";
 
 const OrdersPage: React.FC = () => {
   // Real API hooks
   const { orders, pagination, loading, error, fetchOrders, refreshOrders } =
     useOrders();
-  const { order: selectedOrderDetails, fetchOrderDetails } = useOrderDetails();
+  const { fetchOrderDetails } = useOrderDetails();
   const { updating, updateStatus } = useOrderManagement();
 
   // Local state for UI

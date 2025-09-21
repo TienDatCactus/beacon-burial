@@ -1,17 +1,17 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import Filters from "@/private/components/manager/news/Filters";
-import ListView from "@/private/components/manager/news/ListView";
-import GridView from "@/private/components/manager/news/GridView";
-import EditDialog from "@/private/components/manager/news/EditDialog";
-import DetailsDialog from "@/private/components/manager/news/DetailsDialog";
-import { useNews, useNewsManagement } from "@/lib/hooks/useNews";
 import { News, NewsFilters } from "@/lib/api/news";
+import { useNews, useNewsManagement } from "@/lib/hooks/useNews";
 import withAuth from "@/lib/hooks/useWithAuth";
+import DetailsDialog from "@/private/components/manager/news/DetailsDialog";
+import EditDialog from "@/private/components/manager/news/EditDialog";
+import Filters from "@/private/components/manager/news/Filters";
+import GridView from "@/private/components/manager/news/GridView";
+import ListView from "@/private/components/manager/news/ListView";
 import { Plus } from "lucide-react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 const NewsPage: React.FC = () => {
   // Real API hooks
@@ -113,6 +113,7 @@ const NewsPage: React.FC = () => {
       // Refetch current page
       applyApiFilters(searchTerm, categoryFilter, pagination.currentPage);
     } catch (error) {
+      console.log(error);
       toast.error("Không thể cập nhật trạng thái tin tức");
     }
   };
@@ -155,7 +156,6 @@ const NewsPage: React.FC = () => {
         currentView={currentView}
         setCurrentView={setCurrentView}
         searchTerm={searchTerm}
-        statusFilter={statusFilter}
         handleSearch={handleSearch}
         handleCategoryFilter={handleCategoryFilter}
         setStatusFilter={handleStatusFilter}

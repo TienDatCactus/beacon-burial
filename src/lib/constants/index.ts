@@ -1,1 +1,1 @@
-export const API_BASE_URL = "http://localhost:9999/api";
+export const API_BASE_URL = "https://be-beacon-burial-tfqu.onrender.com/api";

@@ -1,7 +1,8 @@
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Service } from "@/lib/api/service";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatCurrency } from "@/lib/utils/formatting";
 import {
   Calendar,
   ChevronRight,
@@ -14,8 +15,6 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import { ServiceCardProps } from "../ServiceCard";
-import { formatCurrency } from "@/lib/utils/formatting";
 const ServiceSidebar: React.FC<{
   service: Service;
   setIsOrderDialogOpen: React.Dispatch<React.SetStateAction<boolean>>;

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/select";
 import { NewsCategory } from "@/lib/api/news";
 import { GridIcon, ListIcon, SearchIcon } from "lucide-react";
-import { Dispatch, FC, SetStateAction } from "react";
+import { FC } from "react";
 
 interface FiltersProps {
   categories: NewsCategory[];
@@ -19,7 +19,7 @@ interface FiltersProps {
   searchTerm: string;
   handleSearch: (term: string) => void;
   handleCategoryFilter: (category: string | null) => void;
-  setStatusFilter: Dispatch<SetStateAction<"active" | "inactive" | null>>;
+  setStatusFilter: (status: "active" | "inactive" | null) => void;
 }
 
 const Filters: FC<FiltersProps> = ({

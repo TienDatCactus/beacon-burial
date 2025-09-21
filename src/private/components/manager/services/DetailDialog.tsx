@@ -1,4 +1,3 @@
-import { ServiceInclusionItem } from "@/app/system/manager/services/page";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,6 +13,7 @@ import { formatCurrency } from "@/lib/utils/formatting";
 import { PackageCheck } from "lucide-react";
 import Image from "next/image";
 import React from "react";
+import ServiceInclusionItem from "../../services/ServiceInclusionItem";
 
 interface DetailDialogProps {
   isViewDialogOpen: boolean;
@@ -216,7 +216,7 @@ const DetailDialog: React.FC<DetailDialogProps> = ({
 
               <div className="grid gap-4">
                 {selectedService.inclusions.map(
-                  (inclusion: any, index: number) => (
+                  (inclusion: { [key: string]: any }, index: number) => (
                     <div
                       key={index}
                       className="bg-gray-50 border border-dashed border-gray-400 shadow-md rounded-xl p-3 hover:bg-gray-100 transition-colors"
